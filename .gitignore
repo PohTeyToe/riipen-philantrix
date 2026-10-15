@@ -6,6 +6,10 @@ REVIEW.md
 _review_screenshots/
 
 node_modules/
+
+# Env files and secrets.
+.env*
+!.env.example
 .next/
 out/
 next-env.d.ts
