@@ -1,0 +1,47 @@
+{
+  "note": "Check that the sample org's name isn't a real organization. Done 2026-10-15.",
+  "chosen": "Kestrel Lane Youth Mentorship",
+  "shown_as": "Kestrel Lane Youth Mentorship (sample)",
+  "cra_dataset": {
+    "name": "List of charities (2024 filing year), Canada Revenue Agency",
+    "url": "https://open.canada.ca/data/en/dataset/80c00cdb-1358-415c-bb8b-0de7f12675b8",
+    "files_searched": [
+      {
+        "file": "Identification (ident_2024_updated.csv)",
+        "url": "https://open.canada.ca/data/dataset/80c00cdb-1358-415c-bb8b-0de7f12675b8/resource/694fdc72-eae4-4ee0-83eb-832ab7b230e3/download/ident_2024_updated.csv",
+        "rows": 83761,
+        "fields": "Legal Name, Account Name"
+      },
+      {
+        "file": "Qualified donees (qualified_donees_2024_updated.csv)",
+        "url": "https://open.canada.ca/data/dataset/80c00cdb-1358-415c-bb8b-0de7f12675b8/resource/8195b2cb-ce2d-4cd2-b829-6d07f4959f49/download/qualified_donees_2024_updated.csv",
+        "rows": 344533,
+        "fields": "Donee Name"
+      }
+    ],
+    "method": "Case-insensitive substring match on organization names.",
+    "limit": "The open dataset covers charities that filed for 2024. A charity registered later may not appear."
+  },
+  "candidates": [
+    {
+      "name": "Tall Pines Youth Mentorship",
+      "cra_matches": { "TALL PINE": 0, "TALLPINE": 0 },
+      "web_search": {
+        "queries": ["\"Tall Pines Youth Mentorship\"", "\"Tall Pines\" youth mentorship program Canada", "\"Tall Pines School\" Brampton"],
+        "finding": "No organization by this exact name. A real organization serving children in the Toronto area uses the name: Tall Pines School, a private school in Brampton, Ontario, which also runs a summer camp.",
+        "source": "https://peel.cioc.ca/record/CDR1020"
+      },
+      "decision": "Not used. A youth program called Tall Pines in the Toronto area could be mistaken for that school."
+    },
+    {
+      "name": "Kestrel Lane Youth Mentorship",
+      "cra_matches": { "KESTREL": 0, "KESTREL LANE": 0 },
+      "cra_other": "One charity's street address contains the word Kestrel. No organization name does.",
+      "web_search": {
+        "queries": ["\"Kestrel Lane Youth Mentorship\" OR \"Kestrel Lane\" youth program"],
+        "finding": "No organization or program by this name. Nearest results were unrelated (Kestrel Land Trust in Massachusetts, Kestrel Educational Adventures in Massachusetts)."
+      },
+      "decision": "Used. Always shown with \"(sample)\"."
+    }
+  ]
+}

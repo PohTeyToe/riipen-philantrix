@@ -1,0 +1,153 @@
+{
+  "mock": true,
+  "sample_label": "Sample data. Fictional organization and records.",
+  "id": "kestrel-lane",
+  "name": "Kestrel Lane Youth Mentorship",
+  "display_name": "Kestrel Lane Youth Mentorship (sample)",
+  "as_of": "2026-09-30",
+  "period": {
+    "start": "2026-07-01",
+    "end": "2026-09-30"
+  },
+  "activity_types": [
+    {
+      "name": "Attendances",
+      "units": "Session hours"
+    },
+    {
+      "name": "Assignment Submissions",
+      "units": "1 per submission"
+    }
+  ],
+  "age_ranges": [
+    "10-12",
+    "13-15",
+    "16-18",
+    "19-24"
+  ],
+  "workstreams": [
+    {
+      "id": "youth-mentorship-2026",
+      "name": "Youth Mentorship 2026"
+    }
+  ],
+  "groups": [
+    {
+      "id": "coding-club",
+      "name": "Coding Club",
+      "workstream_id": "youth-mentorship-2026",
+      "schedule": {
+        "weekdays": [
+          "Tue",
+          "Thu"
+        ],
+        "hours": 1.5,
+        "from": "2026-07-01",
+        "to": "2026-09-30",
+        "breaks": []
+      },
+      "schedule_label": "Tue and Thu, 1.5 hours",
+      "scheduled_dates": [
+        "2026-07-02",
+        "2026-07-07",
+        "2026-07-09",
+        "2026-07-14",
+        "2026-07-16",
+        "2026-07-21",
+        "2026-07-23",
+        "2026-07-28",
+        "2026-07-30",
+        "2026-08-04",
+        "2026-08-06",
+        "2026-08-11",
+        "2026-08-13",
+        "2026-08-18",
+        "2026-08-20",
+        "2026-08-25",
+        "2026-08-27",
+        "2026-09-01",
+        "2026-09-03",
+        "2026-09-08",
+        "2026-09-10",
+        "2026-09-15",
+        "2026-09-17",
+        "2026-09-22",
+        "2026-09-24",
+        "2026-09-29"
+      ],
+      "mock": true
+    },
+    {
+      "id": "mentor-circle",
+      "name": "Mentor Circle",
+      "workstream_id": "youth-mentorship-2026",
+      "schedule": {
+        "weekdays": [
+          "Mon"
+        ],
+        "hours": 1,
+        "from": "2026-07-01",
+        "to": "2026-09-30",
+        "breaks": [
+          {
+            "from": "2026-08-03",
+            "to": "2026-08-03",
+            "reason": "Civic Holiday"
+          },
+          {
+            "from": "2026-09-07",
+            "to": "2026-09-07",
+            "reason": "Labour Day"
+          }
+        ]
+      },
+      "schedule_label": "Mon, 1 hour",
+      "scheduled_dates": [
+        "2026-07-06",
+        "2026-07-13",
+        "2026-07-20",
+        "2026-07-27",
+        "2026-08-10",
+        "2026-08-17",
+        "2026-08-24",
+        "2026-08-31",
+        "2026-09-14",
+        "2026-09-21",
+        "2026-09-28"
+      ],
+      "mock": true
+    },
+    {
+      "id": "weekend-leaders",
+      "name": "Weekend Leaders",
+      "workstream_id": "youth-mentorship-2026",
+      "schedule": {
+        "weekdays": [
+          "Sat"
+        ],
+        "hours": 2,
+        "from": "2026-07-01",
+        "to": "2026-09-30",
+        "breaks": [
+          {
+            "from": "2026-08-01",
+            "to": "2026-08-31",
+            "reason": "Summer break"
+          }
+        ]
+      },
+      "schedule_label": "Sat, 2 hours, July and September",
+      "scheduled_dates": [
+        "2026-07-04",
+        "2026-07-11",
+        "2026-07-18",
+        "2026-07-25",
+        "2026-09-05",
+        "2026-09-12",
+        "2026-09-19",
+        "2026-09-26"
+      ],
+      "mock": true
+    }
+  ]
+}

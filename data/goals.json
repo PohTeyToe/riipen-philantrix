@@ -1,0 +1,6 @@
+[
+  {"id":"G1","name":"Enroll 8 new participants","metric":"new_participants","unit":"count","target":8,"start_date":"2026-07-01","due_date":"2026-08-31","workstream_id":"youth-mentorship-2026","mock":true},
+  {"id":"G2","name":"Participant hours","metric":"participant_hours","unit":"hours","target":1050,"start_date":"2026-07-01","due_date":"2026-12-18","workstream_id":"youth-mentorship-2026","mock":true},
+  {"id":"G3","name":"Assignment submissions","metric":"assignment_submissions","unit":"count","target":360,"start_date":"2026-07-01","due_date":"2026-12-18","workstream_id":"youth-mentorship-2026","mock":true},
+  {"id":"G4","name":"Attendance rate of 80%","metric":"attendance_rate","unit":"rate","target":0.8,"start_date":"2026-07-01","due_date":null,"workstream_id":"youth-mentorship-2026","mock":true}
+]

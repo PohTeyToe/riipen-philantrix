@@ -1,0 +1,38 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  app:
+    name: Types, tests, summary check, build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+      - run: npm ci
+      - run: npm run typecheck
+      # Includes the golden test against data/figures.json and the SQL view test on PGlite.
+      - run: npm test
+      # Fails if the AI summary has a number the model typed itself.
+      - run: npm run check:narrative
+      - run: npm run build
+
+  database:
+    name: Row-level security (pgTAP)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: supabase/setup-cli@v1
+        with:
+          version: 2.121.0
+      - run: supabase db start
+      - run: supabase test db

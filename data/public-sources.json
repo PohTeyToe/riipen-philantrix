@@ -1,0 +1,78 @@
+{
+  "note": "Public material read on 2026-10-15. Quotes are short fragments, exactly as written on the page. Vocabulary is the product's own words, read from screenshots on its public site. No images are copied into this repo.",
+  "quotes": [
+    {
+      "id": "different-format",
+      "text": "Every funder wants a different format",
+      "url": "https://www.philantrix.com/",
+      "where": "Home page, problem cards",
+      "retrieved": "2026-10-15"
+    },
+    {
+      "id": "rebuild-each-time",
+      "text": "custom reports that take hours to rebuild from scratch each time",
+      "url": "https://www.philantrix.com/",
+      "where": "Home page, problem cards",
+      "retrieved": "2026-10-15"
+    },
+    {
+      "id": "three-days",
+      "text": "You spend the next three days hunting down spreadsheets, consolidating data, reformatting reports",
+      "url": "https://www.philantrix.com/",
+      "where": "Home page, problem section",
+      "retrieved": "2026-10-15"
+    },
+    {
+      "id": "next-quarter",
+      "text": "only to do it all again next quarter",
+      "url": "https://www.philantrix.com/",
+      "where": "Home page, problem section",
+      "retrieved": "2026-10-15"
+    },
+    {
+      "id": "export-formats",
+      "text": "PDF, PPTX, or Excel",
+      "url": "https://www.philantrix.com/features",
+      "where": "Features page, One-Click Reports. Context only.",
+      "retrieved": "2026-10-15"
+    }
+  ],
+  "sectors_named": [
+    {
+      "text": "youth mentorship",
+      "url": "https://www.philantrix.com/",
+      "retrieved": "2026-10-15"
+    },
+    {
+      "text": "housing initiatives",
+      "url": "https://www.philantrix.com/",
+      "retrieved": "2026-10-15"
+    },
+    {
+      "text": "a family in a crisis shelter",
+      "url": "https://www.philantrix.com/about",
+      "retrieved": "2026-10-15"
+    }
+  ],
+  "vocabulary": [
+    { "term": "Workstreams", "used_as": "the report's subject (one workstream)", "source": "https://www.philantrix.com/images/settings-page-screenshot.png" },
+    { "term": "Groups", "used_as": "three groups with schedules", "source": "https://www.philantrix.com/images/settings-page-screenshot.png" },
+    { "term": "Participants", "used_as": "participants.json", "source": "https://www.philantrix.com/images/settings-page-screenshot.png" },
+    { "term": "Engagements", "used_as": "engagements.json, one record per participant per activity", "source": "https://www.philantrix.com/images/settings-page-screenshot.png" },
+    { "term": "Attendances", "used_as": "activity type; units are the session's hours", "source": "https://www.philantrix.com/images/settings-page-screenshot.png" },
+    { "term": "Assignment Submissions", "used_as": "activity type; units are 1", "source": "https://www.philantrix.com/images/settings-page-screenshot.png" },
+    { "term": "Custom Fields", "used_as": "age range on each participant", "source": "https://www.philantrix.com/images/settings-page-screenshot.png" },
+    { "term": "Engagement Logger", "used_as": "how records are entered: date, activity type, duration or units, and a roster to tick", "source": "https://www.philantrix.com/images/engagement-logger-screenshot.png" },
+    { "term": "Duration / Units", "used_as": "the units field on each record", "source": "https://www.philantrix.com/images/engagement-logger-screenshot.png" },
+    { "term": "Participation Roster", "used_as": "the screenshot saves one record per ticked participant (4 ticked, Save 4 New Records), so this data stores one row per attendee and an absence has no row", "source": "https://www.philantrix.com/images/engagement-logger-screenshot.png" },
+    { "term": "Tracked Goals", "used_as": "goals.json: a goal with a target and a due date", "source": "https://www.philantrix.com/images/dashboard-screenshot.png" },
+    { "term": "Attendance rate", "used_as": "goal G4 and the attendance rate metric", "source": "https://www.philantrix.com/images/dashboard-screenshot.png" },
+    { "term": "Age range", "used_as": "participant field and the age breakdown", "source": "https://www.philantrix.com/images/report-output-screenshot.png" },
+    { "term": "Subject: participant", "used_as": "this demo's report uses Subject: workstream instead", "source": "https://www.philantrix.com/images/report-output-screenshot.png" }
+  ],
+  "table_names_seen": {
+    "names": ["memberships", "completed_reports", "report_templates", "template_stakeholders"],
+    "source": "https://www.philantrix.com/images/dashboard-screenshot.png",
+    "where": "Activity feed entries on the dashboard screenshot"
+  }
+}

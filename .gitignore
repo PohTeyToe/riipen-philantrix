@@ -1,0 +1,15 @@
+# Private planning notes. Never publish.
+BRIEF.md
+
+# Review screenshots stay local.
+_review_screenshots/
+
+node_modules/
+.next/
+out/
+next-env.d.ts
+*.tsbuildinfo
+.vercel/
+.playwright-cli/
+.DS_Store
+npm-debug.log*

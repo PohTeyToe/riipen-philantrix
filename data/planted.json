@@ -1,0 +1,190 @@
+{
+  "mock": true,
+  "note": "Cases planted on purpose so tests and copy can point at them. Spec: BRIEF.md, planted cases.",
+  "as_of": "2026-09-30",
+  "inactive_after_days": 30,
+  "findings": [
+    {
+      "id": "gap-coding-club-2026-07-23",
+      "kind": "session_not_logged",
+      "group_id": "coding-club",
+      "date": "2026-07-23",
+      "question": "Did this session run?",
+      "answers": [
+        {
+          "id": "didnt_run",
+          "label": "Didn't run"
+        },
+        {
+          "id": "ran_not_recorded",
+          "label": "Ran, attendance not recorded"
+        }
+      ]
+    },
+    {
+      "id": "gap-mentor-circle-2026-09-14",
+      "kind": "session_not_logged",
+      "group_id": "mentor-circle",
+      "date": "2026-09-14",
+      "question": "Did this session run?",
+      "answers": [
+        {
+          "id": "didnt_run",
+          "label": "Didn't run"
+        },
+        {
+          "id": "ran_not_recorded",
+          "label": "Ran, attendance not recorded"
+        }
+      ]
+    },
+    {
+      "id": "gap-weekend-leaders-2026-09-19",
+      "kind": "session_not_logged",
+      "group_id": "weekend-leaders",
+      "date": "2026-09-19",
+      "question": "Did this session run?",
+      "answers": [
+        {
+          "id": "didnt_run",
+          "label": "Didn't run"
+        },
+        {
+          "id": "ran_not_recorded",
+          "label": "Ran, attendance not recorded"
+        }
+      ]
+    },
+    {
+      "id": "inactive-P02",
+      "kind": "inactive_participant",
+      "participant_id": "P02",
+      "group_id": "coding-club",
+      "last_activity": "2026-08-25",
+      "days_inactive": 36,
+      "question": "Is this participant still enrolled?",
+      "answers": [
+        {
+          "id": "still_enrolled",
+          "label": "Still enrolled"
+        },
+        {
+          "id": "left_program",
+          "label": "Left the program"
+        }
+      ]
+    },
+    {
+      "id": "inactive-P08",
+      "kind": "inactive_participant",
+      "participant_id": "P08",
+      "group_id": "coding-club",
+      "last_activity": "2026-08-20",
+      "days_inactive": 41,
+      "question": "Is this participant still enrolled?",
+      "answers": [
+        {
+          "id": "still_enrolled",
+          "label": "Still enrolled"
+        },
+        {
+          "id": "left_program",
+          "label": "Left the program"
+        }
+      ]
+    },
+    {
+      "id": "goal-no-due-G4",
+      "kind": "goal_no_due_date",
+      "goal_id": "G4",
+      "question": null,
+      "answers": [],
+      "message": "Progress shows without a forecast."
+    },
+    {
+      "id": "duplicate-P03-2026-07-16",
+      "kind": "duplicate_record",
+      "participant_id": "P03",
+      "group_id": "coding-club",
+      "date": "2026-07-16",
+      "record_ids": [
+        "E0105",
+        "E0106"
+      ],
+      "question": null,
+      "answers": [],
+      "message": "The record counts once."
+    }
+  ],
+  "exits": [
+    {
+      "participant_id": "P23",
+      "group_id": "mentor-circle",
+      "exit_date": "2026-07-31",
+      "last_activity": "2026-07-27"
+    },
+    {
+      "participant_id": "P37",
+      "group_id": "weekend-leaders",
+      "exit_date": "2026-09-12",
+      "last_activity": "2026-09-12"
+    }
+  ],
+  "august_joiners": [
+    {
+      "participant_id": "P05",
+      "group_id": "coding-club",
+      "join_date": "2026-08-09"
+    },
+    {
+      "participant_id": "P06",
+      "group_id": "coding-club",
+      "join_date": "2026-08-21"
+    },
+    {
+      "participant_id": "P12",
+      "group_id": "coding-club",
+      "join_date": "2026-08-12"
+    },
+    {
+      "participant_id": "P18",
+      "group_id": "mentor-circle",
+      "join_date": "2026-08-05"
+    },
+    {
+      "participant_id": "P20",
+      "group_id": "mentor-circle",
+      "join_date": "2026-08-03"
+    },
+    {
+      "participant_id": "P31",
+      "group_id": "weekend-leaders",
+      "join_date": "2026-08-14"
+    }
+  ],
+  "no_sessions": [
+    {
+      "group_id": "weekend-leaders",
+      "month": "2026-08",
+      "reason": "Summer break"
+    }
+  ],
+  "age_suppression": {
+    "period": "2026-07-01 to 2026-09-30",
+    "breakdown": "participants served by age range",
+    "small_cell": "19-24"
+  },
+  "goals_expected_at_as_of": {
+    "G1": "Past due",
+    "G2": "On track",
+    "G3": "Behind",
+    "G4": "No due date"
+  },
+  "answers_for_all_answered_state": {
+    "gap-coding-club-2026-07-23": "ran_not_recorded",
+    "gap-mentor-circle-2026-09-14": "ran_not_recorded",
+    "gap-weekend-leaders-2026-09-19": "ran_not_recorded",
+    "inactive-P02": "left_program",
+    "inactive-P08": "left_program"
+  }
+}
