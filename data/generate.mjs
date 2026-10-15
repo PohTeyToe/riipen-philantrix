@@ -1,7 +1,7 @@
 // Generates the sample org's quarter of records. Every row is made up and
 // carries mock: true. Fixed seed, so a rerun writes the same bytes.
 // Usage: node data/generate.mjs
-// Spec: the "Generated sample data" and "Planted cases" sections of BRIEF.md.
+// The planted cases are listed in data/SOURCES.md.
 
 import { readFileSync, writeFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
@@ -12,7 +12,7 @@ const HERE = dirname(fileURLToPath(import.meta.url));
 
 const AS_OF = '2026-09-30';
 const PERIOD = { start: '2026-07-01', end: '2026-09-30' };
-const WORKSTREAM = { id: 'youth-mentorship-2026', name: 'Youth Mentorship 2026' };
+const WORKSTREAM = { id: 'youth-mentorship-2026', name: 'Youth Mentorship 2026', mock: true };
 
 // Name chosen after the CRA and web check in name-check.json.
 const ORG_NAME = 'Kestrel Lane Youth Mentorship';
@@ -40,7 +40,7 @@ const GROUPS = [
   },
 ];
 
-// Planted sessions with no records at all (BRIEF.md, planted cases).
+// Planted sessions with no records at all (data/SOURCES.md, planted cases).
 const GAP_SESSIONS = [
   { group_id: 'coding-club', date: '2026-07-23' },
   { group_id: 'mentor-circle', date: '2026-09-14' },
@@ -287,7 +287,7 @@ export function build(seed = SEED) {
   const inactive = people.filter((p) => p.last_active);
   const planted = {
     mock: true,
-    note: 'Cases planted on purpose so tests and copy can point at them. Spec: BRIEF.md, planted cases.',
+    note: 'Cases planted on purpose so tests and copy can point at them. Listed in data/SOURCES.md.',
     as_of: AS_OF,
     inactive_after_days: 30,
     findings: [
@@ -348,7 +348,40 @@ export function build(seed = SEED) {
 
   const { problems, rates } = selfCheck({ people, engagements, groups });
   if (g2Target === null || g3Target === null) problems.push('no round goal target fits the forecast band');
-  return { org, participants, engagements, goals, planted, problems, stats: { hours, submissions, hoursForecast, subsForecast, g2Target, g3Target, rates } };
+
+  // ----- confidence: a custom field at intake, then a check-in each month -----
+  // A second random stream, so adding this left every record above unchanged.
+  const { intake, checkins } = confidence(mulberry32(seed + 1), people, att);
+  for (const p of participants) p.confidence_intake = intake.get(p.id);
+  // Keep mock last on each row.
+  for (const p of participants) { delete p.mock; p.mock = true; }
+
+  return { org, participants, engagements, checkins, goals, planted, problems, stats: { hours, submissions, hoursForecast, subsForecast, g2Target, g3Target, rates } };
+}
+
+// Intake score on joining. Then, in each month a participant attended, a
+// check-in at their last session of the month, a step or two from the last score.
+function confidence(rand, people, att) {
+  const draw = (pairs) => {
+    let r = rand();
+    for (const [v, p] of pairs) { if (r < p) return v; r -= p; }
+    return pairs.at(-1)[0];
+  };
+  const intake = new Map();
+  const rows = [];
+  for (const p of people) {
+    const start = draw([[1, 0.15], [2, 0.4], [3, 0.35], [4, 0.1]]);
+    intake.set(p.id, start);
+    let score = start;
+    for (const month of ['2026-07', '2026-08', '2026-09']) {
+      const days = [...new Set(att.filter((r) => r.participant_id === p.id && r.date.startsWith(month)).map((r) => r.date))].sort();
+      if (!days.length) continue;
+      score = Math.min(5, Math.max(1, score + draw([[-1, 0.12], [0, 0.43], [1, 0.38], [2, 0.07]])));
+      rows.push({ date: days.at(-1), participant_id: p.id, group_id: p.group_id, field: 'Confidence (1 to 5)', confidence: score });
+    }
+  }
+  rows.sort((a, b) => a.date.localeCompare(b.date) || a.participant_id.localeCompare(b.participant_id));
+  return { intake, checkins: rows.map((r, i) => ({ id: `C${String(i + 1).padStart(3, '0')}`, ...r, mock: true })) };
 }
 
 function lastSessionOnOrBefore(group, date) {
@@ -410,7 +443,8 @@ if (process.argv[1] && resolve(fileURLToPath(import.meta.url)) === resolve(proce
   writeFileSync(join(HERE, 'org.json'), JSON.stringify(out.org, null, 2) + '\n');
   writeRows(join(HERE, 'participants.json'), out.participants);
   writeRows(join(HERE, 'engagements.json'), out.engagements);
+  writeRows(join(HERE, 'checkins.json'), out.checkins);
   writeRows(join(HERE, 'goals.json'), out.goals);
   writeFileSync(join(HERE, 'planted.json'), JSON.stringify(out.planted, null, 2) + '\n');
-  console.log(`Wrote ${out.participants.length} participants, ${out.engagements.length} records, ${out.goals.length} goals.`);
+  console.log(`Wrote ${out.participants.length} participants, ${out.engagements.length} records, ${out.checkins.length} check-ins, ${out.goals.length} goals.`);
 }

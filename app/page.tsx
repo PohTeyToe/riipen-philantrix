@@ -2,7 +2,7 @@ import Link from 'next/link';
 import { SampleBar } from '@/components/SampleBar';
 import { ForwardIcon } from '@/components/icons';
 import { sample } from '@/lib/data';
-import { LINKS, RLS_SHIPPED } from '@/lib/site';
+import { LINKS, REPO_PUBLIC, RLS_SHIPPED } from '@/lib/site';
 
 const ORG = sample.orgName.replace(' (sample)', '');
 
@@ -17,14 +17,14 @@ const STEPS: { text: string; img: string; w: number; h: number; alt: string; pag
   {
     text: 'Build the report, then flip the funder toggle. Same records, a different report.',
     img: '/walkthrough/toggle.webp',
-    w: 2000,
-    h: 1120,
-    alt: 'The report screen with the funder template toggle set to Foundation, showing retention by group and goals.',
+    w: 2200,
+    h: 1200,
+    alt: 'The report screen with the funder template toggle set to Foundation, showing the confidence outcome, retention by group and goals.',
   },
   {
     text: "Click any number. You'll see the formula in plain words and the rows behind it.",
     img: '/walkthrough/trace.webp',
-    w: 1520,
+    w: 1608,
     h: 1400,
     alt: 'The staff view of the attendance rate: the formula, the arithmetic, and one row per seat, absences included.',
   },
@@ -103,9 +103,11 @@ export default function Walkthrough() {
               <Link href="/demo" className="btn btn-primary h-11 px-5 text-[15.5px]">
                 Open the demo <ForwardIcon />
               </Link>
-              <a href={LINKS.repo} className="btn btn-quiet h-11 px-5 text-[15.5px]">
-                See the code
-              </a>
+              {REPO_PUBLIC && (
+                <a href={LINKS.repo} className="btn btn-quiet h-11 px-5 text-[15.5px]">
+                  See the code
+                </a>
+              )}
             </div>
           </header>
 
@@ -155,7 +157,7 @@ export default function Walkthrough() {
               <H2 id="real">What&apos;s real and what&apos;s sample</H2>
               <ul className="mt-5 space-y-3.5 text-[16px] leading-[1.55]">
                 {[
-                  ['Real', 'The words and data shapes. Workstreams, Groups, Participants, Engagements, Tracked Goals, Attendances and Assignment Submissions all come from the product screenshots on your site.'],
+                  ['Real', 'The words and data shapes. Workstreams, Groups, Participants, Engagements, Custom Fields, Tracked Goals, Attendances and Assignment Submissions all come from the product screenshots on your site.'],
                   ['Real', 'The stack. Next.js, TypeScript and Tailwind, with Supabase migrations and tests in the repo.'],
                   ['Sample', `The org, ${ORG}, and everyone in it. A script made them up, and every screen and export says so.`],
                   ['Sample', "The two funder templates. They're examples to correct, not real funders' forms."],
@@ -185,6 +187,7 @@ export default function Walkthrough() {
                 <ul className="mt-4 list-disc space-y-1.5 pl-5 text-[16px] leading-[1.55] marker:text-faint">
                   <li>That groups meet on a set schedule. The gaps check needs one to spot a session nobody logged.</li>
                   <li>That goals have a start date, so pace can be forecast to the due date.</li>
+                  <li>That an outcome like confidence can live in a custom field, scored 1 to 5 at intake and again at check-ins.</li>
                   <li>How a funder template is set up. Yours may already work differently.</li>
                   <li>Some table names in the migration. The guessed ones say so in a comment.</li>
                 </ul>
@@ -270,16 +273,17 @@ export default function Walkthrough() {
                 <li>One metrics file. Each number is an activity type, a way to count it, a denominator and a period.</li>
                 <li>Tests for the awkward cases: someone who joins mid-quarter, a group with no sessions, the same person logged twice in one session, a goal already past due.</li>
                 <li>A Supabase migration and one SQL view that does the same roll-up.</li>
-                {RLS_SHIPPED && <li>Org-scoped row-level security with pgTAP tests that run in GitHub Actions.</li>}
-                <li>A build check that fails if the AI summary contains any number the model typed itself.</li>
+                {RLS_SHIPPED && <li>Org-scoped row-level security, with tests that one org can&apos;t read another&apos;s records and a viewer can&apos;t write.</li>}
+                <li>A build check that rejects the AI summary if it has a digit or a number word outside the slots the engine fills.</li>
               </ul>
             </section>
           </div>
 
           <section className="mt-16 border-t border-rule pt-8" aria-label="About me">
             <p className="max-w-[44rem] text-[16px] leading-[1.6]">
-              I&apos;m Abdallah Safi, a 4th-year Computer Engineering student at TMU. This spring I led a 3-person team at VJDS: 44 FastAPI endpoints over 19 Supabase
-              tables with row-level security, and 3 CI/CD workflows with Vercel preview deploys.
+              I&apos;m Abdallah Safi, a 4th-year Computer Engineering student at TMU. On two Riipen work terms with BESI, I was the sole developer of the portal they
+              use to show an auditor which workers are certified, and BESI hired me back for the second term. I&apos;m also the lead developer on an AI paperwork app
+              that a Calgary real estate brokerage runs its live deals on.
             </p>
             <p className="mt-3 flex gap-5 text-[15px] font-semibold">
               <a href={LINKS.github} className="text-accent underline decoration-accent/30 underline-offset-2 hover:decoration-accent">GitHub</a>

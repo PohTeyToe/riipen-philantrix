@@ -20,9 +20,9 @@ jobs:
           cache: npm
       - run: npm ci
       - run: npm run typecheck
-      # Includes the golden test against data/figures.json and the SQL view test on PGlite.
+      # Includes the golden test against data/figures.json, and the SQL view and pgTAP suite on PGlite.
       - run: npm test
-      # Fails if the AI summary has a number the model typed itself.
+      # Fails if the AI summary has a digit or number word outside its slots.
       - run: npm run check:narrative
       - run: npm run build
 

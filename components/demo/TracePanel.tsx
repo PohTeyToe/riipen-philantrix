@@ -1,15 +1,46 @@
 'use client';
 
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef, useState, type KeyboardEvent as ReactKeyboardEvent } from 'react';
 import type { TraceView } from '@/lib/trace';
 import { CloseIcon } from '../icons';
 
 const FIRST_ROWS = 60;
+const PHONE = '(width < 48rem)';
 
-/** Slides in from the right; a bottom sheet on phones. Not modal: the report stays clickable. */
+/** On phones the sheet covers the page, so it acts as a modal: focus stays inside. */
+function usePhone(): boolean {
+  const [phone, setPhone] = useState(false);
+  useEffect(() => {
+    const mq = window.matchMedia(PHONE);
+    const update = () => setPhone(mq.matches);
+    update();
+    mq.addEventListener('change', update);
+    return () => mq.removeEventListener('change', update);
+  }, []);
+  return phone;
+}
+
+/**
+ * Slides in from the right, and the report stays clickable beside it. On
+ * phones it's a bottom sheet over a backdrop, and Tab cycles inside it.
+ */
 export function TracePanel({ view, onClose }: { view: TraceView; onClose: () => void }) {
   const titleRef = useRef<HTMLHeadingElement>(null);
+  const panelRef = useRef<HTMLElement>(null);
   const [all, setAll] = useState(false);
+  const phone = usePhone();
+
+  // Moves focus itself, wrapping at either end, so Tab never reaches the page behind.
+  const trapTab = (e: ReactKeyboardEvent) => {
+    if (!phone || e.key !== 'Tab' || !panelRef.current) return;
+    const items = [...panelRef.current.querySelectorAll<HTMLElement>('button, a[href], [tabindex]:not([tabindex="-1"])')];
+    if (!items.length) return;
+    e.preventDefault();
+    const at = document.activeElement;
+    const after = (el: HTMLElement) => !!at && (at.compareDocumentPosition(el) & Node.DOCUMENT_POSITION_FOLLOWING) !== 0;
+    const next = e.shiftKey ? [...items].reverse().find((el) => el !== at && !after(el)) ?? items[items.length - 1] : items.find((el) => el !== at && after(el)) ?? items[0];
+    next.focus();
+  };
 
   useEffect(() => {
     setAll(false);
@@ -28,11 +59,13 @@ export function TracePanel({ view, onClose }: { view: TraceView; onClose: () => 
     <>
       <div aria-hidden className="no-print fixed inset-0 z-30 bg-ink/25 md:hidden" onClick={onClose} />
       <aside
+        ref={panelRef}
         id="trace-panel"
         role="dialog"
-        aria-modal="false"
+        aria-modal={phone}
         aria-labelledby="trace-title"
-        className="no-print fixed inset-x-0 bottom-0 z-40 flex max-h-[84dvh] flex-col rounded-t-2xl bg-paper shadow-[0_-12px_40px_-12px_oklch(26%_0.03_265/0.35)] [animation:sheet-in_200ms_var(--ease-out-quint)_both] md:inset-x-auto md:right-0 md:top-0 md:max-h-none md:w-[min(460px,100vw)] md:rounded-none md:border-l md:border-rule md:shadow-[-16px_0_40px_-16px_oklch(26%_0.03_265/0.25)] md:[animation:panel-in_200ms_var(--ease-out-quint)_both]"
+        onKeyDown={trapTab}
+        className="no-print fixed inset-x-0 bottom-0 z-40 flex max-h-[84dvh] flex-col rounded-t-2xl bg-paper shadow-[0_-12px_40px_-12px_oklch(26%_0.03_265/0.35)] [animation:sheet-in_200ms_var(--ease-out-quint)_both] md:inset-x-auto md:right-0 md:top-0 md:max-h-none md:w-[min(500px,100vw)] md:rounded-none md:border-l md:border-rule md:shadow-[-16px_0_40px_-16px_oklch(26%_0.03_265/0.25)] md:[animation:panel-in_200ms_var(--ease-out-quint)_both]"
       >
         <div className="flex items-center justify-between gap-3 border-b border-rule bg-desk/70 py-2 pl-5 pr-2 md:rounded-none max-md:rounded-t-2xl">
           <p className="text-[12.5px] font-semibold text-muted">Staff view. Names never appear in the funder copy.</p>

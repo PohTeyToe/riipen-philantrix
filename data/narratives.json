@@ -6,7 +6,7 @@
     {
       "template_id": "city-youth-grant",
       "template_name": "City youth grant (example): reach and attendance",
-      "text": "During {period}, {participants_served} participants took part in sessions and {new_participants} new participants joined the program. The program ran {sessions_delivered} group sessions, and participants spent {participant_hours} hours in them. At sessions with attendance logged, {attendance_rate} of seats were filled. Since each goal began, the program has enrolled {g1_value} new participants toward a target of {g1_target} and logged {g2_value} participant hours toward a target of {g2_target}.",
+      "text": "During {period}, {participants_served} participants took part in sessions, and {new_participants} new participants joined the program. The program ran {sessions_delivered} group sessions for a total of {participant_hours} participant hours, and {attendance_rate} of seats were filled at sessions with attendance logged. Since the enrollment goal began, {g1_value} new participants have enrolled toward a target of {g1_target}, a goal that is {g1_status}. Since the hours goal began, participants have logged {g2_value} hours toward a target of {g2_target}, a goal that is {g2_status}.",
       "model": "claude-opus-5-5",
       "cli": "2.1.299 (Claude Code)",
       "drafted_on": "2026-10-15",
@@ -18,14 +18,21 @@
     {
       "template_id": "foundation-outcomes",
       "template_name": "Foundation (example): outcomes and retention",
-      "text": "During {period}, {participants_served} participants took part in sessions, and {retention_rate} of everyone enrolled during the period was still enrolled when it ended. Sessions with logged attendance filled {attendance_rate} of seats. Participants handed in {assignment_submissions} assignments, or {submissions_per_participant} per participant served. Since the goals started, participants have logged {g2_value} participant hours toward a target of {g2_target}, handed in {g3_value} assignments toward a target of {g3_target}, and reached an attendance rate of {g4_value} against a target of {g4_target}.",
+      "text": "During {period}, {participants_served} participants took part in sessions, {attendance_rate} of seats were filled at sessions with attendance logged, and {retention_rate} of participants enrolled during the period were still enrolled on its last day. Of the {participants_checked_in} participants who rated their confidence at intake and at a check-in, {confidence_improved} saw their confidence score go up between intake and their latest check-in. Participants handed in {assignment_submissions} assignments, or {submissions_per_participant} per participant served, and have handed in {g3_value} since the assignment goal started toward a target of {g3_target}, a goal that is {g3_status}. Participant hours since the hours goal started stand at {g2_value} toward a target of {g2_target}, a goal that is {g2_status}, and the attendance rate since its goal started is {g4_value} against a target of {g4_target}.",
       "model": "claude-opus-5-5",
       "cli": "2.1.299 (Claude Code)",
       "drafted_on": "2026-10-15",
       "prompt_file": "data/prompts/narrative.md",
       "attempts": 1,
       "rejected_drafts": [],
-      "check": "scripts/check-narrative.mjs passed"
+      "check": "scripts/check-narrative.mjs passed",
+      "human_edits": [
+        {
+          "from": "Participant hours since that goal started stand at",
+          "to": "Participant hours since the hours goal started stand at",
+          "why": "\"that goal\" could be read as the assignment goal from the sentence before."
+        }
+      ]
     }
   ]
 }

@@ -5,7 +5,7 @@
 
 import { ATTENDANCES, SUBMISSIONS } from './data';
 import type { Measure } from './engine';
-import { commas, fmtCount, fmtDecimal1, fmtDecimalPrecise, fmtHours, fmtPercent, fmtPercentPrecise } from './format';
+import { commas, fmtCount, fmtDecimal1, fmtDecimalPrecise, fmtHours, fmtHoursExact, fmtPercent, fmtPercentPrecise } from './format';
 import { peopleForFunder } from './privacy';
 
 export type MetricId =
@@ -16,7 +16,9 @@ export type MetricId =
   | 'attendance_rate'
   | 'retention_rate'
   | 'assignment_submissions'
-  | 'submissions_per_participant';
+  | 'submissions_per_participant'
+  | 'participants_checked_in'
+  | 'confidence_improved';
 
 /** How a value is shown, and whether the people-count rule applies. */
 export type MetricKind = 'people' | 'count' | 'hours' | 'percent' | 'decimal';
@@ -28,7 +30,7 @@ export interface MetricValue {
   display: string;
   /** What staff see: the true count where the funder copy hides it. */
   staffDisplay: string;
-  /** The working, e.g. "420 attended ÷ 553 offered = 75.9%, shown as 76%". */
+  /** The working, e.g. "420 attended ÷ 553 offered = 75.95%, shown as 76%". */
   arithmetic: string;
 }
 
@@ -132,7 +134,7 @@ export const METRICS: Record<MetricId, MetricDef> = {
         value: m.hoursHundredths / 100,
         display: shown,
         staffDisplay: shown,
-        arithmetic: `${commas(m.attendance.length)} records${dup}, total ${(m.hoursHundredths / 100).toFixed(1)} hours, shown as ${shown}`,
+        arithmetic: `${commas(m.attendance.length)} records${dup}, total ${fmtHoursExact(m.hoursHundredths)} hours, shown as ${shown}`,
       };
     },
   },
@@ -146,7 +148,7 @@ export const METRICS: Record<MetricId, MetricDef> = {
     period: REPORT_PERIOD,
     definition: 'Seats filled at sessions with attendance logged. Each enrolled group member is one seat.',
     formula:
-      'Attended ÷ offered. Attended counts each person once per session. Offered counts everyone enrolled in the group on the day of each session with attendance logged. Sessions that ran without attendance logged are left out of both.',
+      'Attended ÷ offered. Offered counts everyone enrolled in the group on the day of each session with attendance logged. Attended counts the seats that were filled, each person once per session. Sessions that ran without attendance logged are left out of both.',
     compute: (m) => rate(m.attended, m.offered, 'attended', 'offered', 'No sessions in this period'),
   },
   retention_rate: {
@@ -196,6 +198,38 @@ export const METRICS: Record<MetricId, MetricDef> = {
       const shown = fmtDecimal1(s, n);
       return { value: s / n, display: shown, staffDisplay: shown, arithmetic: `${commas(s)} submissions ÷ ${commas(n)} participants served = ${fmtDecimalPrecise(s, n)}, shown as ${shown}` };
     },
+  },
+  participants_checked_in: {
+    id: 'participants_checked_in',
+    label: 'Participants with a check-in',
+    kind: 'people',
+    activityType: 'Check-ins, and the intake score on each participant',
+    aggregation: 'Distinct participants',
+    denominator: null,
+    period: REPORT_PERIOD,
+    definition: 'Rated their confidence at a check-in in the period, and at intake.',
+    formula: 'Count each participant once if they have an intake score and at least one check-in dated in the period.',
+    compute: (m) => people(m.checkins.length, m.checkins.length === 1 ? 'participant with an intake score and a check-in' : 'participants with an intake score and a check-in'),
+  },
+  confidence_improved: {
+    id: 'confidence_improved',
+    label: 'Confidence improved',
+    kind: 'percent',
+    activityType: 'Custom field "Confidence (1 to 5)", at intake and at check-ins',
+    aggregation: 'Participants whose latest check-in score is higher than at intake',
+    denominator: 'Participants with an intake score and a check-in in the period',
+    period: REPORT_PERIOD,
+    definition: 'Rated their confidence higher at their latest check-in than at intake.',
+    formula:
+      "Take each participant's latest check-in in the period and compare it with their intake score, both on a scale of 1 to 5. Improved ÷ everyone with both. A score that stayed the same or went down is not improved.",
+    compute: (m) =>
+      rate(
+        m.checkins.filter((c) => c.improved).length,
+        m.checkins.length,
+        'improved',
+        m.checkins.length === 1 ? 'participant with a check-in' : 'participants with a check-in',
+        'No check-ins in this period',
+      ),
   },
 };
 

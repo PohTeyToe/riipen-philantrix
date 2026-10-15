@@ -23,7 +23,7 @@ function cell(kind: MetricKind, value: number | null, display: string): Cell {
 
 export function workbookSheets(r: Report): Sheet[] {
   const label = `SAMPLE DATA. ${r.sampleLabel.replace(/^Sample data\.\s*/, '')}`;
-  const head: Cell[][] = [[label], [r.orgName], [r.templateName], [r.subject], [`Period: ${r.period.range}`], [`As of ${fmtDate(r.asOf)}`], []];
+  const head: Cell[][] = [[label], [r.orgName], [r.templateName], [`Subject: ${r.subject}`], [`Period: ${r.period.range}`], [`As of ${fmtDate(r.asOf)}`], []];
   const sheets: Sheet[] = [];
 
   const summary: Cell[][] = [...head, ['Metric', 'Value', 'Definition']];
@@ -46,7 +46,7 @@ export function workbookSheets(r: Report): Sheet[] {
     for (const c of b.cells) rows.push([c.key, cell('people', c.value, c.display)]);
     rows.push(['Total', cell('people', b.total.value, b.total.display)]);
     rows.push([]);
-    if (b.cells.some((c) => c.hidden === 'small')) rows.push(['<5 means 1 to 4 people, not shown so no one can be identified.']);
+    if (b.cells.some((c) => c.display === '<5')) rows.push(['<5 means 1 to 4 people, not shown so no one can be identified.']);
     if (b.footnote) rows.push([b.footnote]);
     sheets.push({ name: 'Age range', rows, widths: [22, 22] });
   }
@@ -60,11 +60,9 @@ export function workbookSheets(r: Report): Sheet[] {
   }
   sheets.push({ name: 'Goals', rows: goals, widths: [30, 12, 12, 16, 12, 36] });
 
+  // Like the page: no notes, no notes sheet.
   const notes = r.sections.find((s) => s.type === 'notes');
-  const noteRows: Cell[][] = [[label], [], ['Data note']];
-  if (notes?.type === 'notes') for (const n of notes.notes) noteRows.push([n]);
-  if (noteRows.length === 3) noteRows.push(['No data notes for this period.']);
-  sheets.push({ name: 'Data notes', rows: noteRows, widths: [110] });
+  if (notes?.type === 'notes') sheets.push({ name: 'Data notes', rows: [[label], [], ['Data note'], ...notes.notes.map((n) => [n])], widths: [110] });
 
   return sheets;
 }

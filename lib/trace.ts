@@ -5,7 +5,7 @@
 import { periodById, type Dataset, type Period } from './data';
 import { goalFigure, measure, type Measure } from './engine';
 import { applyAnswers, type Answers, type Finding, type State } from './findings';
-import { commas, fmtDate, fmtDay, fmtDecimalPrecise, fmtShortDate } from './format';
+import { commas, fmtDate, fmtDateIn, fmtDay, fmtHoursExact, fmtShortDate, fmtWholePrecise } from './format';
 import { METRICS, type MetricId } from './metrics';
 import { isSmall, peopleForFunder, suppressBreakdown } from './privacy';
 import type { TraceRef } from './report';
@@ -43,6 +43,13 @@ function metricRows(metric: MetricId, m: Measure, ds: Dataset, st: State): Pick<
   const name = (pid: string) => person.get(pid)?.display_name ?? pid;
   const group = (gid: string) => ds.groups.find((g) => g.id === gid)?.name ?? gid;
   const sessionsAttended = (pid: string) => m.attendance.filter((e) => e.participant_id === pid).length;
+  // A date outside the report period carries its year, so "Sep 9" can't read as this September.
+  const date = (iso: string) => fmtDateIn(iso, m.start, m.end);
+  const checkinRows = () =>
+    m.checkins.map((c) => ({
+      cells: [c.participant.display_name, group(c.participant.group_id), String(c.intake), `${c.checkin.confidence} on ${date(c.checkin.date)}`, c.improved ? 'Improved' : c.checkin.confidence === c.intake ? 'Same' : 'Lower'],
+      tone: c.improved ? undefined : ('absent' as const),
+    }));
 
   switch (metric) {
     case 'participants_served':
@@ -56,7 +63,7 @@ function metricRows(metric: MetricId, m: Measure, ds: Dataset, st: State): Pick<
       return {
         columns: ['Participant', 'Group', 'Joined'],
         numeric: [],
-        rows: m.newParticipants.map((p) => ({ cells: [p.display_name, group(p.group_id), fmtShortDate(p.join_date)] })),
+        rows: m.newParticipants.map((p) => ({ cells: [p.display_name, group(p.group_id), date(p.join_date)] })),
         rowsCaption: m.newParticipants.length ? plural(m.newParticipants.length, 'participant', 'participants') : 'Nobody joined in this period.',
       };
     case 'sessions_delivered':
@@ -85,27 +92,30 @@ function metricRows(metric: MetricId, m: Measure, ds: Dataset, st: State): Pick<
     }
     case 'attendance_rate': {
       const absent = m.seats.filter((s) => !s.attended).length;
+      const offRoster = m.seats.filter((s) => s.offRoster).length;
       return {
         columns: ['Date', 'Group', 'Participant', 'Seat'],
         numeric: [],
         rows: m.seats.map((s) => ({
           cells: [fmtDay(s.date), group(s.groupId), name(s.participantId), s.offRoster ? 'Attended, not on roster' : s.attended ? 'Attended' : 'Absent'],
-          tone: s.attended ? undefined : 'absent',
+          tone: s.attended && !s.offRoster ? undefined : 'absent',
         })),
         rowsCaption: m.seats.length
-          ? `${plural(m.offered, 'seat', 'seats')} offered: ${commas(m.attended)} attended, ${commas(absent)} absent. Absences have no record, so these rows come from the roster and the sessions held.`
+          ? `${plural(m.offered, 'seat', 'seats')} offered: ${commas(m.attended)} attended, ${commas(absent)} absent.${
+              offRoster ? ` ${plural(offRoster, 'person', 'people')} attended while not enrolled in the group, left out of the rate.` : ''
+            } Absences have no record, so these rows come from the roster and the sessions held.`
           : 'No sessions with attendance logged in this period.',
       };
     }
     case 'retention_rate':
       return {
-        columns: ['Participant', 'Group', 'Joined', 'Exit date', `On ${fmtShortDate(m.end)}`],
+        columns: ['Participant', 'Group', 'Joined', `On ${fmtShortDate(m.end)}`],
         numeric: [],
         rows: m.enrolledAny.map((p) => {
           const retained = m.retained.includes(p);
           const byAnswer = st.exitedByAnswer.has(p.id);
           return {
-            cells: [p.display_name, group(p.group_id), fmtShortDate(p.join_date), p.exit_date ? `${fmtShortDate(p.exit_date)}${byAnswer ? ' (your answer)' : ''}` : '', retained ? 'Enrolled' : 'Left'],
+            cells: [p.display_name, group(p.group_id), date(p.join_date), retained ? 'Enrolled' : `Left ${date(p.exit_date!)}${byAnswer ? ' (your answer)' : ''}`],
             tone: retained ? undefined : 'left',
           };
         }),
@@ -125,6 +135,18 @@ function metricRows(metric: MetricId, m: Measure, ds: Dataset, st: State): Pick<
         rows: m.served.map((pid) => ({ cells: [name(pid), group(person.get(pid)!.group_id), String(m.submissions.filter((e) => e.participant_id === pid).length)] })),
         rowsCaption: `${plural(m.served.length, 'participant', 'participants')} served, ${plural(m.submissions.length, 'submission', 'submissions')}`,
       };
+    case 'participants_checked_in':
+    case 'confidence_improved': {
+      const improved = m.checkins.filter((c) => c.improved).length;
+      return {
+        columns: ['Participant', 'Group', 'Intake', 'Latest check-in', 'Result'],
+        numeric: [2],
+        rows: checkinRows(),
+        rowsCaption: m.checkins.length
+          ? `${plural(m.checkins.length, 'participant', 'participants')} with a check-in, ${commas(improved)} improved. Scores are 1 to 5, from the custom field "Confidence (1 to 5)".`
+          : 'No check-ins in this period.',
+      };
+    }
   }
 }
 
@@ -174,11 +196,11 @@ export function explain(ds: Dataset, findings: Finding[], answers: Answers, peri
     const cell = ref.ageRange ? suppressBreakdown(counts).cells.find((c) => c.key === ref.ageRange) : null;
     const shown = cell ? cell.display : peopleForFunder(n);
     let staffNote: string | null = null;
-    if (cell?.hidden === 'secondary') {
-      const small = counts.find((c) => isSmall(c.value));
-      staffNote = `The ${small?.key} cell is under 5. With only that cell hidden, it could be worked out from the total, so the next smallest cell is hidden too.`;
-    } else if (isSmall(n)) {
+    if (isSmall(n)) {
       staffNote = 'Counts of 1 to 4 people could identify someone.';
+    } else if (cell?.hidden === 'secondary') {
+      const small = counts.filter((c) => isSmall(c.value)).map((c) => c.key);
+      staffNote = `This cell isn't under 5. It's hidden so the ${small.join(' and ')} ${small.length === 1 ? 'cell' : 'cells'} under 5 can't be worked out from the total.`;
     }
     return {
       title: ref.ageRange ? `Participants served, age ${ref.ageRange}` : 'Participants served, all ages',
@@ -204,17 +226,19 @@ export function explain(ds: Dataset, findings: Finding[], answers: Answers, peri
   const v = METRICS[metricId].compute(g.measure);
   const arithmetic = [`Progress from ${fmtShortDate(goal.start_date)} to ${fmtShortDate(g.asOf)}: ${v.arithmetic}`];
   if (g.windowDays !== null && g.forecast !== null) {
-    const valueText = goal.metric === 'participant_hours' ? (g.basis.n / 100).toFixed(1) : commas(g.basis.n);
-    arithmetic.push(`Forecast: ${valueText} × ${g.windowDays} days in the goal ÷ ${g.elapsedDays} days so far = ${fmtDecimalPrecise(g.basis.n * g.windowDays, g.basis.scale * g.elapsedDays)}, shown as ${g.forecastDisplay}`);
+    const valueText = goal.metric === 'participant_hours' ? fmtHoursExact(g.basis.n) : commas(g.basis.n);
+    arithmetic.push(`Forecast: ${valueText} × ${g.windowDays} days in the goal ÷ ${g.elapsedDays} days so far = ${fmtWholePrecise(g.basis.n * g.windowDays, g.basis.scale * g.elapsedDays)}, shown as ${g.forecastStaffDisplay}`);
   }
-  arithmetic.push(statusReason(g.status, g.dueDate, g.asOf, g.targetDisplay, g.forecastDisplay));
+  arithmetic.push(statusReason(g.status, g.dueDate, g.targetDisplay, g.forecastStaffDisplay));
   const rows = metricRows(metricId, g.measure, ds, st);
+  const hides =
+    (ref.part === 'value' && g.display !== g.staffDisplay) || (ref.part === 'forecast' && g.forecastDisplay !== null && g.forecastDisplay !== g.forecastStaffDisplay);
   return {
     title: goal.name,
     scope: `Tracked Goal, as of ${fmtDate(g.asOf)}`,
-    value: ref.part === 'target' ? g.targetDisplay : ref.part === 'forecast' && g.forecastDisplay ? g.forecastDisplay : g.staffDisplay,
-    funderShows: ref.part === 'value' && g.display !== g.staffDisplay ? g.display : null,
-    staffNote: ref.part === 'value' && g.display !== g.staffDisplay ? 'Counts of 1 to 4 people could identify someone.' : null,
+    value: ref.part === 'target' ? g.targetDisplay : ref.part === 'forecast' && g.forecastStaffDisplay ? g.forecastStaffDisplay : g.staffDisplay,
+    funderShows: hides ? (ref.part === 'forecast' ? g.forecastDisplay : g.display) : null,
+    staffNote: hides ? 'Counts of 1 to 4 people could identify someone.' : null,
     facts: [
       { label: 'Measures', value: METRICS[metricId].label },
       { label: 'Target', value: g.targetDisplay },
@@ -229,10 +253,10 @@ export function explain(ds: Dataset, findings: Finding[], answers: Answers, peri
   };
 }
 
-function statusReason(status: string, due: string | null, asOf: string, target: string, forecast: string | null): string {
+function statusReason(status: string, due: string | null, target: string, forecast: string | null): string {
   switch (status) {
     case 'Met': return `Progress has reached the target of ${target}, so the status is Met.`;
-    case 'Past due': return `The due date, ${fmtShortDate(due!)}, is before ${fmtShortDate(asOf)} and the target of ${target} isn't met, so the status is Past due.`;
+    case 'Past due': return `The goal reached its due date, ${fmtShortDate(due!)}, without meeting the target of ${target}, so the status is Past due.`;
     case 'No due date': return 'There is no due date, so progress shows without a forecast.';
     case 'On track': return `The forecast of ${forecast} reaches the target of ${target}, so the status is On track.`;
     default: return `The forecast of ${forecast} is short of the target of ${target}, so the status is Behind.`;

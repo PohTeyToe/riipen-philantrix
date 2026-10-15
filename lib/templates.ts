@@ -13,9 +13,9 @@ export type Section =
   | { id: string; title: string; type: 'summary' }
   | { id: string; title: string; type: 'notes' };
 
-/** Summary slot kinds. A "people" slot of 1 to 4 renders "fewer than 5". */
-export type SlotKind = 'text' | 'people' | 'count' | 'hours' | 'percent' | 'decimal';
-export type SlotSource = { from: 'period' } | { from: 'metric'; metric: MetricId } | { from: 'goal'; goalId: string; part: 'value' | 'target' };
+/** Summary slot kinds. A "people" slot of 1 to 4 renders "fewer than 5". A "status" slot renders a goal status in words. */
+export type SlotKind = 'text' | 'people' | 'count' | 'hours' | 'percent' | 'decimal' | 'status';
+export type SlotSource = { from: 'period' } | { from: 'metric'; metric: MetricId } | { from: 'goal'; goalId: string; part: 'value' | 'target' | 'status' };
 export interface Slot { kind: SlotKind; source: SlotSource }
 
 export interface Template {
@@ -58,8 +58,10 @@ export const TEMPLATES: Template[] = [
       attendance_rate: { kind: 'percent', source: { from: 'metric', metric: 'attendance_rate' } },
       g1_value: { kind: 'people', source: { from: 'goal', goalId: 'G1', part: 'value' } },
       g1_target: { kind: 'count', source: { from: 'goal', goalId: 'G1', part: 'target' } },
+      g1_status: { kind: 'status', source: { from: 'goal', goalId: 'G1', part: 'status' } },
       g2_value: { kind: 'hours', source: { from: 'goal', goalId: 'G2', part: 'value' } },
       g2_target: { kind: 'hours', source: { from: 'goal', goalId: 'G2', part: 'target' } },
+      g2_status: { kind: 'status', source: { from: 'goal', goalId: 'G2', part: 'status' } },
     },
     narrative: narrativeFor('city-youth-grant'),
   },
@@ -68,6 +70,7 @@ export const TEMPLATES: Template[] = [
     short: 'Foundation',
     name: 'Foundation (example): outcomes and retention',
     sections: [
+      { id: 'outcomes', title: 'Outcomes', type: 'figures', metrics: ['confidence_improved', 'participants_checked_in'] },
       { id: 'retention', title: 'Retention', type: 'figures', metrics: ['retention_rate'], chart: 'retention_rate' },
       { id: 'engagement', title: 'Engagement', type: 'figures', metrics: ['attendance_rate', 'assignment_submissions', 'submissions_per_participant'] },
       { id: 'goals', title: 'Goals', type: 'goals', goals: ['G2', 'G3', 'G4'] },
@@ -76,6 +79,8 @@ export const TEMPLATES: Template[] = [
     ],
     slots: {
       period: { kind: 'text', source: { from: 'period' } },
+      confidence_improved: { kind: 'percent', source: { from: 'metric', metric: 'confidence_improved' } },
+      participants_checked_in: { kind: 'people', source: { from: 'metric', metric: 'participants_checked_in' } },
       retention_rate: { kind: 'percent', source: { from: 'metric', metric: 'retention_rate' } },
       attendance_rate: { kind: 'percent', source: { from: 'metric', metric: 'attendance_rate' } },
       assignment_submissions: { kind: 'count', source: { from: 'metric', metric: 'assignment_submissions' } },
@@ -83,8 +88,10 @@ export const TEMPLATES: Template[] = [
       participants_served: { kind: 'people', source: { from: 'metric', metric: 'participants_served' } },
       g2_value: { kind: 'hours', source: { from: 'goal', goalId: 'G2', part: 'value' } },
       g2_target: { kind: 'hours', source: { from: 'goal', goalId: 'G2', part: 'target' } },
+      g2_status: { kind: 'status', source: { from: 'goal', goalId: 'G2', part: 'status' } },
       g3_value: { kind: 'count', source: { from: 'goal', goalId: 'G3', part: 'value' } },
       g3_target: { kind: 'count', source: { from: 'goal', goalId: 'G3', part: 'target' } },
+      g3_status: { kind: 'status', source: { from: 'goal', goalId: 'G3', part: 'status' } },
       g4_value: { kind: 'percent', source: { from: 'goal', goalId: 'G4', part: 'value' } },
       g4_target: { kind: 'percent', source: { from: 'goal', goalId: 'G4', part: 'target' } },
     },

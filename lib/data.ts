@@ -5,6 +5,7 @@ import orgJson from '../data/org.json';
 import participantsJson from '../data/participants.json';
 import engagementsJson from '../data/engagements.json';
 import goalsJson from '../data/goals.json';
+import checkinsJson from '../data/checkins.json';
 
 export const ATTENDANCES = 'Attendances';
 export const SUBMISSIONS = 'Assignment Submissions';
@@ -28,6 +29,16 @@ export interface Participant {
   join_date: string;
   /** Last enrolled day, or null while enrolled. */
   exit_date: string | null;
+  /** Custom field: confidence at intake, 1 to 5. */
+  confidence_intake: number | null;
+}
+
+/** A check-in: the confidence custom field (1 to 5), recorded again later. */
+export interface Checkin {
+  id: string;
+  date: string;
+  participant_id: string;
+  confidence: number;
 }
 
 export interface Engagement {
@@ -61,6 +72,7 @@ export interface Dataset {
   groups: Group[];
   participants: Participant[];
   engagements: Engagement[];
+  checkins: Checkin[];
   goals: Goal[];
 }
 
@@ -84,6 +96,7 @@ export const sample: Dataset = {
     age_range: p.age_range,
     join_date: p.join_date,
     exit_date: p.exit_date,
+    confidence_intake: p.confidence_intake,
   })),
   engagements: engagementsJson.map((e) => ({
     id: e.id,
@@ -93,6 +106,7 @@ export const sample: Dataset = {
     activity_type: e.activity_type as ActivityType,
     units: e.units,
   })),
+  checkins: checkinsJson.map((c) => ({ id: c.id, date: c.date, participant_id: c.participant_id, confidence: c.confidence })),
   goals: goalsJson.map((g) => ({
     id: g.id,
     name: g.name,

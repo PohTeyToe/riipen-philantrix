@@ -11,7 +11,8 @@ export function SampleBar({ link }: { link?: { href: string; label: string } }) 
           {sample.sampleLabel.replace(/^Sample data\.\s*/, '')}
         </p>
         {link && (
-          <Link href={link.href} className="shrink-0 font-semibold text-paper underline decoration-paper/40 underline-offset-2 hover:decoration-paper">
+          // No prefetch: the walkthrough's payload preloads its screenshots, which this page never shows.
+          <Link href={link.href} prefetch={false} className="shrink-0 font-semibold text-paper underline decoration-paper/40 underline-offset-2 hover:decoration-paper">
             {link.label}
           </Link>
         )}

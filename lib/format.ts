@@ -12,6 +12,11 @@ export const fmtCount = (n: number): string => commas(n);
 /** Hours are held as hundredths so sums stay exact. */
 export const toHundredths = (hours: number): number => Math.round(hours * 100);
 export const fmtHours = (hundredths: number): string => commas(halfUp(hundredths, 100));
+/** The exact total, for the trace panel: "614.5", "614.25", "1,200.0". */
+export const fmtHoursExact = (hundredths: number): string => {
+  const cents = String(hundredths % 100).padStart(2, '0');
+  return `${commas(Math.floor(hundredths / 100))}.${cents.endsWith('0') ? cents[0] : cents}`;
+};
 
 /** Percent, rounded half up to a whole number. */
 export const fmtPercent = (num: number, den: number): string => `${halfUp(100 * num, den)}%`;
@@ -23,11 +28,28 @@ export const fmtDecimal1 = (num: number, den: number): string => {
 };
 
 /**
- * The unrounded value the trace panel shows next to the rounded one. Cut off,
- * not rounded, so 77.49% never reads as "77.5%, shown as 77%".
+ * num ÷ den, rounded half up to `places` decimals (at least `min`), with
+ * thousands separators. It adds places until the shown value rounds the same
+ * way as the exact one, so 77.496 reads "77.496", never "77.50, shown as 77".
  */
-export const fmtPercentPrecise = (num: number, den: number): string => `${(Math.floor((10000 * num) / den) / 100).toFixed(2)}%`;
-export const fmtDecimalPrecise = (num: number, den: number): string => (Math.floor((1000 * num) / den) / 1000).toFixed(3);
+function precise(num: number, den: number, min: number, wholePlaces: number): string {
+  const shown = halfUp(num * 10 ** wholePlaces, den);
+  for (let places = min; ; places++) {
+    const scaled = halfUp(num * 10 ** places, den);
+    const back = halfUp(scaled, 10 ** (places - wholePlaces));
+    if (back === shown || places >= min + 4) {
+      const s = String(scaled).padStart(places + 1, '0');
+      return `${commas(Number(s.slice(0, -places)))}.${s.slice(-places)}`;
+    }
+  }
+}
+
+/** The value the trace panel shows next to a rounded percent, e.g. "80.56%". */
+export const fmtPercentPrecise = (num: number, den: number): string => `${precise(100 * num, den, 2, 0)}%`;
+/** The value the trace panel shows next to a one-decimal figure, e.g. "4.075". */
+export const fmtDecimalPrecise = (num: number, den: number): string => precise(num, den, 3, 1);
+/** The value the trace panel shows next to a whole number, e.g. "1,142.168". */
+export const fmtWholePrecise = (num: number, den: number): string => precise(num, den, 3, 0);
 
 // ---------- dates (ISO yyyy-mm-dd, all in UTC) ----------
 const DAY_MS = 86_400_000;
@@ -51,3 +73,6 @@ export const fmtShortDate = (iso: string): string => {
 
 /** "Sep 30, 2026" */
 export const fmtDate = (iso: string): string => `${fmtShortDate(iso)}, ${iso.slice(0, 4)}`;
+
+/** "Jul 23" inside the period, "Sep 9, 2025" outside it, so an old date never reads as this year's. */
+export const fmtDateIn = (iso: string, start: string, end: string): string => (iso >= start && iso <= end ? fmtShortDate(iso) : fmtDate(iso));

@@ -8,8 +8,14 @@ export const LINKS = {
 };
 
 /**
- * True only when the org-scoped row-level security policies and their pgTAP
- * tests ran green locally and in GitHub Actions. While false, the walkthrough
- * leaves that line out and keeps the work in the plan.
+ * True only once LINKS.repo is public and its CI run is green. While false,
+ * the walkthrough has no "See the code" button, so it never links to a 404.
+ */
+export const REPO_PUBLIC = false;
+
+/**
+ * True only while the row-level security tests pass: `npm test` runs
+ * supabase/tests/database/rls.test.sql on PGlite (tests/rls.test.ts). While
+ * false, the walkthrough leaves that line out and keeps the work in the plan.
  */
 export const RLS_SHIPPED = true;

@@ -6,7 +6,7 @@
 import { periodById, type Dataset, type Period } from './data';
 import { goalFigure, measure, type GoalFigure } from './engine';
 import { applyAnswers, type Answers, type Finding, type State } from './findings';
-import { commas, fmtDate, fmtDay, fmtHours, fmtPercent, fmtShortDate, toHundredths } from './format';
+import { commas, fmtDate, fmtDay, fmtHours, fmtPercent, toHundredths } from './format';
 import { METRICS, type MetricId, type MetricKind, type MetricValue } from './metrics';
 import { peopleForFunder, suppressBreakdown, type BreakdownCell } from './privacy';
 import { SUMMARY_LABEL, TEMPLATES, templateById, templateGoals, type Slot, type Template, type TemplateId } from './templates';
@@ -64,26 +64,29 @@ export function computePeriod(ds: Dataset, st: State, findings: Finding[], perio
   };
 }
 
-/** Unanswered findings never block a report. They print here instead. */
+export const EXIT_NOTE = 'Where staff confirmed that a participant with no activity for 30 or more days had left, their exit date is their last activity.';
+
+/**
+ * Notes a funder needs to read the figures: how an answer on Check changed the
+ * counting, and goals without a forecast. A finding nobody answered stays on
+ * the staff side, and the report counts only what was logged.
+ */
 export function dataNotes(ds: Dataset, st: State, findings: Finding[], period: Period): DataNote[] {
   const inPeriod = (d: string) => d >= period.start && d <= period.end;
   const groupName = (id: string) => ds.groups.find((g) => g.id === id)?.name ?? id;
   const all = TEMPLATES.map((t) => t.id);
   const notes: DataNote[] = [];
+  let exitNote = false;
   for (const f of findings) {
     const a = st.answers[f.id];
-    if (f.kind === 'session_not_logged' && inPeriod(f.date)) {
-      if (a === 'ran_not_recorded') {
-        notes.push({ findingId: f.id, kind: 'session_ran_not_recorded', templates: all, text: `${groupName(f.groupId)}, ${fmtDay(f.date)}: ran, but attendance wasn't recorded. Counted as delivered and left out of the attendance rate.` });
-      } else if (!a) {
-        notes.push({ findingId: f.id, kind: f.kind, templates: all, text: `${groupName(f.groupId)}, ${fmtDay(f.date)}: on the schedule, but no attendance was logged. Not counted as delivered.` });
-      }
+    if (f.kind === 'session_not_logged' && inPeriod(f.date) && a === 'ran_not_recorded') {
+      notes.push({ findingId: f.id, kind: 'session_ran_not_recorded', templates: all, text: `${groupName(f.groupId)}, ${fmtDay(f.date)}: ran, but attendance wasn't recorded. Counted as delivered and left out of the attendance rate.` });
     }
-    if (f.kind === 'inactive_participant' && !a && f.lastActivity < period.end) {
-      notes.push({ findingId: f.id, kind: f.kind, templates: all, text: `A ${groupName(f.groupId)} participant has had no activity since ${fmtShortDate(f.lastActivity)} and has no exit date. Counted as enrolled.` });
-    }
-    if (f.kind === 'duplicate_record' && inPeriod(f.date)) {
-      notes.push({ findingId: f.id, kind: f.kind, templates: all, text: `${groupName(f.groupId)}, ${fmtDay(f.date)}: one participant was logged twice. Counted once.` });
+    // One note for every exit set by an answer, in any period it changes. No
+    // group or date, so it can't point to a person.
+    if (f.kind === 'inactive_participant' && a === 'left_program' && f.lastActivity <= period.end && !exitNote) {
+      exitNote = true;
+      notes.push({ findingId: 'exit-by-answer', kind: 'exit_by_answer', templates: all, text: EXIT_NOTE });
     }
     if (f.kind === 'goal_no_due_date') {
       const goal = ds.goals.find((g) => g.id === f.goalId);
@@ -169,6 +172,15 @@ const GOAL_KIND: Record<GoalFigure['metric'], MetricKind> = {
   attendance_rate: 'percent',
 };
 
+/** A goal status as words that finish "the goal is ...". */
+export const STATUS_PHRASE: Record<GoalFigure['status'], string> = {
+  Met: 'met',
+  'On track': 'on track',
+  Behind: 'behind',
+  'Past due': 'past due',
+  'No due date': 'open, with no due date',
+};
+
 export function renderSlot(slot: Slot, f: PeriodFigures): SummaryPart {
   const src = slot.source;
   if (src.from === 'period') return { text: f.period.long };
@@ -181,6 +193,7 @@ export function renderSlot(slot: Slot, f: PeriodFigures): SummaryPart {
   } else {
     const g = f.goals.find((x) => x.id === src.goalId);
     if (!g) throw new Error(`no goal ${src.goalId}`);
+    if (src.part === 'status') return { text: STATUS_PHRASE[g.status], ref: { kind: 'goal', goalId: src.goalId, part: 'value' } };
     ({ value, display } = src.part === 'value' ? g : { value: g.target, display: g.targetDisplay });
     ref = { kind: 'goal', goalId: src.goalId, part: src.part };
   }
@@ -210,7 +223,9 @@ export function renderSummary(t: Template, f: PeriodFigures): SummaryPart[] {
 
 export function reportFromFigures(ds: Dataset, f: PeriodFigures, templateId: TemplateId): Report {
   const t = templateById(templateId);
-  const sections: SectionView[] = t.sections.map((s): SectionView => {
+  const notes = f.notes.filter((n) => n.templates.includes(t.id)).map((n) => n.text);
+  // A notes section with nothing in it is left off the page.
+  const sections: SectionView[] = t.sections.filter((s) => s.type !== 'notes' || notes.length).map((s): SectionView => {
     if (s.type === 'figures') {
       const view: SectionView = {
         type: 'figures',
@@ -269,7 +284,7 @@ export function reportFromFigures(ds: Dataset, f: PeriodFigures, templateId: Tem
       };
     }
     if (s.type === 'summary') return { type: 'summary', id: s.id, title: s.title, parts: renderSummary(t, f), label: SUMMARY_LABEL };
-    return { type: 'notes', id: s.id, title: s.title, notes: f.notes.filter((n) => n.templates.includes(t.id)).map((n) => n.text) };
+    return { type: 'notes', id: s.id, title: s.title, notes };
   });
   return {
     templateId: t.id,
@@ -277,7 +292,7 @@ export function reportFromFigures(ds: Dataset, f: PeriodFigures, templateId: Tem
     periodId: f.period.id,
     period: f.period,
     orgName: ds.orgName,
-    subject: `Subject: workstream, ${ds.workstream}`,
+    subject: `workstream, ${ds.workstream}`,
     asOf: f.period.end,
     sampleLabel: ds.sampleLabel,
     sections,
@@ -289,25 +304,55 @@ export function buildReport(ds: Dataset, findings: Finding[], answers: Answers, 
   return reportFromFigures(ds, computePeriod(ds, st, findings, periodById(periodId)), templateId);
 }
 
-/** Every traceable number on a report, keyed by refKey, for spotting what changed. */
-export function reportNumbers(r: Report): Map<string, string> {
-  const out = new Map<string, string>();
+/** Every number on a report, keyed by refKey, with a label, in page order. */
+export function reportFigures(r: Report): Map<string, { label: string; display: string }> {
+  const out = new Map<string, { label: string; display: string }>();
   for (const s of r.sections) {
     if (s.type === 'figures') {
-      for (const f of s.figures) out.set(refKey(f.ref), f.display);
+      for (const f of s.figures) out.set(refKey(f.ref), { label: f.label, display: f.display });
       if (s.breakdown) {
-        for (const c of s.breakdown.cells) out.set(refKey(c.ref), c.display);
-        out.set(refKey(s.breakdown.total.ref), s.breakdown.total.display);
+        for (const c of s.breakdown.cells) out.set(refKey(c.ref), { label: `Participants served, age ${c.key}`, display: c.display });
+        out.set(refKey(s.breakdown.total.ref), { label: 'Participants served, all ages', display: s.breakdown.total.display });
       }
-      if (s.chart) for (const b of s.chart.bars) out.set(refKey(b.ref), b.display);
+      if (s.chart) for (const b of s.chart.bars) out.set(refKey(b.ref), { label: `${METRICS[s.chart.metric].label}, ${b.label}`, display: b.display });
     }
     if (s.type === 'goals') {
       for (const g of s.goals) {
-        out.set(`goal:${g.id}:value`, g.display);
-        out.set(`goal:${g.id}:forecast`, g.forecastDisplay ?? '');
-        out.set(`goal:${g.id}:status`, g.status);
+        out.set(`goal:${g.id}:value`, { label: `${g.name}, progress`, display: g.display });
+        out.set(`goal:${g.id}:forecast`, { label: `${g.name}, forecast`, display: g.forecastDisplay ?? 'none' });
+        out.set(`goal:${g.id}:status`, { label: `${g.name}, status`, display: g.status });
       }
     }
   }
   return out;
+}
+
+/** Every traceable number on a report, keyed by refKey, for spotting what changed. */
+export function reportNumbers(r: Report): Map<string, string> {
+  return new Map([...reportFigures(r)].map(([k, v]) => [k, v.display]));
+}
+
+export interface FigureChange {
+  key: string;
+  label: string;
+  before: string;
+  after: string;
+  /** The templates that show this number. */
+  templates: TemplateId[];
+}
+
+/** Every number that differs between two sets of answers, on either template. */
+export function changedFigures(ds: Dataset, findings: Finding[], before: Answers, after: Answers, periodId: Period['id']): FigureChange[] {
+  const out = new Map<string, FigureChange>();
+  for (const t of TEMPLATES) {
+    const was = reportFigures(buildReport(ds, findings, before, t.id, periodId));
+    for (const [key, now] of reportFigures(buildReport(ds, findings, after, t.id, periodId))) {
+      const old = was.get(key);
+      if (!old || old.display === now.display) continue;
+      const seen = out.get(key);
+      if (seen) seen.templates.push(t.id);
+      else out.set(key, { key, label: now.label, before: old.display, after: now.display, templates: [t.id] });
+    }
+  }
+  return [...out.values()];
 }

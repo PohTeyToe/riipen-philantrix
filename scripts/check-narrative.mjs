@@ -1,8 +1,11 @@
-// Fails if an AI-drafted summary could put a number on the report that the
-// engine didn't compute. Run by CI and before every build.
+// Rejects an AI-drafted summary that has a digit, a number word, a comparison
+// or a judgment outside the slots the engine fills, or a slot the template
+// doesn't have. Run by CI and before every build. It checks words, not
+// meaning: a person still reads each draft to confirm every slot is described
+// with the right unit.
 // Usage: node scripts/check-narrative.mjs            (checks data/narratives.json)
 //        node scripts/check-narrative.mjs <template-id> <text-file>   (checks one draft)
-// Spec: BRIEF.md, "AI narrative".
+// The rules are also in the drafting prompt, data/prompts/narrative.md.
 
 import { readFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
@@ -15,9 +18,12 @@ const NUMBER_WORDS = [
   'zero', 'one', 'two', 'three', 'four', 'five', 'six', 'seven', 'eight', 'nine', 'ten',
   'eleven', 'twelve', 'thirteen', 'fourteen', 'fifteen', 'sixteen', 'seventeen', 'eighteen', 'nineteen',
   'twenty', 'thirty', 'forty', 'fifty', 'sixty', 'seventy', 'eighty', 'ninety',
-  'hundred', 'hundreds', 'thousand', 'thousands', 'million', 'dozen', 'dozens',
+  'hundred', 'hundreds', 'thousand', 'thousands', 'million', 'millions', 'billion', 'billions', 'trillion',
+  'dozen', 'dozens', 'couple', 'pair', 'handful',
   'half', 'twice', 'thrice', 'double', 'triple', 'single',
   'first', 'second', 'third', 'fourth', 'fifth', 'percent', 'per cent',
+  // Quantities without a figure are still a claim the engine didn't make.
+  'several', 'many', 'few', 'numerous', 'multiple', 'countless', 'all', 'none', 'nobody', 'no one', 'every', 'everyone', 'entire', 'whole',
 ];
 
 // Comparisons and trends. The brief's list, plus close forms.
@@ -62,6 +68,11 @@ export function checkNarrative(templateId, text, ctx = loadContext()) {
   const slots = [...text.matchAll(/\{([a-z0-9_]+)\}/g)].map((m) => m[1]);
   for (const s of slots) if (!known.includes(s)) errs.push(`unknown slot {${s}}`);
   if (slots.length === 0) errs.push('no slots used');
+  // A goal the summary mentions has its status said too, so it can't skip a goal that's behind.
+  for (const k of known.filter((x) => x.endsWith('_status'))) {
+    const goal = k.slice(0, -'_status'.length);
+    if (slots.some((x) => x.startsWith(`${goal}_`)) && !slots.includes(k)) errs.push(`mentions ${goal} without its status slot {${k}}`);
+  }
 
   const prose = text.replace(/\{[a-z0-9_]+\}/g, ' ');
   if (/[{}]/.test(prose)) errs.push('stray brace outside a slot');

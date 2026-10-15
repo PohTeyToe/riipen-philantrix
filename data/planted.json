@@ -1,6 +1,6 @@
 {
   "mock": true,
-  "note": "Cases planted on purpose so tests and copy can point at them. Spec: BRIEF.md, planted cases.",
+  "note": "Cases planted on purpose so tests and copy can point at them. Listed in data/SOURCES.md.",
   "as_of": "2026-09-30",
   "inactive_after_days": 30,
   "findings": [

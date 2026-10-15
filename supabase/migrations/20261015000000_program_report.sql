@@ -55,14 +55,15 @@ create table schedule_breaks (
   check (ends_on >= starts_on)
 );
 
--- Inferred. Age range is a custom field in the product; it's a column here to
--- keep the demo small.
+-- Inferred. Age range and confidence at intake are custom fields in the
+-- product; they're columns here to keep the demo small.
 create table participants (
   id uuid primary key default gen_random_uuid(),
   organization_id uuid not null references organizations (id) on delete cascade,
   group_id uuid not null references groups (id) on delete restrict,
   display_name text not null,
   age_range text,
+  confidence_intake smallint check (confidence_intake between 1 and 5), -- inferred
   join_date date not null,
   exit_date date, -- last enrolled day
   check (exit_date is null or exit_date >= join_date)
@@ -82,6 +83,19 @@ create table engagements (
 );
 create index engagements_group_day on engagements (group_id, engaged_on);
 create index engagements_participant_day on engagements (participant_id, engaged_on);
+
+-- Inferred. The confidence custom field (1 to 5), recorded again at a
+-- check-in. The outcome compares each participant's latest check-in with
+-- their score at intake.
+create table checkins (
+  id uuid primary key default gen_random_uuid(),
+  organization_id uuid not null references organizations (id) on delete cascade,
+  participant_id uuid not null references participants (id) on delete cascade,
+  checked_on date not null,
+  confidence smallint not null check (confidence between 1 and 5),
+  created_at timestamptz not null default now()
+);
+create index checkins_participant_day on checkins (participant_id, checked_on);
 
 -- Inferred. Tracked Goals.
 create table tracked_goals (
@@ -148,10 +162,12 @@ create table report_periods (
 
 -- The roll-up. One row per workstream and report period, counted the same
 -- way as lib/metrics.ts:
---   attended       distinct participant and session pairs (a duplicate counts once)
 --   offered        enrolled group members on the day of each session with attendance logged
+--   attended       offered seats that have an Attendances record (a duplicate counts once)
+--   hours          units on the first record logged for each person and session
 --   delivered      sessions with attendance logged, plus sessions answered "ran"
 --   retained       enrolled on the period's last day, out of enrolled on any day
+--   improved       latest check-in in the period above the intake score, out of everyone with both
 -- security_invoker makes the view run with the caller's row-level security.
 create view program_rollup with (security_invoker = true) as
 with attendance as (
@@ -172,7 +188,7 @@ answered_sessions as (
   where not exists (select 1 from logged_sessions l where l.group_id = s.group_id and l.session_date = s.session_date)
 ),
 seats as (
-  select l.workstream_id, l.session_date, p.id as participant_id
+  select l.workstream_id, l.group_id, l.session_date, p.id as participant_id
   from logged_sessions l
   join participants p on p.group_id = l.group_id
     and p.join_date <= l.session_date
@@ -188,6 +204,15 @@ submissions as (
   from engagements e
   join groups g on g.id = e.group_id
   where e.activity_type = 'Assignment Submissions'
+),
+latest_checkins as (
+  select distinct on (rp.id, c.participant_id)
+    rp.id as period_id, c.participant_id, c.confidence, p.confidence_intake
+  from report_periods rp
+  join groups g on g.workstream_id = rp.workstream_id
+  join participants p on p.group_id = g.id and p.confidence_intake is not null
+  join checkins c on c.participant_id = p.id and c.checked_on between rp.starts_on and rp.ends_on
+  order by rp.id, c.participant_id, c.checked_on desc, c.created_at desc, c.id desc
 ),
 counts as (
   select
@@ -206,8 +231,10 @@ counts as (
       where s.workstream_id = rp.workstream_id and s.session_date between rp.starts_on and rp.ends_on) as sessions_delivered,
     (select coalesce(sum(a.units), 0) from attendance a
       where a.workstream_id = rp.workstream_id and a.engaged_on between rp.starts_on and rp.ends_on) as participant_hours,
-    (select count(*) from attendance a
-      where a.workstream_id = rp.workstream_id and a.engaged_on between rp.starts_on and rp.ends_on) as attended,
+    (select count(*) from seats s
+      where s.workstream_id = rp.workstream_id and s.session_date between rp.starts_on and rp.ends_on
+        and exists (select 1 from attendance a
+          where a.group_id = s.group_id and a.participant_id = s.participant_id and a.engaged_on = s.session_date)) as attended,
     (select count(*) from seats s
       where s.workstream_id = rp.workstream_id and s.session_date between rp.starts_on and rp.ends_on) as offered,
     (select count(*) from roster r
@@ -217,12 +244,15 @@ counts as (
       where r.workstream_id = rp.workstream_id and r.join_date <= rp.ends_on
         and (r.exit_date is null or r.exit_date >= rp.starts_on)) as enrolled,
     (select count(*) from submissions s
-      where s.workstream_id = rp.workstream_id and s.engaged_on between rp.starts_on and rp.ends_on) as assignment_submissions
+      where s.workstream_id = rp.workstream_id and s.engaged_on between rp.starts_on and rp.ends_on) as assignment_submissions,
+    (select count(*) from latest_checkins c where c.period_id = rp.id) as participants_checked_in,
+    (select count(*) from latest_checkins c where c.period_id = rp.id and c.confidence > c.confidence_intake) as confidence_improved
   from report_periods rp
 )
 select
   counts.*,
   attended::numeric / nullif(offered, 0) as attendance_rate,
   retained::numeric / nullif(enrolled, 0) as retention_rate,
-  assignment_submissions::numeric / nullif(participants_served, 0) as submissions_per_participant
+  assignment_submissions::numeric / nullif(participants_served, 0) as submissions_per_participant,
+  confidence_improved::numeric / nullif(participants_checked_in, 0) as confidence_improved_rate
 from counts;

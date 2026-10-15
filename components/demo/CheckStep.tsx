@@ -2,10 +2,10 @@
 
 import { useMemo, useState } from 'react';
 import { ATTENDANCES, PERIODS, sample } from '@/lib/data';
-import { measure } from '@/lib/engine';
-import { applyAnswers, needsAnswer, type AnswerId, type Answers, type Finding, type FindingKind } from '@/lib/findings';
+import { needsAnswer, type AnswerId, type Answers, type Finding, type FindingKind } from '@/lib/findings';
 import { commas, fmtDate, fmtDay, fmtShortDate } from '@/lib/format';
-import { METRICS, type MetricId } from '@/lib/metrics';
+import { changedFigures } from '@/lib/report';
+import { TEMPLATES, templateById } from '@/lib/templates';
 import { CheckIcon, ForwardIcon } from '../icons';
 
 const KINDS: { kind: FindingKind; title: string; why: string }[] = [
@@ -20,7 +20,7 @@ const KINDS: { kind: FindingKind; title: string; why: string }[] = [
     why: 'They still count as enrolled, which holds up retention, until someone says they left.',
   },
   { kind: 'goal_no_due_date', title: 'Goals with no due date', why: 'No question to answer. A report that shows the goal says why it has no forecast.' },
-  { kind: 'duplicate_record', title: 'Duplicate records', why: 'No question to answer. The engine counts the record once and the report notes it.' },
+  { kind: 'duplicate_record', title: 'Duplicate records', why: 'No question to answer. The engine counts the first record and leaves out the copy.' },
 ];
 
 const q3 = PERIODS[0];
@@ -48,7 +48,7 @@ export function CheckStep({
           <p className="mt-1 text-[15px]">
             {findings.length} findings for {fmtShortDate(q3.start)} to {fmtDate(q3.end)}. {answerable} need a one-click answer.
           </p>
-          <p className="text-[13.5px] text-muted">Anything left unanswered prints as a data note, so nothing here blocks the report.</p>
+          <p className="text-[13.5px] text-muted">Nothing here blocks the report. Until a finding is answered, the report counts only what was logged, and the funder never sees the finding.</p>
         </div>
         <button type="button" onClick={onNext} className="btn btn-primary">
           Build report <ForwardIcon />
@@ -115,7 +115,7 @@ function FindingRow({ f, findings, answers, onAnswer }: { f: Finding; findings: 
             type="button"
             onClick={() => setOpen((o) => !o)}
             aria-expanded={open}
-            className="mt-1.5 text-[13.5px] font-semibold text-accent underline decoration-accent/30 underline-offset-2 hover:decoration-accent"
+            className="mt-1 inline-flex min-h-6 items-center text-[13.5px] font-semibold text-accent underline decoration-accent/30 underline-offset-2 hover:decoration-accent"
           >
             {open ? 'Hide rows' : rows.rows.length === 1 ? 'Show the row' : `Show the ${rows.rows.length} rows`}
           </button>
@@ -160,30 +160,31 @@ function FindingRow({ f, findings, answers, onAnswer }: { f: Finding; findings: 
   );
 }
 
-/** Shows the number an answer moves, right where the answer was given. */
+/** Every number an answer moves, on either template, right where the answer was given. */
 function Effect({ f, findings, answers }: { f: Finding; findings: Finding[]; answers: Answers }) {
-  const metricId: MetricId | null = f.kind === 'session_not_logged' ? 'sessions_delivered' : f.kind === 'inactive_participant' ? 'retention_rate' : null;
-  if (!metricId) return null;
-  const without = { ...answers };
-  delete without[f.id];
-  const value = (a: Answers) => METRICS[metricId].compute(measure(sample, applyAnswers(sample, findings, a), q3.start, q3.end)).display;
-  const before = value(without);
-  const after = value(answers);
-  const where = metricId === 'retention_rate' ? ' (Foundation template)' : '';
+  const changes = useMemo(() => {
+    const without = { ...answers };
+    delete without[f.id];
+    return changedFigures(sample, findings, without, answers, q3.id);
+  }, [f.id, findings, answers]);
+  const adds = answers[f.id] === 'ran_not_recorded' || answers[f.id] === 'left_program';
+  if (!changes.length) return <p className="fade-in mt-1.5 text-[13.5px] text-muted">No figure changes.</p>;
   return (
-    <p className="fade-in num mt-1.5 text-[13.5px]">
-      {before === after ? (
-        <span className="text-muted">No figure changes. The data note comes off the report.</span>
-      ) : (
-        <>
-          <span className="text-muted">
-            {METRICS[metricId].label}, {q3.short}{where}:
-          </span>{' '}
-          <span className="text-muted line-through decoration-faint">{before}</span> <span aria-hidden>→</span>
-          <span className="sr-only">changes to</span> <span className="rounded-sm bg-amber-tint px-1 font-semibold">{after}</span>
-        </>
-      )}
-    </p>
+    <div className="fade-in mt-1.5 text-[13.5px]">
+      <p className="text-muted">On the {q3.short} report{adds ? ', with a data note saying why' : ''}:</p>
+      <ul className="num mt-0.5 space-y-0.5">
+        {changes.map((c) => (
+          <li key={c.key}>
+            <span className="text-muted">
+              {c.label}
+              {c.templates.length < TEMPLATES.length && ` (${c.templates.map((t) => templateById(t).short).join(', ')})`}:
+            </span>{' '}
+            <span className="text-muted line-through decoration-faint">{c.before}</span> <span aria-hidden>→</span>
+            <span className="sr-only">changes to</span> <span className="rounded-sm bg-amber-tint px-1 font-semibold">{c.after}</span>
+          </li>
+        ))}
+      </ul>
+    </div>
   );
 }
 
@@ -242,7 +243,7 @@ function findingRows(f: Finding): MiniRows {
       rows: [{ cells: [g.name, g.metric === 'attendance_rate' ? `${Math.round(g.target * 100)}%` : commas(g.target), fmtDate(g.start_date), 'None'], flag: true }],
     };
   }
-  const recs = sample.engagements.filter((e) => f.recordIds.includes(e.id));
+  const recs = sample.engagements.filter((e) => f.recordIds.includes(e.id)).sort((a, b) => a.id.localeCompare(b.id));
   return {
     columns: ['Record', 'Date', 'Participant', 'Activity type', 'Counted'],
     numeric: [],

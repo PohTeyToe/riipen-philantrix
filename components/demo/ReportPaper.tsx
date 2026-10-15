@@ -19,19 +19,14 @@ export function ReportPaper({ report }: { report: Report }) {
 
       <header className="mt-7 sm:mt-9">
         <p className="text-[13px] text-muted">{report.orgName}</p>
-        <h1 className="mt-1 font-serif text-[27px] font-semibold leading-[1.1] tracking-[-0.015em] sm:text-[33px]">
-          {main}
-          {sub && <span className="sr-only">: {sub}</span>}
-        </h1>
-        {sub && (
-          <p aria-hidden className="mt-1 font-serif text-[18px] leading-snug text-muted sm:text-[20px]">
-            {sub[0].toUpperCase() + sub.slice(1)}
-          </p>
-        )}
+        <hgroup>
+          <h1 className="mt-1 font-serif text-[27px] font-semibold leading-[1.1] tracking-[-0.015em] sm:text-[33px]">{main}</h1>
+          {sub && <p className="mt-1 font-serif text-[18px] leading-snug text-muted sm:text-[20px]">{sub[0].toUpperCase() + sub.slice(1)}</p>}
+        </hgroup>
         <dl className="mt-5 grid gap-x-6 gap-y-1 text-[12.5px] sm:grid-cols-[auto_auto_auto] sm:justify-start">
           <div>
-            <dt className="sr-only">Subject</dt>
-            <dd>{report.subject}</dd>
+            <dt className="inline text-muted">Subject: </dt>
+            <dd className="inline">{report.subject}</dd>
           </div>
           <div>
             <dt className="inline text-muted">Period: </dt>
@@ -79,16 +74,13 @@ function Section({ s }: { s: SectionView }) {
             <p className="mt-2 text-[11.5px] text-muted">{s.label}</p>
           </>
         )}
-        {s.type === 'notes' &&
-          (s.notes.length ? (
-            <ol className="num list-decimal space-y-1 pl-5 text-[13px] leading-snug marker:text-muted">
-              {s.notes.map((n) => (
-                <li key={n} className="fade-in pl-1">{n}</li>
-              ))}
-            </ol>
-          ) : (
-            <p className="text-[13px] text-muted">No data notes for this period.</p>
-          ))}
+        {s.type === 'notes' && (
+          <ol className="num list-decimal space-y-1 pl-5 text-[13px] leading-snug marker:text-muted">
+            {s.notes.map((n) => (
+              <li key={n} className="fade-in pl-1">{n}</li>
+            ))}
+          </ol>
+        )}
       </div>
     </section>
   );
@@ -139,7 +131,7 @@ function Figures({ s }: { s: Extract<SectionView, { type: 'figures' }> }) {
           </table>
           {(s.breakdown.cells.some((c) => c.hidden) || s.breakdown.footnote) && (
             <div className="mt-2 space-y-0.5 text-[11.5px] leading-snug text-muted">
-              {s.breakdown.cells.some((c) => c.hidden === 'small') && <p>&lt;5 means 1 to 4 people, not shown so no one can be identified.</p>}
+              {s.breakdown.cells.some((c) => c.display === '<5') && <p>&lt;5 means 1 to 4 people, not shown so no one can be identified.</p>}
               {s.breakdown.footnote && <p>{s.breakdown.footnote}</p>}
             </div>
           )}

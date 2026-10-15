@@ -1,7 +1,8 @@
 -- Org-scoped row-level security. A signed-in user reads rows of the
 -- organizations they belong to; owners, admins and editors can also write
 -- them; viewers can't. Anonymous requests get nothing.
--- Tested by supabase/tests/database/rls.test.sql (pgTAP, `supabase test db`).
+-- Tested by supabase/tests/database/rls.test.sql (pgTAP): `supabase test db`,
+-- and on PGlite by tests/rls.test.ts as part of `npm test`.
 
 -- Membership checks run as the function owner so policies on memberships
 -- don't call themselves.
@@ -50,7 +51,7 @@ create policy "admins delete" on memberships for delete to authenticated using (
 do $$
 declare t text;
 begin
-  foreach t in array array['workstreams', 'groups', 'participants', 'engagements', 'tracked_goals', 'report_templates', 'completed_reports'] loop
+  foreach t in array array['workstreams', 'groups', 'participants', 'engagements', 'checkins', 'tracked_goals', 'report_templates', 'completed_reports'] loop
     execute format('alter table %I enable row level security', t);
     execute format('create policy "members read" on %I for select to authenticated using (public.is_member(organization_id))', t);
     execute format('create policy "writers insert" on %I for insert to authenticated with check (public.can_write(organization_id))', t);

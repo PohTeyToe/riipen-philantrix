@@ -4,7 +4,8 @@ import type { NextConfig } from 'next';
 const nextConfig: NextConfig = {
   output: 'export',
   images: { unoptimized: true },
-  trailingSlash: false,
+  // demo/index.html rather than demo.html, so a plain file server can serve /demo/.
+  trailingSlash: true,
   // Don't write an AGENTS.md into the repo on `next dev`.
   agentRules: false,
 };

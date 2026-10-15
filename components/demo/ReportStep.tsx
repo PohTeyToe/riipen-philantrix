@@ -123,15 +123,15 @@ export function ReportStep({
             {toAnswer > 0 ? (
               <p>
                 <span className="font-semibold text-amber-ink">{toAnswer} {toAnswer === 1 ? 'finding' : 'findings'} unanswered.</span>{' '}
-                <span className="text-muted">They print as data notes.</span>{' '}
-                <button type="button" onClick={onCheck} className="inline-flex items-center font-semibold text-accent underline decoration-accent/30 underline-offset-2 hover:decoration-accent">
+                <span className="text-muted">The funder copy doesn&apos;t show them. It counts only what was logged.</span>{' '}
+                <button type="button" onClick={onCheck} className="-my-[3px] inline-flex items-center py-[3px] font-semibold text-accent underline decoration-accent/30 underline-offset-2 hover:decoration-accent">
                   <BackIcon className="size-3.5" /> Answer on Check
                 </button>
               </p>
             ) : (
               <p className="text-muted">
                 Every finding is answered.{' '}
-                <button type="button" onClick={onCheck} className="font-semibold text-accent underline decoration-accent/30 underline-offset-2 hover:decoration-accent">
+                <button type="button" onClick={onCheck} className="-my-[3px] py-[3px] font-semibold text-accent underline decoration-accent/30 underline-offset-2 hover:decoration-accent">
                   Review answers
                 </button>
               </p>

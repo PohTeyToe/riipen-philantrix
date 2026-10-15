@@ -55,8 +55,12 @@
     font-variant-numeric: tabular-nums lining-nums;
   }
 
-  /* A number that opens its trace. Dotted teal underline, like a footnote. */
+  /* A number that opens its trace. Dotted teal underline, like a footnote.
+     The padding and matching negative margin make the tap target at least
+     24px tall without moving the text. */
   .trace {
+    padding: 3px 2px;
+    margin: -3px -2px;
     font: inherit;
     color: inherit;
     font-variant-numeric: tabular-nums lining-nums;
