@@ -1,0 +1,10 @@
+# Keep private notes and local build output out of Vercel uploads.
+BRIEF.md
+REVIEW.md
+_review_screenshots/
+node_modules/
+.next/
+out/
+.env*
+.playwright-cli/
+*.tsbuildinfo
