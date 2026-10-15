@@ -5,34 +5,48 @@ import type { TraceView } from '@/lib/trace';
 import { CloseIcon } from '../icons';
 
 const FIRST_ROWS = 60;
-const PHONE = '(width < 48rem)';
+/** Below this width there's no room for the report beside the panel, so it's a sheet. Matches `min-[75rem]` here and in ReportStep. */
+export const SIDE_PANEL = '(width >= 75rem)';
 
-/** On phones the sheet covers the page, so it acts as a modal: focus stays inside. */
-function usePhone(): boolean {
-  const [phone, setPhone] = useState(false);
+/** Below 1200px the sheet covers the page, so it acts as a modal: focus stays inside and the page behind can't scroll. */
+function useSheet(): boolean {
+  const [sheet, setSheet] = useState(false);
   useEffect(() => {
-    const mq = window.matchMedia(PHONE);
-    const update = () => setPhone(mq.matches);
+    const mq = window.matchMedia(SIDE_PANEL);
+    const update = () => setSheet(!mq.matches);
     update();
     mq.addEventListener('change', update);
     return () => mq.removeEventListener('change', update);
   }, []);
-  return phone;
+  useEffect(() => {
+    if (!sheet) return;
+    const root = document.documentElement;
+    const was = root.style.overflow;
+    root.style.overflow = 'hidden';
+    return () => {
+      root.style.overflow = was;
+    };
+  }, [sheet]);
+  return sheet;
 }
 
 /**
- * Slides in from the right, and the report stays clickable beside it. On
- * phones it's a bottom sheet over a backdrop, and Tab cycles inside it.
+ * Slides in from the right on wide screens, where the report moves over to
+ * make room and stays clickable beside it. Below 1200px it's a bottom sheet
+ * over a backdrop, and Tab cycles inside it.
  */
 export function TracePanel({ view, onClose }: { view: TraceView; onClose: () => void }) {
   const titleRef = useRef<HTMLHeadingElement>(null);
   const panelRef = useRef<HTMLElement>(null);
   const [all, setAll] = useState(false);
-  const phone = usePhone();
+  const modal = useSheet();
+  // On a phone, the Group column folds under the first column so the row fits.
+  const fold = view.columns[1] === 'Group' ? 1 : -1;
+  const last = view.columns.length - 1;
 
   // Moves focus itself, wrapping at either end, so Tab never reaches the page behind.
   const trapTab = (e: ReactKeyboardEvent) => {
-    if (!phone || e.key !== 'Tab' || !panelRef.current) return;
+    if (!modal || e.key !== 'Tab' || !panelRef.current) return;
     const items = [...panelRef.current.querySelectorAll<HTMLElement>('button, a[href], [tabindex]:not([tabindex="-1"])')];
     if (!items.length) return;
     e.preventDefault();
@@ -57,17 +71,17 @@ export function TracePanel({ view, onClose }: { view: TraceView; onClose: () => 
 
   return (
     <>
-      <div aria-hidden className="no-print fixed inset-0 z-30 bg-ink/25 md:hidden" onClick={onClose} />
+      <div aria-hidden className="no-print fixed inset-0 z-30 bg-ink/25 min-[75rem]:hidden" onClick={onClose} />
       <aside
         ref={panelRef}
         id="trace-panel"
         role="dialog"
-        aria-modal={phone}
+        aria-modal={modal}
         aria-labelledby="trace-title"
         onKeyDown={trapTab}
-        className="no-print fixed inset-x-0 bottom-0 z-40 flex max-h-[84dvh] flex-col rounded-t-2xl bg-paper shadow-[0_-12px_40px_-12px_oklch(26%_0.03_265/0.35)] [animation:sheet-in_200ms_var(--ease-out-quint)_both] md:inset-x-auto md:right-0 md:top-0 md:max-h-none md:w-[min(500px,100vw)] md:rounded-none md:border-l md:border-rule md:shadow-[-16px_0_40px_-16px_oklch(26%_0.03_265/0.25)] md:[animation:panel-in_200ms_var(--ease-out-quint)_both]"
+        className="no-print fixed inset-x-0 bottom-0 z-40 flex max-h-[84dvh] flex-col rounded-t-2xl bg-paper shadow-[0_-12px_40px_-12px_oklch(26%_0.03_265/0.35)] [animation:sheet-in_200ms_var(--ease-out-quint)_both] min-[75rem]:inset-x-auto min-[75rem]:right-0 min-[75rem]:top-0 min-[75rem]:max-h-none min-[75rem]:w-[500px] min-[75rem]:rounded-none min-[75rem]:border-l min-[75rem]:border-rule min-[75rem]:shadow-[-16px_0_40px_-16px_oklch(26%_0.03_265/0.25)] min-[75rem]:[animation:panel-in_200ms_var(--ease-out-quint)_both]"
       >
-        <div className="flex items-center justify-between gap-3 border-b border-rule bg-desk/70 py-2 pl-5 pr-2 md:rounded-none max-md:rounded-t-2xl">
+        <div className="flex items-center justify-between gap-3 border-b border-rule bg-desk/70 py-2 pl-5 pr-2 max-[75rem]:rounded-t-2xl">
           <p className="text-[12.5px] font-semibold text-muted">Staff view. Names never appear in the funder copy.</p>
           <button type="button" onClick={onClose} className="grid size-10 place-items-center rounded-md text-muted hover:bg-desk-deep hover:text-ink" aria-label="Close">
             <CloseIcon />
@@ -116,7 +130,13 @@ export function TracePanel({ view, onClose }: { view: TraceView; onClose: () => 
                 <thead className="sticky top-0">
                   <tr className="bg-desk text-left text-[11.5px] text-muted">
                     {view.columns.map((c, i) => (
-                      <th key={c} scope="col" className={`whitespace-nowrap px-2.5 py-1.5 font-semibold ${view.numeric.includes(i) ? 'text-right' : ''}`}>{c}</th>
+                      <th
+                        key={c}
+                        scope="col"
+                        className={`whitespace-nowrap px-2.5 py-1.5 font-semibold max-sm:whitespace-normal max-sm:px-2 ${view.numeric.includes(i) ? 'text-right' : ''} ${i === fold ? 'max-sm:hidden' : ''}`}
+                      >
+                        {c}
+                      </th>
                     ))}
                   </tr>
                 </thead>
@@ -124,7 +144,13 @@ export function TracePanel({ view, onClose }: { view: TraceView; onClose: () => 
                   {rows.map((r, i) => (
                     <tr key={i} className={`border-t border-rule ${r.tone === 'absent' || r.tone === 'left' ? 'bg-absent text-muted' : ''} ${r.tone === 'duplicate' ? 'italic text-muted' : ''} ${r.tone === 'answered' ? 'bg-accent-tint/60' : ''}`}>
                       {r.cells.map((c, j) => (
-                        <td key={j} className={`whitespace-nowrap px-2.5 py-1 ${view.numeric.includes(j) ? 'text-right' : ''}`}>{c}</td>
+                        <td
+                          key={j}
+                          className={`whitespace-nowrap px-2.5 py-1 max-sm:px-2 ${view.numeric.includes(j) ? 'text-right' : ''} ${j === fold ? 'max-sm:hidden' : ''} ${j === last ? 'max-sm:whitespace-normal' : ''}`}
+                        >
+                          {c}
+                          {j === 0 && fold > 0 && <span className="block text-[12px] text-muted sm:hidden">{r.cells[fold]}</span>}
+                        </td>
                       ))}
                     </tr>
                   ))}

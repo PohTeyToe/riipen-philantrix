@@ -2,11 +2,10 @@
 // built by hand so each rule is tested on its own.
 
 import { describe, expect, it } from 'vitest';
-import { ATTENDANCES, PERIODS, SUBMISSIONS, sample, type Dataset, type Engagement, type Participant } from '../lib/data';
+import { ATTENDANCES, PERIODS, sample, type Dataset, type Engagement, type Participant } from '../lib/data';
 import { goalFigure, measure } from '../lib/engine';
 import { applyAnswers, detectFindings, unansweredCount, type Answers } from '../lib/findings';
 import { METRICS } from '../lib/metrics';
-import { suppressBreakdown } from '../lib/privacy';
 import { fmtDecimalPrecise, fmtPercentPrecise, fmtWholePrecise } from '../lib/format';
 import { EXIT_NOTE, buildReport, changedFigures, computePeriod, renderSlot } from '../lib/report';
 import { explain } from '../lib/trace';
@@ -20,7 +19,6 @@ const figuresFor = (answers: Answers, period = q3) => computePeriod(sample, appl
 const person = (id: string, join: string, exit: string | null = null, age = '13-15'): Participant => ({ id, display_name: `Person ${id}`, group_id: 'g', age_range: age, join_date: join, exit_date: exit, confidence_intake: null });
 let n = 0;
 const att = (pid: string, date: string, units = 1): Engagement => ({ id: `E${++n}`, date, group_id: 'g', participant_id: pid, activity_type: ATTENDANCES, units });
-const sub = (pid: string, date: string): Engagement => ({ id: `E${++n}`, date, group_id: 'g', participant_id: pid, activity_type: SUBMISSIONS, units: 1 });
 function tiny(over: Partial<Dataset> = {}): Dataset {
   return {
     orgName: 'Test org (sample)',
@@ -85,15 +83,20 @@ describe('the same person logged twice in one session', () => {
     expect(f.answers).toEqual([]);
     expect(figuresFor({}, PERIODS[1]).notes.some((x) => x.findingId === f.id)).toBe(false);
   });
-  it('keeps the first record logged, whatever order the rows come in', () => {
-    const later = { ...att('A', '2026-07-02', 2), id: 'E9' };
-    const first = { ...att('A', '2026-07-02', 1), id: 'E1' };
-    for (const engagements of [[first, later], [later, first]]) {
+  it('counts the copy with fewer hours when the copies disagree, whatever their ids or order', () => {
+    const longer = { ...att('A', '2026-07-02', 2), id: 'E1' };
+    const shorter = { ...att('A', '2026-07-02', 1.5), id: 'E9' };
+    for (const engagements of [[longer, shorter], [shorter, longer]]) {
       const m = tinyMeasure(tiny({ engagements }));
-      expect(m.attendance.map((e) => e.id)).toEqual(['E1']);
-      expect(m.duplicates.map((e) => e.id)).toEqual(['E9']);
-      expect(m.hoursHundredths).toBe(100);
+      expect(m.attendance.map((e) => e.id)).toEqual(['E9']);
+      expect(m.duplicates.map((e) => e.id)).toEqual(['E1']);
+      expect(m.hoursHundredths).toBe(150);
     }
+  });
+  it('shows the lower id as the counted copy when the copies are the same', () => {
+    const a = { ...att('A', '2026-07-02', 1), id: 'E9' };
+    const b = { ...att('A', '2026-07-02', 1), id: 'E1' };
+    expect(tinyMeasure(tiny({ engagements: [a, b] })).attendance.map((e) => e.id)).toEqual(['E1']);
   });
   it('shows in the trace as a row that counts once', () => {
     const t = explain(sample, findings, {}, 'q3', { kind: 'metric', metric: 'participant_hours' });
@@ -128,15 +131,30 @@ describe('goals', () => {
     const g = goalFigure(sample, st, sample.goals.find((x) => x.id === 'G1')!, '2026-08-31');
     expect([g.status, g.forecastLine]).toEqual(['Past due', null]);
   });
-  it('a forecast of people follows the "<5" rule in funder copy', () => {
-    // One person joins Jul 1. As of Jul 31, G1 (due Aug 31) forecasts 1 × 62 ÷ 31 = 2 people.
-    const ds: Dataset = { ...sample, participants: sample.participants.map((p) => (p.id === 'P05' ? { ...p, join_date: '2026-07-01' } : p)) };
-    const g = goalFigure(ds, applyAnswers(ds, findings, {}), ds.goals.find((x) => x.id === 'G1')!, '2026-07-31');
-    expect([g.display, g.staffDisplay]).toEqual(['<5', '1']);
-    expect([g.forecastDisplay, g.forecastStaffDisplay]).toEqual(['<5', '2']);
-    expect(g.forecastLine).toBe('Forecast by Aug 31: <5 of 8');
-    const t = explain(ds, findings, {}, 'jul', { kind: 'goal', goalId: 'G1', part: 'forecast' });
-    expect([t.value, t.funderShows]).toEqual(['2', '<5']);
+  // Three people join on Jul 1. As of Jul 31, G1 (due Aug 31) forecasts 3 × 62 ÷ 31 = 6 of 8,
+  // so "<5" next to "Forecast: 6" or "Behind" would say it's 3.
+  const julyJoiners = ['P05', 'P06', 'P12'];
+  const early: Dataset = { ...sample, participants: sample.participants.map((p) => (julyJoiners.includes(p.id) ? { ...p, join_date: '2026-07-01' } : p)) };
+  it('a people goal at 1 to 4 shows "<5" with no status or forecast, since either would give the count away', () => {
+    const g = goalFigure(early, applyAnswers(early, findings, {}), early.goals.find((x) => x.id === 'G1')!, '2026-07-31');
+    expect([g.display, g.staffDisplay, g.status, g.shownStatus]).toEqual(['<5', '3', 'Behind', 'Not shown']);
+    expect([g.forecastDisplay, g.forecastLine, g.forecastStaffDisplay]).toEqual([null, null, '6']);
+    const t = explain(early, findings, {}, 'jul', { kind: 'goal', goalId: 'G1', part: 'value' });
+    expect([t.value, t.funderShows]).toEqual(['3', '<5, with no status or forecast']);
+  });
+  it('says why in a data note on the template that shows the goal, and in the summary', () => {
+    const r = buildReport(early, findings, {}, 'city-youth-grant', 'jul');
+    const notes = r.sections.find((s) => s.type === 'notes');
+    expect(notes?.type === 'notes' && notes.notes).toContain("Enroll 8 new participants: fewer than 5 so far, so its status and forecast aren't shown. Either one would say how many.");
+    const goals = r.sections.find((s) => s.type === 'goals');
+    expect(goals?.type === 'goals' && goals.goals[0].status).toBe('Not shown');
+    expect(renderSlot({ kind: 'status', source: { from: 'goal', goalId: 'G1', part: 'status' } }, computePeriod(early, applyAnswers(early, findings, {}), findings, PERIODS[1])).text).toBe('not rated while it counts fewer than 5 people');
+    const foundation = buildReport(early, findings, {}, 'foundation-outcomes', 'jul').sections.find((s) => s.type === 'notes');
+    expect(foundation?.type === 'notes' && foundation.notes.some((n) => n.startsWith('Enroll'))).toBe(false);
+  });
+  it('shows a people goal at 0 or 5 and up as usual', () => {
+    const g = goalFigure(sample, st, sample.goals.find((x) => x.id === 'G1')!, '2026-07-31');
+    expect([g.display, g.shownStatus, g.forecastLine]).toEqual(['0', 'Behind', 'Forecast by Aug 31: 0 of 8']);
   });
   it('a met goal stays Met after its due date', () => {
     const g = goalFigure(sample, st, { ...sample.goals.find((x) => x.id === 'G1')!, target: 6 }, '2026-09-30');
@@ -156,49 +174,15 @@ describe('goals', () => {
   });
 });
 
-describe('suppression', () => {
-  it('hides 1 to 4 as <5 and shows 0 as 0', () => {
-    const { cells } = suppressBreakdown([{ key: 'a', value: 0 }, { key: 'b', value: 4 }, { key: 'c', value: 5 }, { key: 'd', value: 1 }]);
-    expect(cells.map((c) => c.display)).toEqual(['0', '<5', '5', '<5']);
+describe('people counts in the summary', () => {
+  const f = figuresFor({});
+  const slot = (value: number) =>
+    renderSlot({ kind: 'people', source: { from: 'metric', metric: 'new_participants' } }, { ...f, metrics: { ...f.metrics, new_participants: { ...f.metrics.new_participants, value } } }).text;
+  it('reads "no" for 0, "fewer than 5" for 1 to 4, and the number from 5', () => {
+    expect([slot(0), slot(1), slot(4), slot(5), slot(1200)]).toEqual(['no', 'fewer than 5', 'fewer than 5', '5', '1,200']);
   });
-  it('hides the next smallest cell when only one is small, so it cannot be subtracted out', () => {
-    const r = suppressBreakdown([{ key: 'a', value: 11 }, { key: 'b', value: 14 }, { key: 'c', value: 12 }, { key: 'd', value: 3 }]);
-    expect(r.cells.map((c) => c.display)).toEqual(['hidden', '14', '12', '<5']);
-    expect(r.footnote).toBe("Hidden so a small group can't be worked out from the total.");
-  });
-  it('breaks a tie for next smallest by display order', () => {
-    const r = suppressBreakdown([{ key: 'a', value: 9 }, { key: 'b', value: 9 }, { key: 'c', value: 2 }]);
-    expect(r.cells.map((c) => c.display)).toEqual(['hidden', '9', '<5']);
-  });
-  it('needs no second cell when two are already hidden and their sum leaves room', () => {
-    const r = suppressBreakdown([{ key: 'a', value: 9 }, { key: 'b', value: 2 }, { key: 'c', value: 3 }]);
-    expect(r.cells.map((c) => c.display)).toEqual(['9', '<5', '<5']);
-    expect(r.footnote).toBeNull();
-  });
-  const cells = (values: number[]) => suppressBreakdown(values.map((value, i) => ({ key: String(i), value }))).cells.map((c) => c.display);
-  it('never hides a 0 as the second cell, since "hidden" plus "<5" would give the small one away', () => {
-    expect(cells([3, 0, 12, 9])).toEqual(['<5', '0', '12', 'hidden']);
-  });
-  it('keeps hiding while a hidden cell could still be worked out', () => {
-    // 1 and 5 hidden would sum to 6, which only 1 + 5 can make.
-    expect(cells([1, 5, 12, 9])).toEqual(['<5', 'hidden', '12', 'hidden']);
-    // Two cells of 1 sum to 2, which gives both away.
-    expect(cells([1, 1, 12, 9])).toEqual(['<5', '<5', '12', 'hidden']);
-  });
-  it('hides every cell when nothing else is left to hide', () => {
-    expect(cells([1, 5, 0, 0])).toEqual(['hidden', 'hidden', 'hidden', 'hidden']);
-  });
-  it('skips the second cell when the total is itself under 5', () => {
-    expect(cells([3, 0, 0, 0])).toEqual(['<5', '0', '0', '0']);
-  });
-  it('fires on the sample: 19-24 shows <5 and 10-12 is hidden too', () => {
-    const cells = figuresFor({}).ageBreakdown.cells;
-    expect(cells.map((c) => [c.key, c.display])).toEqual([['10-12', 'hidden'], ['13-15', '14'], ['16-18', '12'], ['19-24', '<5']]);
-  });
-  it('turns a small people count into "fewer than 5" in the summary', () => {
-    const f = figuresFor({});
-    const small = { ...f, metrics: { ...f.metrics, new_participants: { ...f.metrics.new_participants, value: 3, display: '<5' } } };
-    expect(renderSlot({ kind: 'people', source: { from: 'metric', metric: 'new_participants' } }, small).text).toBe('fewer than 5');
+  it('writes a goal due date out in full', () => {
+    expect(renderSlot({ kind: 'date', source: { from: 'goal', goalId: 'G2', part: 'due' } }, f).text).toBe('December 18, 2026');
   });
 });
 
@@ -281,15 +265,15 @@ describe('Excel sheets', () => {
     expect(workbookSheets(buildReport(sample, findings, {}, 'foundation-outcomes', 'q3')).map((s) => s.name)).toEqual(['Summary', 'By group', 'Goals', 'Data notes']);
     expect(workbookSheets(buildReport(sample, findings, { 'gap-coding-club-2026-07-23': 'ran_not_recorded' }, 'city-youth-grant', 'q3')).map((s) => s.name)).toEqual(['Summary', 'By group', 'Age range', 'Goals', 'Data notes']);
   });
-  it('start with the sample label and keep numbers numeric, hidden cells as text', async () => {
+  it('start with the sample label and keep numbers numeric', async () => {
     const { workbookSheets } = await import('../lib/excel');
     const sheets = workbookSheets(buildReport(sample, findings, {}, 'city-youth-grant', 'q3'));
     expect(sheets.map((s) => s.name)).toEqual(['Summary', 'By group', 'Age range', 'Goals']);
     for (const s of sheets) expect(String(s.rows[0][0])).toMatch(/^SAMPLE DATA\./);
     const age = sheets.find((s) => s.name === 'Age range')!.rows;
-    expect(age.find((r) => r[0] === '19-24')![1]).toBe('<5');
-    expect(age.find((r) => r[0] === '10-12')![1]).toBe('hidden');
-    expect(age.find((r) => r[0] === '13-15')![1]).toEqual({ v: 14, z: '#,##0' });
+    expect(age.filter((r) => typeof r[1] === 'object' && r[1] !== null).map((r) => r[0])).toEqual(['10-12', '13-15', '16-24', 'Total']);
+    expect(age.find((r) => r[0] === '16-24')![1]).toEqual({ v: 15, z: '#,##0' });
+    expect(age.some((r) => r[0] === "Age ranges are combined where one would show 1 to 4 people in this quarter or any month of it.")).toBe(true);
     const summary = sheets[0].rows.find((r) => r[0] === 'Attendance rate')!;
     expect(summary[1]).toMatchObject({ z: '0%' });
   });
@@ -306,6 +290,12 @@ describe('the confidence outcome', () => {
       { id: 'C5', date: '2026-08-04', participant_id: 'B', confidence: 4 },
     ],
   });
+  it('counts the lower score when someone has two check-ins on the same day, whatever their ids', () => {
+    const twice = { ...ds, checkins: [...ds.checkins, { id: 'C0', date: '2026-07-16', participant_id: 'A', confidence: 2 }] };
+    const m = tinyMeasure(twice, '2026-07-01', '2026-07-31');
+    expect(m.checkins.find((c) => c.participant.id === 'A')!.checkin.id).toBe('C0');
+    expect(METRICS.confidence_improved.compute(m).display).toBe('0%');
+  });
   it('compares the latest check-in in the period with intake, and skips anyone without an intake score', () => {
     const m = tinyMeasure(ds, '2026-07-01', '2026-07-31');
     expect(m.checkins.map((c) => [c.participant.id, c.checkin.id, c.improved])).toEqual([['A', 'C2', true], ['B', 'C3', false]]);
@@ -316,8 +306,12 @@ describe('the confidence outcome', () => {
     const m = tinyMeasure(ds, '2026-09-01', '2026-09-30');
     expect(METRICS.confidence_improved.compute(m)).toMatchObject({ value: null, display: 'No check-ins in this period' });
   });
-  it('has check-ins in every period of the sample', () => {
-    for (const p of PERIODS) expect(figuresFor({}, p).metrics.participants_checked_in.value!).toBeGreaterThanOrEqual(5);
+  it('has check-ins in every period of the sample, and some people served without one', () => {
+    for (const p of PERIODS) {
+      const m = figuresFor({}, p).metrics;
+      expect(m.participants_checked_in.value!).toBeGreaterThanOrEqual(5);
+      expect(m.participants_checked_in.value!, p.id).toBeLessThan(m.participants_served.value!);
+    }
   });
 });
 
@@ -327,11 +321,20 @@ describe('the summary states each goal it mentions', () => {
     expect(renderSlot({ kind: 'status', source: { from: 'goal', goalId: 'G1', part: 'status' } }, f).text).toBe('past due');
     expect(renderSlot({ kind: 'status', source: { from: 'goal', goalId: 'G3', part: 'status' } }, f).text).toBe('behind');
   });
+  const text = (t: 'city-youth-grant' | 'foundation-outcomes', period: 'q3' | 'jul' = 'q3') =>
+    buildReport(sample, findings, {}, t, period).sections.flatMap((s) => (s.type === 'summary' ? s.parts.map((p) => p.text) : [])).join('');
   it('says "past due" and "behind" on the sample report', () => {
-    const text = (t: 'city-youth-grant' | 'foundation-outcomes') =>
-      buildReport(sample, findings, {}, t, 'q3').sections.flatMap((s) => (s.type === 'summary' ? s.parts.map((p) => p.text) : [])).join('');
-    expect(text('city-youth-grant')).toContain('a goal that is past due');
-    expect(text('foundation-outcomes')).toContain('a goal that is behind');
+    expect(text('city-youth-grant')).toMatch(/\bpast due\b/);
+    expect(text('foundation-outcomes')).toMatch(/\bbehind\b/);
+  });
+  it('gives each goal its target and due date, not progress that would repeat the period figure', () => {
+    expect(text('city-youth-grant')).toContain('August 31, 2026');
+    expect(text('foundation-outcomes')).toContain('December 18, 2026');
+    expect(text('foundation-outcomes').match(/\b163\b/g)).toHaveLength(1);
+    expect(text('city-youth-grant').match(/\b615\b/g)).toHaveLength(1);
+  });
+  it('reads "no new participants" in a month nobody joined', () => {
+    expect(text('city-youth-grant', 'jul')).toContain('no new participants');
   });
 });
 

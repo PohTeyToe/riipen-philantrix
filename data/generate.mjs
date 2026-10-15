@@ -119,8 +119,9 @@ export function build(seed = SEED) {
   const used = new Set();
   const people = ROSTER.map(([group_id, age_range, role], i) => {
     let display_name;
+    const list = i % 2 === 0 ? 'female' : 'male';
     do {
-      const first = pick(i % 2 === 0 ? names.female : names.male);
+      const first = pick(names[list]);
       const initial = pick('ABCDEFGHJKLMNPRSTW'.split(''));
       display_name = `${first} ${initial}.`;
     } while (used.has(display_name));
@@ -139,16 +140,28 @@ export function build(seed = SEED) {
 
     const g = groupById[group_id];
     return {
-      group_id, age_range, role, display_name, join_date, exit_date, last_active,
+      group_id, age_range, role, display_name, list, join_date, exit_date, last_active,
       attend: Math.min(0.97, Math.max(0.5, g.attend + between(-0.12, 0.12))),
       submit: Math.min(0.95, Math.max(0.2, g.submit + between(-0.15, 0.15))),
     };
   });
 
-  // Stable ids that don't reveal roles: group order, then name.
+  // Stable ids that don't reveal roles: group order, then the name first drawn.
   const groupOrder = (gid) => GROUPS.findIndex((g) => g.id === gid);
   people.sort((a, b) => groupOrder(a.group_id) - groupOrder(b.group_id) || a.display_name.localeCompare(b.display_name));
   people.forEach((p, i) => { p.id = `P${String(i + 1).padStart(2, '0')}`; });
+
+  // One first name per person, so the staff view never lists three Victorias.
+  // A repeat takes the most common name nobody has yet, from the same list.
+  // It runs after the ids and draws nothing random, so every record stays the same.
+  const taken = new Set();
+  for (const p of people) {
+    const [first, initial] = p.display_name.split(' ');
+    if (!taken.has(first)) { taken.add(first); continue; }
+    const next = names[p.list].find((n) => !taken.has(n) && !people.some((q) => q.display_name.split(' ')[0] === n));
+    taken.add(next);
+    p.display_name = `${next} ${initial}`;
+  }
 
   const enrolled = (p, d) => p.join_date <= d && (p.exit_date === null || d <= p.exit_date);
 
@@ -351,7 +364,14 @@ export function build(seed = SEED) {
 
   // ----- confidence: a custom field at intake, then a check-in each month -----
   // A second random stream, so adding this left every record above unchanged.
-  const { intake, checkins } = confidence(mulberry32(seed + 1), people, att);
+  // Three people who attended every month never fill in a check-in, chosen
+  // with a third stream, so the other check-ins keep their scores.
+  const everyMonth = people.filter((p) => ['2026-07', '2026-08', '2026-09'].every((m) => att.some((r) => r.participant_id === p.id && r.date.startsWith(m))));
+  const third = mulberry32(seed + 2);
+  const noCheckins = new Set();
+  while (noCheckins.size < 3) noCheckins.add(everyMonth[Math.floor(third() * everyMonth.length)].id);
+  const { intake, checkins } = confidence(mulberry32(seed + 1), people, att, noCheckins);
+  planted.no_checkins = [...noCheckins].sort();
   for (const p of participants) p.confidence_intake = intake.get(p.id);
   // Keep mock last on each row.
   for (const p of participants) { delete p.mock; p.mock = true; }
@@ -361,7 +381,7 @@ export function build(seed = SEED) {
 
 // Intake score on joining. Then, in each month a participant attended, a
 // check-in at their last session of the month, a step or two from the last score.
-function confidence(rand, people, att) {
+function confidence(rand, people, att, skip) {
   const draw = (pairs) => {
     let r = rand();
     for (const [v, p] of pairs) { if (r < p) return v; r -= p; }
@@ -377,6 +397,7 @@ function confidence(rand, people, att) {
       const days = [...new Set(att.filter((r) => r.participant_id === p.id && r.date.startsWith(month)).map((r) => r.date))].sort();
       if (!days.length) continue;
       score = Math.min(5, Math.max(1, score + draw([[-1, 0.12], [0, 0.43], [1, 0.38], [2, 0.07]])));
+      if (skip.has(p.id)) continue; // their score still moves, so the draws stay in step
       rows.push({ date: days.at(-1), participant_id: p.id, group_id: p.group_id, field: 'Confidence (1 to 5)', confidence: score });
     }
   }

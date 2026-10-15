@@ -186,5 +186,10 @@
     "gap-weekend-leaders-2026-09-19": "ran_not_recorded",
     "inactive-P02": "left_program",
     "inactive-P08": "left_program"
-  }
+  },
+  "no_checkins": [
+    "P09",
+    "P13",
+    "P17"
+  ]
 }

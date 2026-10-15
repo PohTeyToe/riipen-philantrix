@@ -120,7 +120,7 @@ function Figures({ s }: { s: Extract<SectionView, { type: 'figures' }> }) {
               <tr>
                 {s.breakdown.cells.map((c) => (
                   <td key={c.key} className="px-2 pt-1.5 text-right first:pl-0">
-                    <T r={c.ref} className={c.hidden === 'secondary' ? 'italic text-muted' : ''}>{c.display}</T>
+                    <T r={c.ref}>{c.display}</T>
                   </td>
                 ))}
                 <td className="pl-3 pt-1.5 text-right font-semibold">
@@ -129,9 +129,9 @@ function Figures({ s }: { s: Extract<SectionView, { type: 'figures' }> }) {
               </tr>
             </tbody>
           </table>
-          {(s.breakdown.cells.some((c) => c.hidden) || s.breakdown.footnote) && (
+          {(s.breakdown.cells.some((c) => c.display === '<5') || s.breakdown.footnote) && (
             <div className="mt-2 space-y-0.5 text-[11.5px] leading-snug text-muted">
-              {s.breakdown.cells.some((c) => c.display === '<5') && <p>&lt;5 means 1 to 4 people, not shown so no one can be identified.</p>}
+              {s.breakdown.cells.some((c) => c.display === '<5') && <p>&lt;5 means 1 to 4 people.</p>}
               {s.breakdown.footnote && <p>{s.breakdown.footnote}</p>}
             </div>
           )}
@@ -190,6 +190,7 @@ const STATUS_STYLE: Record<GoalView['status'], { cls: string; mark: React.ReactN
   Behind: { cls: 'text-amber-ink', mark: <span className="size-2 rounded-full border-[1.5px] border-amber" /> },
   'Past due': { cls: 'text-amber-ink', mark: <span className="size-2 rounded-full bg-amber" /> },
   'No due date': { cls: 'text-muted', mark: <span className="size-2 rounded-full border-[1.5px] border-faint" /> },
+  'Not shown': { cls: 'text-muted', mark: <span className="size-2 rounded-full border-[1.5px] border-faint" /> },
 };
 
 function Status({ g }: { g: GoalView }) {

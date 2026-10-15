@@ -68,11 +68,13 @@ export function checkNarrative(templateId, text, ctx = loadContext()) {
   const slots = [...text.matchAll(/\{([a-z0-9_]+)\}/g)].map((m) => m[1]);
   for (const s of slots) if (!known.includes(s)) errs.push(`unknown slot {${s}}`);
   if (slots.length === 0) errs.push('no slots used');
-  // A goal the summary mentions has its status said too, so it can't skip a goal that's behind.
-  for (const k of known.filter((x) => x.endsWith('_status'))) {
-    const goal = k.slice(0, -'_status'.length);
-    if (slots.some((x) => x.startsWith(`${goal}_`)) && !slots.includes(k)) errs.push(`mentions ${goal} without its status slot {${k}}`);
+  // A goal the summary mentions has its status and due date said too, so it can't skip a goal that's behind.
+  for (const k of known.filter((x) => x.endsWith('_status') || x.endsWith('_due'))) {
+    const goal = k.slice(0, k.lastIndexOf('_'));
+    if (slots.some((x) => x.startsWith(`${goal}_`)) && !slots.includes(k)) errs.push(`mentions ${goal} without its slot {${k}}`);
   }
+  // Each figure once: a slot used twice says the same number twice.
+  for (const s of new Set(slots)) if (slots.filter((x) => x === s).length > 1) errs.push(`slot {${s}} used more than once`);
 
   const prose = text.replace(/\{[a-z0-9_]+\}/g, ' ');
   if (/[{}]/.test(prose)) errs.push('stray brace outside a slot');

@@ -13,9 +13,15 @@ export type Section =
   | { id: string; title: string; type: 'summary' }
   | { id: string; title: string; type: 'notes' };
 
-/** Summary slot kinds. A "people" slot of 1 to 4 renders "fewer than 5". A "status" slot renders a goal status in words. */
-export type SlotKind = 'text' | 'people' | 'count' | 'hours' | 'percent' | 'decimal' | 'status';
-export type SlotSource = { from: 'period' } | { from: 'metric'; metric: MetricId } | { from: 'goal'; goalId: string; part: 'value' | 'target' | 'status' };
+/**
+ * Summary slot kinds. A "people" slot renders "no" for 0 and "fewer than 5"
+ * for 1 to 4. A "status" slot renders a goal status in words, and a "date"
+ * slot a due date written out. Goals give their target, due date and status
+ * only: progress is in the goals table, and for a goal that starts with the
+ * period it would repeat the period's own figure.
+ */
+export type SlotKind = 'text' | 'people' | 'count' | 'hours' | 'percent' | 'decimal' | 'status' | 'date';
+export type SlotSource = { from: 'period' } | { from: 'metric'; metric: MetricId } | { from: 'goal'; goalId: string; part: 'target' | 'due' | 'status' };
 export interface Slot { kind: SlotKind; source: SlotSource }
 
 export interface Template {
@@ -56,11 +62,11 @@ export const TEMPLATES: Template[] = [
       sessions_delivered: { kind: 'count', source: { from: 'metric', metric: 'sessions_delivered' } },
       participant_hours: { kind: 'hours', source: { from: 'metric', metric: 'participant_hours' } },
       attendance_rate: { kind: 'percent', source: { from: 'metric', metric: 'attendance_rate' } },
-      g1_value: { kind: 'people', source: { from: 'goal', goalId: 'G1', part: 'value' } },
       g1_target: { kind: 'count', source: { from: 'goal', goalId: 'G1', part: 'target' } },
+      g1_due: { kind: 'date', source: { from: 'goal', goalId: 'G1', part: 'due' } },
       g1_status: { kind: 'status', source: { from: 'goal', goalId: 'G1', part: 'status' } },
-      g2_value: { kind: 'hours', source: { from: 'goal', goalId: 'G2', part: 'value' } },
       g2_target: { kind: 'hours', source: { from: 'goal', goalId: 'G2', part: 'target' } },
+      g2_due: { kind: 'date', source: { from: 'goal', goalId: 'G2', part: 'due' } },
       g2_status: { kind: 'status', source: { from: 'goal', goalId: 'G2', part: 'status' } },
     },
     narrative: narrativeFor('city-youth-grant'),
@@ -86,14 +92,12 @@ export const TEMPLATES: Template[] = [
       assignment_submissions: { kind: 'count', source: { from: 'metric', metric: 'assignment_submissions' } },
       submissions_per_participant: { kind: 'decimal', source: { from: 'metric', metric: 'submissions_per_participant' } },
       participants_served: { kind: 'people', source: { from: 'metric', metric: 'participants_served' } },
-      g2_value: { kind: 'hours', source: { from: 'goal', goalId: 'G2', part: 'value' } },
       g2_target: { kind: 'hours', source: { from: 'goal', goalId: 'G2', part: 'target' } },
+      g2_due: { kind: 'date', source: { from: 'goal', goalId: 'G2', part: 'due' } },
       g2_status: { kind: 'status', source: { from: 'goal', goalId: 'G2', part: 'status' } },
-      g3_value: { kind: 'count', source: { from: 'goal', goalId: 'G3', part: 'value' } },
       g3_target: { kind: 'count', source: { from: 'goal', goalId: 'G3', part: 'target' } },
+      g3_due: { kind: 'date', source: { from: 'goal', goalId: 'G3', part: 'due' } },
       g3_status: { kind: 'status', source: { from: 'goal', goalId: 'G3', part: 'status' } },
-      g4_value: { kind: 'percent', source: { from: 'goal', goalId: 'G4', part: 'value' } },
-      g4_target: { kind: 'percent', source: { from: 'goal', goalId: 'G4', part: 'target' } },
     },
     narrative: narrativeFor('foundation-outcomes'),
   },
@@ -107,3 +111,6 @@ export const templateById = (id: TemplateId): Template => {
 
 /** Goals a template puts on the page. */
 export const templateGoals = (t: Template): string[] => t.sections.flatMap((s) => (s.type === 'goals' ? s.goals : []));
+
+/** Metrics a template shows as figures. */
+export const templateMetrics = (t: Template): MetricId[] => t.sections.flatMap((s) => (s.type === 'figures' ? s.metrics : []));

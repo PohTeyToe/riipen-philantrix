@@ -164,10 +164,11 @@ create table report_periods (
 -- way as lib/metrics.ts:
 --   offered        enrolled group members on the day of each session with attendance logged
 --   attended       offered seats that have an Attendances record (a duplicate counts once)
---   hours          units on the first record logged for each person and session
+--   hours          units for each person and session; copies that disagree count at the fewest hours
 --   delivered      sessions with attendance logged, plus sessions answered "ran"
 --   retained       enrolled on the period's last day, out of enrolled on any day
---   improved       latest check-in in the period above the intake score, out of everyone with both
+--   improved       latest check-in in the period above the intake score, out of everyone with both;
+--                  two check-ins on the same day count at the lower score
 -- security_invoker makes the view run with the caller's row-level security.
 create view program_rollup with (security_invoker = true) as
 with attendance as (
@@ -176,7 +177,7 @@ with attendance as (
   from engagements e
   join groups g on g.id = e.group_id
   where e.activity_type = 'Attendances'
-  order by e.group_id, e.participant_id, e.engaged_on, e.created_at, e.id
+  order by e.group_id, e.participant_id, e.engaged_on, e.units, e.id
 ),
 logged_sessions as (
   select distinct workstream_id, group_id, engaged_on as session_date from attendance
@@ -212,7 +213,7 @@ latest_checkins as (
   join groups g on g.workstream_id = rp.workstream_id
   join participants p on p.group_id = g.id and p.confidence_intake is not null
   join checkins c on c.participant_id = p.id and c.checked_on between rp.starts_on and rp.ends_on
-  order by rp.id, c.participant_id, c.checked_on desc, c.created_at desc, c.id desc
+  order by rp.id, c.participant_id, c.checked_on desc, c.confidence
 ),
 counts as (
   select

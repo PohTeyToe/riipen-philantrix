@@ -1,5 +1,10 @@
 // Links and switches for the walkthrough page.
 
+import type { Metadata } from 'next';
+
+/** Each page sets this; see app/layout.tsx. */
+export const NO_INDEX: Metadata['robots'] = { index: false, follow: false };
+
 export const LINKS = {
   /** The public repo for this demo. Update if the repo gets a different name. */
   repo: 'https://github.com/PohTeyToe/philantrix-funder-report',

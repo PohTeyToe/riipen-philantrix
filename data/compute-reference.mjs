@@ -23,10 +23,12 @@ export const PERIODS = [
 ];
 
 const statusMeaning = (goal) =>
-  `Status of the ${goal} goal, as words that finish "the goal is": met, on track, behind or past due. The engine fills it in.`;
+  `Status of the ${goal} goal, as words that finish "the goal is": met, on track, behind or past due. For a goal that counts people, it can also read "not rated while it counts fewer than 5 people". The engine fills it in.`;
+const dueMeaning = (goal) => `Due date of the ${goal} goal, written out, for example "December 18, 2026".`;
 
-// Slot kinds: people (a count of people; 1 to 4 renders "fewer than 5"),
-// count, hours, percent, decimal, status (a goal status in words), text.
+// Slot kinds: people (a count of people; 0 renders "no", 1 to 4 "fewer than
+// 5"), count, hours, percent, decimal, status (a goal status in words), date
+// (a due date written out), text. Goals give target, due date and status only.
 export const TEMPLATES = [
   {
     id: 'city-youth-grant',
@@ -46,11 +48,11 @@ export const TEMPLATES = [
       sessions_delivered: { kind: 'count', meaning: 'Group sessions that ran in the period.' },
       participant_hours: { kind: 'hours', meaning: 'Total hours participants spent in sessions they attended (each session counted at its length).' },
       attendance_rate: { kind: 'percent', meaning: 'Share of seats filled at sessions with attendance logged. Each enrolled group member is one seat at each of those sessions. Sessions that ran without attendance logged are left out.' },
-      g1_value: { kind: 'people', meaning: 'New participants enrolled since the goal started (goal: "Enroll 8 new participants").' },
-      g1_target: { kind: 'count', meaning: 'Target for the new participants goal.' },
+      g1_target: { kind: 'count', meaning: 'Target for the new participants goal (goal: "Enroll 8 new participants"): a number of new participants.' },
+      g1_due: { kind: 'date', meaning: dueMeaning('new participants') },
       g1_status: { kind: 'status', meaning: statusMeaning('new participants') },
-      g2_value: { kind: 'hours', meaning: 'Participant hours since the goal started (goal: "Participant hours").' },
-      g2_target: { kind: 'hours', meaning: 'Target for the participant hours goal.' },
+      g2_target: { kind: 'hours', meaning: 'Target for the participant hours goal: a number of hours.' },
+      g2_due: { kind: 'date', meaning: dueMeaning('participant hours') },
       g2_status: { kind: 'status', meaning: statusMeaning('participant hours') },
     },
   },
@@ -74,20 +76,19 @@ export const TEMPLATES = [
       assignment_submissions: { kind: 'count', meaning: 'Assignments handed in during the period.' },
       submissions_per_participant: { kind: 'decimal', meaning: 'Assignments handed in per participant served.' },
       participants_served: { kind: 'people', meaning: 'Participants who attended at least one session in the period.' },
-      g2_value: { kind: 'hours', meaning: 'Participant hours since the goal started (goal: "Participant hours").' },
-      g2_target: { kind: 'hours', meaning: 'Target for the participant hours goal.' },
+      g2_target: { kind: 'hours', meaning: 'Target for the participant hours goal: a number of hours.' },
+      g2_due: { kind: 'date', meaning: dueMeaning('participant hours') },
       g2_status: { kind: 'status', meaning: statusMeaning('participant hours') },
-      g3_value: { kind: 'count', meaning: 'Assignment submissions since the goal started (goal: "Assignment submissions").' },
-      g3_target: { kind: 'count', meaning: 'Target for the assignment submissions goal.' },
+      g3_target: { kind: 'count', meaning: 'Target for the assignment submissions goal: a number of assignments.' },
+      g3_due: { kind: 'date', meaning: dueMeaning('assignment submissions') },
       g3_status: { kind: 'status', meaning: statusMeaning('assignment submissions') },
-      g4_value: { kind: 'percent', meaning: 'Attendance rate since the goal started (goal: "Attendance rate of 80%").' },
-      g4_target: { kind: 'percent', meaning: 'Target for the attendance rate goal.' },
     },
   },
 ];
 
 const EXIT_NOTE = 'Where staff confirmed that a participant with no activity for 30 or more days had left, their exit date is their last activity.';
-const STATUS_WORDS = { Met: 'met', 'On track': 'on track', Behind: 'behind', 'Past due': 'past due', 'No due date': 'open, with no due date' };
+const STATUS_WORDS = { Met: 'met', 'On track': 'on track', Behind: 'behind', 'Past due': 'past due', 'No due date': 'open, with no due date', 'Not shown': 'not rated while it counts fewer than 5 people' };
+const COMBINED_FOOTNOTE = 'Age ranges are combined where one would show 1 to 4 people in this quarter or any month of it.';
 
 // ---------- dates ----------
 const DAY = 86400000;
@@ -102,6 +103,11 @@ const fmtDay = (iso) => {
 const fmtShortDate = (iso) => {
   const d = new Date(ms(iso));
   return `${MON[d.getUTCMonth()]} ${d.getUTCDate()}`;
+};
+const LONG_MON = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
+const fmtLongDate = (iso) => {
+  const d = new Date(ms(iso));
+  return `${LONG_MON[d.getUTCMonth()]} ${d.getUTCDate()}, ${d.getUTCFullYear()}`;
 };
 
 // ---------- the one formatter ----------
@@ -118,39 +124,26 @@ const fmtDecimal1 = (num, den) => {
   return `${Math.floor(tenths / 10)}.${tenths % 10}`;
 };
 
-// ---------- suppression of a breakdown whose total is shown ----------
-// A reader knows "<5" is 1 to 4 and "hidden" is 5 or more. Keep hiding the
-// smallest visible cell above 0 until no hidden cell has only one possible
-// value; if none is left, hide everything.
-function suppress(values) {
-  const cells = values.map((v) => ({ value: v, hidden: v >= 1 && v <= 4 ? 'small' : null }));
-  const total = values.reduce((a, b) => a + b, 0);
-  const pinned = () => {
-    const h = cells.filter((c) => c.hidden);
-    const s = h.reduce((a, c) => a + c.value, 0);
-    const range = (c) => (c.hidden === 'small' ? [1, 4] : [5, s]);
-    return h.some((c, i) => {
-      const rest = h.filter((_, j) => j !== i);
-      const lo = Math.max(range(c)[0], s - rest.reduce((a, o) => a + range(o)[1], 0));
-      const hi = Math.min(range(c)[1], s - rest.reduce((a, o) => a + range(o)[0], 0));
-      return lo === hi;
-    });
-  };
-  let all = false;
-  if (cells.some((c) => c.hidden) && !(total >= 1 && total <= 4)) {
-    while (pinned()) {
-      const visible = cells.filter((c) => !c.hidden && c.value > 0);
-      if (!visible.length) { all = true; break; }
-      const min = Math.min(...visible.map((c) => c.value));
-      visible.find((c) => c.value === min).hidden = 'secondary';
-    }
-  }
-  return cells.map((c) => {
-    const hidden = all && !c.hidden ? 'secondary' : c.hidden;
-    const display = all || hidden === 'secondary' ? 'hidden' : hidden === 'small' ? '<5' : commas(c.value);
-    return { value: c.value, hidden, display };
+// ---------- age bands for a breakdown whose total is shown ----------
+// Decided once from the counts in every period (rows), so each period shows
+// the same bands. A band with 1 to 4 people in any period merges into the band
+// after it (the last into the one before) until none is small or one is left.
+function combine(ranges, rows) {
+  let bands = ranges.map((r, i) => ({ ranges: [r], idx: [i] }));
+  const small = (b) => rows.some((row) => {
+    const n = b.idx.reduce((a, i) => a + row[i], 0);
+    return n >= 1 && n <= 4;
   });
+  while (bands.length > 1) {
+    const i = bands.findIndex(small);
+    if (i < 0) break;
+    const j = i === bands.length - 1 ? i - 1 : i;
+    const merged = { ranges: [...bands[j].ranges, ...bands[j + 1].ranges], idx: [...bands[j].idx, ...bands[j + 1].idx] };
+    bands = [...bands.slice(0, j), merged, ...bands.slice(j + 2)];
+  }
+  return bands.map((b) => b.ranges);
 }
+const bandName = (ranges) => (ranges.length === 1 ? ranges[0] : `${ranges[0].split('-')[0]}-${ranges.at(-1).split('-')[1]}`);
 
 export function computeReference({ org, participants, engagements, checkins, goals }) {
   const AS_OF = org.as_of;
@@ -212,7 +205,8 @@ export function computeReference({ org, participants, engagements, checkins, goa
     const people = st.people.filter((p) => inGroup(p.group_id));
     const enrolledOn = (p, d) => p.join_date <= d && (p.exit_date === null || d <= p.exit_date);
 
-    // participant|group|date -> the record that counts: the first logged, by record id.
+    // participant|group|date -> the record that counts: fewest hours if the
+    // copies disagree (lower record id between equal copies, for display only).
     const att = new Map();
     let rawAtt = 0;
     let submissions = 0;
@@ -221,7 +215,8 @@ export function computeReference({ org, participants, engagements, checkins, goa
       if (e.activity_type === ATT) {
         rawAtt++;
         const k = `${e.participant_id}|${e.group_id}|${e.date}`;
-        if (!att.has(k) || e.id < att.get(k).id) att.set(k, e);
+        const cur = att.get(k);
+        if (!cur || e.units < cur.units || (e.units === cur.units && e.id < cur.id)) att.set(k, e);
       } else if (e.activity_type === SUB) {
         submissions++;
       }
@@ -249,13 +244,14 @@ export function computeReference({ org, participants, engagements, checkins, goa
     const enrolledAny = people.filter((p) => p.join_date <= end && (p.exit_date === null || p.exit_date >= start));
     const retained = enrolledAny.filter((p) => enrolledOn(p, end));
 
-    // Confidence: each participant's latest check-in in range against their intake score.
+    // Confidence: each participant's latest check-in in range against their
+    // intake score. Two on the same day: the lower score.
     const ids = new Set(people.filter((p) => p.confidence_intake !== null).map((p) => p.id));
     const latest = new Map();
     for (const c of checkins) {
       if (!inRange(c.date) || !ids.has(c.participant_id)) continue;
       const prev = latest.get(c.participant_id);
-      if (!prev || c.date > prev.date || (c.date === prev.date && c.id > prev.id)) latest.set(c.participant_id, c);
+      if (!prev || c.date > prev.date || (c.date === prev.date && c.confidence < prev.confidence)) latest.set(c.participant_id, c);
     }
     const intake = Object.fromEntries(people.map((p) => [p.id, p.confidence_intake]));
     const improved = [...latest.values()].filter((c) => c.confidence > intake[c.participant_id]).length;
@@ -305,8 +301,7 @@ export function computeReference({ org, participants, engagements, checkins, goa
       met = n >= goal.target * unitScale;
       if (window !== null) {
         forecastCmp = n * window >= goal.target * unitScale * elapsed; // forecast >= target
-        const whole = halfUp(n * window, unitScale * elapsed);
-        forecastDisplay = goal.metric === 'new_participants' ? fmtPeople(whole) : commas(whole);
+        forecastDisplay = commas(halfUp(n * window, unitScale * elapsed));
       }
     }
     let status;
@@ -317,6 +312,9 @@ export function computeReference({ org, participants, engagements, checkins, goa
     else status = forecastCmp ? 'On track' : 'Behind';
 
     const showForecast = status === 'On track' || status === 'Behind';
+    // A people goal at 1 to 4: its status and forecast would each give the count away.
+    const withheld = goal.metric === 'new_participants' && n >= 1 && n <= 4;
+    const shownForecast = showForecast && !withheld ? forecastDisplay : null;
     const targetDisplay = goal.metric === 'attendance_rate' ? `${Math.round(goal.target * 100)}%` : commas(goal.target);
     return {
       id: goal.id,
@@ -329,42 +327,65 @@ export function computeReference({ org, participants, engagements, checkins, goa
       target_display: targetDisplay,
       due_date: goal.due_date,
       status,
+      shown_status: withheld ? 'Not shown' : status,
       elapsed_days: elapsed,
       window_days: window,
       forecast: showForecast && window ? (n * window) / (unitScale * elapsed) : null,
-      forecast_display: showForecast ? forecastDisplay : null,
-      forecast_line: showForecast ? `Forecast by ${fmtShortDate(goal.due_date)}: ${forecastDisplay} of ${targetDisplay}` : null,
+      forecast_display: shownForecast,
+      forecast_line: shownForecast ? `Forecast by ${fmtShortDate(goal.due_date)}: ${shownForecast} of ${targetDisplay}` : null,
     };
   }
 
   // ---------- age breakdown of participants served ----------
-  function ageBreakdown(served, st) {
-    const byId = Object.fromEntries(st.people.map((p) => [p.id, p]));
-    const values = org.age_ranges.map((r) => [...served].filter((pid) => byId[pid].age_range === r).length);
-    const cells = suppress(values).map((c, i) => ({ age_range: org.age_ranges[i], ...c }));
-    const footnote = cells.some((c) => c.hidden === 'secondary') ? "Hidden so a small group can't be worked out from the total." : null;
+  const ageOf = Object.fromEntries(participants.map((p) => [p.id, p.age_range]));
+  let bandsMemo = null;
+  function bands() {
+    if (!bandsMemo) {
+      const st0 = applyState({}, []);
+      const rows = PERIODS.map((p) => {
+        const served = measure(p.start, p.end, st0).served;
+        return org.age_ranges.map((r) => [...served].filter((pid) => ageOf[pid] === r).length);
+      });
+      bandsMemo = combine(org.age_ranges, rows);
+    }
+    return bandsMemo;
+  }
+  function ageBreakdown(served) {
+    const cells = bands().map((ranges) => {
+      const value = [...served].filter((pid) => ranges.includes(ageOf[pid])).length;
+      return { age_range: bandName(ranges), ranges, value, display: fmtPeople(value) };
+    });
+    const footnote = bands().some((b) => b.length > 1) ? COMBINED_FOOTNOTE : null;
     return { total: { value: served.size, display: fmtPeople(served.size) }, cells, footnote };
   }
 
   // ---------- data notes: only what a funder needs to read the figures ----------
-  function dataNotes(period, st, findings) {
+  function dataNotes(period, st, findings, goalFigs) {
     const inP = (d) => d >= period.start && d <= period.end;
     const both = TEMPLATES.map((t) => t.id);
+    const showsGoal = (id) => TEMPLATES.filter((t) => t.sections.some((s) => s.goals?.includes(id))).map((t) => t.id);
+    const withDelivered = TEMPLATES.filter((t) => t.sections.some((s) => s.metrics?.includes('sessions_delivered'))).map((t) => t.id);
     const notes = [];
     for (const f of findings) {
       const a = st.answers[f.id];
       if (f.kind === 'session_not_logged' && inP(f.date) && a === 'ran_not_recorded') {
-        notes.push({ finding_id: f.id, kind: 'session_ran_not_recorded', templates: both, text: `${groupName[f.group_id]}, ${fmtDay(f.date)}: ran, but attendance wasn't recorded. Counted as delivered and left out of the attendance rate.` });
+        const head = `${groupName[f.group_id]}, ${fmtDay(f.date)}: ran, but attendance wasn't recorded.`;
+        notes.push({ finding_id: f.id, kind: 'session_ran_not_recorded', templates: withDelivered, text: `${head} Counted as delivered and left out of the attendance rate.` });
+        notes.push({ finding_id: f.id, kind: 'session_ran_not_recorded', templates: both.filter((t) => !withDelivered.includes(t)), text: `${head} Left out of the attendance rate.` });
       }
       if (f.kind === 'inactive_participant' && a === 'left_program' && f.last_activity <= period.end && !notes.some((n) => n.kind === 'exit_by_answer')) {
         notes.push({ finding_id: 'exit-by-answer', kind: 'exit_by_answer', templates: both, text: EXIT_NOTE });
       }
       if (f.kind === 'goal_no_due_date') {
-        const shownIn = TEMPLATES.filter((t) => t.sections.some((s) => s.goals?.includes(f.goal_id))).map((t) => t.id);
-        notes.push({ finding_id: f.id, kind: f.kind, templates: shownIn, text: `${goalById[f.goal_id].name} has no due date, so it shows progress without a forecast.` });
+        notes.push({ finding_id: f.id, kind: f.kind, templates: showsGoal(f.goal_id), text: `${goalById[f.goal_id].name} has no due date, so it shows progress without a forecast.` });
       }
     }
-    return notes;
+    for (const g of goalFigs) {
+      if (g.shown_status === 'Not shown') {
+        notes.push({ finding_id: `withheld-${g.id}`, kind: 'goal_status_withheld', templates: showsGoal(g.id), text: `${g.name}: fewer than 5 so far, so its status and forecast aren't shown. Either one would say how many.` });
+      }
+    }
+    return notes.filter((n) => n.templates.length);
   }
 
   // ---------- one period, one state ----------
@@ -385,13 +406,14 @@ export function computeReference({ org, participants, engagements, checkins, goa
       confidence_improved: { improved: m.improved, checked_in: m.checked_in, ...rateFigure(m.improved, m.checked_in, 'No check-ins in this period') },
     };
     const byGroup = org.groups.map((g) => ({ g, gm: measure(period.start, period.end, st, g.id) }));
+    const goalFigs = goals.map((g) => goalFigure(g, period.end, st));
     return {
       metrics,
       attendance_rate_by_group: byGroup.map(({ g, gm }) => ({ group_id: g.id, attended: gm.attended, offered: gm.offered, ...rateFigure(gm.attended, gm.offered, `No sessions in ${period.short}`) })),
       retention_by_group: byGroup.map(({ g, gm }) => ({ group_id: g.id, retained: gm.retained, enrolled: gm.enrolled_any, ...rateFigure(gm.retained, gm.enrolled_any, `No participants in ${period.short}`) })),
-      participants_by_age_range: ageBreakdown(m.served, st),
-      goals: goals.map((g) => goalFigure(g, period.end, st)),
-      data_notes: dataNotes(period, st, findings),
+      participants_by_age_range: ageBreakdown(m.served),
+      goals: goalFigs,
+      data_notes: dataNotes(period, st, findings, goalFigs),
       raw: { attendance_records: m.attendance_records_raw, attendance_records_kept: m.attendance_records_kept },
     };
   }
@@ -399,13 +421,14 @@ export function computeReference({ org, participants, engagements, checkins, goa
   // ---------- narrative slots ----------
   function renderSlot(slot, kind, r, period) {
     if (kind === 'text') return period.long;
-    const g = slot.match(/^g(\d)_(value|target|status)$/);
+    const g = slot.match(/^g(\d)_(target|due|status)$/);
     const goal = g && r.goals.find((x) => x.id === `G${g[1]}`);
-    if (kind === 'status') return STATUS_WORDS[goal.status];
-    const fig = g ? (g[2] === 'value' ? { value: goal.value, display: goal.display } : { value: goal.target, display: goal.target_display }) : r.metrics[slot];
+    if (kind === 'status') return STATUS_WORDS[goal.shown_status];
+    if (kind === 'date') return goal.due_date ? fmtLongDate(goal.due_date) : 'no due date';
+    const fig = g ? { value: goal.target, display: goal.target_display } : r.metrics[slot];
     if (fig.value === null) return fig.display;
     switch (kind) {
-      case 'people': return fig.value >= 1 && fig.value <= 4 ? 'fewer than 5' : commas(fig.value);
+      case 'people': return fig.value === 0 ? 'no' : fig.value <= 4 ? 'fewer than 5' : commas(fig.value);
       case 'count': return commas(fig.value);
       case 'hours': return fmtCents(cents(fig.value));
       case 'percent': return fig.display;
@@ -458,13 +481,14 @@ function checkSpec(data, planted, findings, results) {
     if (s.G2.status !== 'On track' || !(s.G2.forecast / s.G2.target >= 1.05 && s.G2.forecast / s.G2.target <= 1.1)) errs.push(`${st}: G2 ${s.G2.status} ${s.G2.forecast}`);
     if (s.G3.status !== 'Behind' || !(s.G3.forecast / s.G3.target >= 0.83 && s.G3.forecast / s.G3.target <= 0.87)) errs.push(`${st}: G3 ${s.G3.status} ${s.G3.forecast}`);
     if (s.G4.status !== 'No due date') errs.push(`${st}: G4 ${s.G4.status}`);
-    const small = r.participants_by_age_range.cells.filter((c) => c.hidden === 'small');
-    if (small.length !== 1 || small[0].age_range !== '19-24') errs.push(`${st}: age suppression should fire once, on 19-24`);
-    if (!r.participants_by_age_range.cells.some((c) => c.hidden === 'secondary')) errs.push(`${st}: secondary suppression should fire`);
+    if (r.participants_by_age_range.cells.map((c) => c.age_range).join() !== '10-12,13-15,16-24') errs.push(`${st}: 19-24 should be combined with 16-18`);
   }
   for (const p of PERIODS) {
-    const c = results[p.id].none_answered.metrics.participants_checked_in.value;
+    const r = results[p.id].none_answered;
+    const c = r.metrics.participants_checked_in.value;
     if (c < 5) errs.push(`${p.id}: only ${c} participants with a check-in`);
+    if (c >= r.metrics.participants_served.value) errs.push(`${p.id}: everyone served has a check-in; some should have none`);
+    if (r.participants_by_age_range.cells.some((x) => x.value >= 1 && x.value <= 4)) errs.push(`${p.id}: an age band shows 1 to 4 people`);
   }
   const wlAug = results.aug.none_answered.attendance_rate_by_group.find((g) => g.group_id === 'weekend-leaders');
   if (wlAug.value !== null || wlAug.display !== 'No sessions in Aug') errs.push('Weekend Leaders should show No sessions in Aug');
@@ -509,7 +533,7 @@ function main() {
   console.log('figures.json written. Jul to Sep, none answered vs all answered:');
   for (const k of Object.keys(q.none_answered.metrics)) console.log(`  ${k}: ${q.none_answered.metrics[k].display} | ${q.all_answered.metrics[k].display}`);
   console.log('  goals:', q.none_answered.goals.map((g) => `${g.id} ${g.display}/${g.target_display} ${g.status}${g.forecast_line ? ' (' + g.forecast_line + ')' : ''}`).join('; '));
-  console.log('  age:', q.none_answered.participants_by_age_range.cells.map((c) => `${c.age_range}=${c.value}->${c.display}`).join(', '));
+  console.log('  age:', PERIODS.map((p) => `${p.id} ` + results[p.id].none_answered.participants_by_age_range.cells.map((c) => `${c.age_range}=${c.display}`).join(' ')).join('; '));
   console.log('  attendance by group:', q.none_answered.attendance_rate_by_group.map((g) => `${g.group_id} ${g.display}`).join(', '));
   console.log('  retention by group:', q.none_answered.retention_by_group.map((g) => `${g.group_id} ${g.display}`).join(', '));
 }

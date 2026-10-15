@@ -41,9 +41,9 @@ beforeAll(async () => {
       ${rows(sample.groups.map((g) => `(${uid('group', g.id)}, ${ORG}, ${WS}, ${q(g.name)}, ${g.hours})`))};
     insert into participants (id, organization_id, group_id, display_name, age_range, confidence_intake, join_date, exit_date) values
       ${rows(sample.participants.map((p) => `(${uid('p', p.id)}, ${ORG}, ${uid('group', p.group_id)}, ${q(p.display_name)}, ${q(p.age_range)}, ${p.confidence_intake ?? 'null'}, ${q(p.join_date)}, ${p.exit_date ? q(p.exit_date) : 'null'})`))};
-    -- created_at follows the record ids, so "the first record logged" means the same thing here and in the app.
-    insert into engagements (id, organization_id, group_id, participant_id, activity_type, engaged_on, units, created_at) values
-      ${rows([...sample.engagements].sort((a, b) => a.id.localeCompare(b.id)).map((e, i) => `(${uid('e', e.id)}, ${ORG}, ${uid('group', e.group_id)}, ${uid('p', e.participant_id)}, ${q(e.activity_type)}, ${q(e.date)}, ${e.units}, timestamptz '2026-10-01 00:00:00+00' + interval '${i} seconds')`))};
+    -- One insert, so every row gets the same created_at. Which copy of a duplicate counts can't depend on it, or on ids.
+    insert into engagements (id, organization_id, group_id, participant_id, activity_type, engaged_on, units) values
+      ${rows(sample.engagements.map((e) => `(${uid('e', e.id)}, ${ORG}, ${uid('group', e.group_id)}, ${uid('p', e.participant_id)}, ${q(e.activity_type)}, ${q(e.date)}, ${e.units})`))};
     insert into checkins (id, organization_id, participant_id, checked_on, confidence) values
       ${rows(sample.checkins.map((c) => `(${uid('c', c.id)}, ${ORG}, ${uid('p', c.participant_id)}, ${q(c.date)}, ${c.confidence})`))};
     insert into report_periods (id, workstream_id, label, starts_on, ends_on) values
@@ -129,11 +129,21 @@ describe('program_rollup view matches the app', () => {
     await answerAll();
     await compare(ALL);
   });
+  // Changed below, and kept for the tests after.
+  const units: Record<string, number> = { E0106: 0.5, E0001: 1.25 };
+  const changed: Dataset = { ...sample, engagements: sample.engagements.map((e) => (e.id in units ? { ...e, units: units[e.id] } : e)) };
   it('when a duplicate has different units, and units are not whole half hours', async () => {
-    // The later copy of the duplicate says 0.5 hours. Both sides keep the first record logged.
-    const units: Record<string, number> = { E0106: 0.5, E0001: 1.25 };
+    // The second copy of the duplicate says 0.5 hours. Both sides count the copy with fewer hours.
     for (const [id, u] of Object.entries(units)) await db.exec(`update engagements set units = ${u} where id = ${uid('e', id)}`);
-    const ds: Dataset = { ...sample, engagements: sample.engagements.map((e) => (e.id in units ? { ...e, units: units[e.id] } : e)) };
-    await compare(ALL, ds);
+    await compare(ALL, changed);
+  });
+  it('when someone has two check-ins on the same day, saved at the same moment', async () => {
+    // Codex's case: same day, same created_at, ids that sort differently here and in the app.
+    const p02 = sample.checkins.filter((c) => c.participant_id === 'P02').at(-1)!;
+    const tie = { id: 'C999', date: p02.date, participant_id: 'P02', confidence: p02.confidence - 1 };
+    expect(tie.confidence).toBeGreaterThanOrEqual(1);
+    await db.exec(`insert into checkins (id, organization_id, participant_id, checked_on, confidence, created_at)
+      values (${uid('c', tie.id)}, ${ORG}, ${uid('p', tie.participant_id)}, ${q(tie.date)}, ${tie.confidence}, (select created_at from checkins where id = ${uid('c', p02.id)}))`);
+    await compare(ALL, { ...changed, checkins: [...sample.checkins, tie] });
   });
 });

@@ -5,7 +5,7 @@
 import { ATTENDANCES, SUBMISSIONS, type Checkin, type Dataset, type Engagement, type Goal, type Participant } from './data';
 import type { State } from './findings';
 import { commas, daysBetween, fmtCount, fmtHours, fmtPercent, fmtShortDate, halfUp, toHundredths } from './format';
-import { peopleForFunder } from './privacy';
+import { isSmall, peopleForFunder } from './privacy';
 
 export interface Seat {
   participantId: string;
@@ -35,9 +35,9 @@ export interface Measure {
   start: string;
   end: string;
   groupId: string | null;
-  /** Attendances records in range, one per person per session: the first logged (lowest record id). */
+  /** Attendances records in range, one per person per session. Copies that disagree count at the fewest hours. */
   attendance: Engagement[];
-  /** Later records for a person already logged at that session. Not counted. */
+  /** The other copies when a person is logged twice at one session. Not counted. */
   duplicates: Engagement[];
   submissions: Engagement[];
   sessions: SessionRow[];
@@ -70,11 +70,14 @@ export function measure(ds: Dataset, st: State, start: string, end: string, grou
   for (const e of ds.engagements) {
     if (!inRange(e.date) || !inGroup(e.group_id)) continue;
     if (e.activity_type === ATTENDANCES) {
-      // The same person twice at one session counts once: the first record logged.
+      // The same person twice at one session counts once. If the copies
+      // disagree, the one with fewer hours counts, so a mistake can't add
+      // hours. Nothing here depends on record ids or when a record was saved,
+      // so SQL picks the same copy. (Equal copies: the lower id, for display.)
       const pair = `${e.participant_id}|${e.group_id}|${e.date}`;
-      const first = kept.get(pair);
-      if (first) {
-        if (e.id < first.id) { duplicates.push(first); kept.set(pair, e); } else duplicates.push(e);
+      const prev = kept.get(pair);
+      if (prev) {
+        if (e.units < prev.units || (e.units === prev.units && e.id < prev.id)) { duplicates.push(prev); kept.set(pair, e); } else duplicates.push(e);
         continue;
       }
       kept.set(pair, e);
@@ -105,11 +108,13 @@ export function measure(ds: Dataset, st: State, start: string, end: string, grou
 
   const enrolledAny = people.filter((p) => p.join_date <= end && (p.exit_date === null || p.exit_date >= start));
 
+  // The latest check-in in range. Two on the same day: the lower score
+  // counts, so a double entry can't make an outcome look better.
   const latest = new Map<string, Checkin>();
   for (const c of ds.checkins) {
     if (!inRange(c.date)) continue;
     const prev = latest.get(c.participant_id);
-    if (!prev || c.date > prev.date || (c.date === prev.date && c.id > prev.id)) latest.set(c.participant_id, c);
+    if (!prev || c.date > prev.date || (c.date === prev.date && c.confidence < prev.confidence)) latest.set(c.participant_id, c);
   }
   const checkins: CheckinRow[] = people
     .filter((p) => p.confidence_intake !== null && latest.has(p.id))
@@ -142,6 +147,8 @@ export function measure(ds: Dataset, st: State, start: string, end: string, grou
 // ---------- goals ----------
 
 export type GoalStatus = 'Met' | 'On track' | 'Behind' | 'Past due' | 'No due date';
+/** What funder copy shows for a status: the status, or "Not shown" when it would give a count of 1 to 4 people away. */
+export type ShownStatus = GoalStatus | 'Not shown';
 
 export interface GoalFigure {
   id: string;
@@ -156,12 +163,15 @@ export interface GoalFigure {
   target: number;
   targetDisplay: string;
   dueDate: string | null;
+  /** The true status, as staff see it. */
   status: GoalStatus;
+  /** Funder copy. A people goal at 1 to 4 shows "<5" and neither status nor forecast, since both are worked out from the count and could give it away. */
+  shownStatus: ShownStatus;
   elapsedDays: number;
   windowDays: number | null;
   /** Unrounded forecast for count goals that are On track or Behind. */
   forecast: number | null;
-  /** Funder display (a people forecast follows the "<5" rule). */
+  /** Funder display. Null when there is no forecast, or when it's withheld with the status. */
   forecastDisplay: string | null;
   forecastStaffDisplay: string | null;
   forecastLine: string | null;
@@ -181,7 +191,6 @@ export function goalFigure(ds: Dataset, st: State, goal: Goal, asOf: string): Go
   let n = 0;
   let scale = 1;
   let forecastOk: boolean | null = null;
-  let forecastDisplay: string | null = null;
   let forecastStaffDisplay: string | null = null;
 
   if (goal.metric === 'attendance_rate') {
@@ -201,9 +210,7 @@ export function goalFigure(ds: Dataset, st: State, goal: Goal, asOf: string): Go
     met = n >= goal.target * scale;
     if (window !== null) {
       forecastOk = n * window >= goal.target * scale * elapsed;
-      const rounded = halfUp(n * window, scale * elapsed);
-      forecastStaffDisplay = commas(rounded);
-      forecastDisplay = goal.metric === 'new_participants' ? peopleForFunder(rounded) : forecastStaffDisplay;
+      forecastStaffDisplay = commas(halfUp(n * window, scale * elapsed));
     }
   }
 
@@ -216,6 +223,9 @@ export function goalFigure(ds: Dataset, st: State, goal: Goal, asOf: string): Go
   else status = forecastOk ? 'On track' : 'Behind';
 
   const showForecast = status === 'On track' || status === 'Behind';
+  // "<5" with "On track", or with a forecast of 6 halfway through, would say how many.
+  const withheld = goal.metric === 'new_participants' && isSmall(n);
+  const forecastDisplay = showForecast && !withheld ? forecastStaffDisplay : null;
   const targetDisplay = goal.metric === 'attendance_rate' ? `${Math.round(goal.target * 100)}%` : commas(goal.target);
   return {
     id: goal.id,
@@ -229,12 +239,13 @@ export function goalFigure(ds: Dataset, st: State, goal: Goal, asOf: string): Go
     targetDisplay,
     dueDate: goal.due_date,
     status,
+    shownStatus: withheld ? 'Not shown' : status,
     elapsedDays: elapsed,
     windowDays: window,
     forecast: showForecast && window ? (n * window) / (scale * elapsed) : null,
-    forecastDisplay: showForecast ? forecastDisplay : null,
+    forecastDisplay,
     forecastStaffDisplay: showForecast ? forecastStaffDisplay : null,
-    forecastLine: showForecast && goal.due_date ? `Forecast by ${fmtShortDate(goal.due_date)}: ${forecastDisplay} of ${targetDisplay}` : null,
+    forecastLine: forecastDisplay && goal.due_date ? `Forecast by ${fmtShortDate(goal.due_date)}: ${forecastDisplay} of ${targetDisplay}` : null,
     basis: { n, scale, attended: m.attended, offered: m.offered },
     measure: m,
   };

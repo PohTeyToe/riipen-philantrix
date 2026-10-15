@@ -174,29 +174,29 @@
           "kind": "percent",
           "meaning": "Share of seats filled at sessions with attendance logged. Each enrolled group member is one seat at each of those sessions. Sessions that ran without attendance logged are left out."
         },
-        "g1_value": {
-          "kind": "people",
-          "meaning": "New participants enrolled since the goal started (goal: \"Enroll 8 new participants\")."
-        },
         "g1_target": {
           "kind": "count",
-          "meaning": "Target for the new participants goal."
+          "meaning": "Target for the new participants goal (goal: \"Enroll 8 new participants\"): a number of new participants."
+        },
+        "g1_due": {
+          "kind": "date",
+          "meaning": "Due date of the new participants goal, written out, for example \"December 18, 2026\"."
         },
         "g1_status": {
           "kind": "status",
-          "meaning": "Status of the new participants goal, as words that finish \"the goal is\": met, on track, behind or past due. The engine fills it in."
-        },
-        "g2_value": {
-          "kind": "hours",
-          "meaning": "Participant hours since the goal started (goal: \"Participant hours\")."
+          "meaning": "Status of the new participants goal, as words that finish \"the goal is\": met, on track, behind or past due. For a goal that counts people, it can also read \"not rated while it counts fewer than 5 people\". The engine fills it in."
         },
         "g2_target": {
           "kind": "hours",
-          "meaning": "Target for the participant hours goal."
+          "meaning": "Target for the participant hours goal: a number of hours."
+        },
+        "g2_due": {
+          "kind": "date",
+          "meaning": "Due date of the participant hours goal, written out, for example \"December 18, 2026\"."
         },
         "g2_status": {
           "kind": "status",
-          "meaning": "Status of the participant hours goal, as words that finish \"the goal is\": met, on track, behind or past due. The engine fills it in."
+          "meaning": "Status of the participant hours goal, as words that finish \"the goal is\": met, on track, behind or past due. For a goal that counts people, it can also read \"not rated while it counts fewer than 5 people\". The engine fills it in."
         }
       }
     },
@@ -276,37 +276,29 @@
           "kind": "people",
           "meaning": "Participants who attended at least one session in the period."
         },
-        "g2_value": {
-          "kind": "hours",
-          "meaning": "Participant hours since the goal started (goal: \"Participant hours\")."
-        },
         "g2_target": {
           "kind": "hours",
-          "meaning": "Target for the participant hours goal."
+          "meaning": "Target for the participant hours goal: a number of hours."
+        },
+        "g2_due": {
+          "kind": "date",
+          "meaning": "Due date of the participant hours goal, written out, for example \"December 18, 2026\"."
         },
         "g2_status": {
           "kind": "status",
-          "meaning": "Status of the participant hours goal, as words that finish \"the goal is\": met, on track, behind or past due. The engine fills it in."
-        },
-        "g3_value": {
-          "kind": "count",
-          "meaning": "Assignment submissions since the goal started (goal: \"Assignment submissions\")."
+          "meaning": "Status of the participant hours goal, as words that finish \"the goal is\": met, on track, behind or past due. For a goal that counts people, it can also read \"not rated while it counts fewer than 5 people\". The engine fills it in."
         },
         "g3_target": {
           "kind": "count",
-          "meaning": "Target for the assignment submissions goal."
+          "meaning": "Target for the assignment submissions goal: a number of assignments."
+        },
+        "g3_due": {
+          "kind": "date",
+          "meaning": "Due date of the assignment submissions goal, written out, for example \"December 18, 2026\"."
         },
         "g3_status": {
           "kind": "status",
-          "meaning": "Status of the assignment submissions goal, as words that finish \"the goal is\": met, on track, behind or past due. The engine fills it in."
-        },
-        "g4_value": {
-          "kind": "percent",
-          "meaning": "Attendance rate since the goal started (goal: \"Attendance rate of 80%\")."
-        },
-        "g4_target": {
-          "kind": "percent",
-          "meaning": "Target for the attendance rate goal."
+          "meaning": "Status of the assignment submissions goal, as words that finish \"the goal is\": met, on track, behind or past due. For a goal that counts people, it can also read \"not rated while it counts fewer than 5 people\". The engine fills it in."
         }
       }
     }
@@ -360,15 +352,15 @@
             "display": "4.1"
           },
           "participants_checked_in": {
-            "value": 40,
-            "display": "40"
+            "value": 37,
+            "display": "37"
           },
           "confidence_improved": {
-            "improved": 29,
-            "checked_in": 40,
-            "numerator": 29,
-            "denominator": 40,
-            "value": 0.725,
+            "improved": 27,
+            "checked_in": 37,
+            "numerator": 27,
+            "denominator": 37,
+            "value": 0.7297297297297297,
             "display": "73%"
           }
         },
@@ -438,30 +430,31 @@
           "cells": [
             {
               "age_range": "10-12",
+              "ranges": [
+                "10-12"
+              ],
               "value": 11,
-              "hidden": "secondary",
-              "display": "hidden"
+              "display": "11"
             },
             {
               "age_range": "13-15",
+              "ranges": [
+                "13-15"
+              ],
               "value": 14,
-              "hidden": null,
               "display": "14"
             },
             {
-              "age_range": "16-18",
-              "value": 12,
-              "hidden": null,
-              "display": "12"
-            },
-            {
-              "age_range": "19-24",
-              "value": 3,
-              "hidden": "small",
-              "display": "<5"
+              "age_range": "16-24",
+              "ranges": [
+                "16-18",
+                "19-24"
+              ],
+              "value": 15,
+              "display": "15"
             }
           ],
-          "footnote": "Hidden so a small group can't be worked out from the total."
+          "footnote": "Age ranges are combined where one would show 1 to 4 people in this quarter or any month of it."
         },
         "goals": [
           {
@@ -475,6 +468,7 @@
             "target_display": "8",
             "due_date": "2026-08-31",
             "status": "Past due",
+            "shown_status": "Past due",
             "elapsed_days": 92,
             "window_days": 62,
             "forecast": null,
@@ -492,6 +486,7 @@
             "target_display": "1,050",
             "due_date": "2026-12-18",
             "status": "On track",
+            "shown_status": "On track",
             "elapsed_days": 92,
             "window_days": 171,
             "forecast": 1142.1684782608695,
@@ -509,6 +504,7 @@
             "target_display": "360",
             "due_date": "2026-12-18",
             "status": "Behind",
+            "shown_status": "Behind",
             "elapsed_days": 92,
             "window_days": 171,
             "forecast": 302.9673913043478,
@@ -526,6 +522,7 @@
             "target_display": "80%",
             "due_date": null,
             "status": "No due date",
+            "shown_status": "No due date",
             "elapsed_days": 92,
             "window_days": null,
             "forecast": null,
@@ -595,15 +592,15 @@
             "display": "4.1"
           },
           "participants_checked_in": {
-            "value": 40,
-            "display": "40"
+            "value": 37,
+            "display": "37"
           },
           "confidence_improved": {
-            "improved": 29,
-            "checked_in": 40,
-            "numerator": 29,
-            "denominator": 40,
-            "value": 0.725,
+            "improved": 27,
+            "checked_in": 37,
+            "numerator": 27,
+            "denominator": 37,
+            "value": 0.7297297297297297,
             "display": "73%"
           }
         },
@@ -673,30 +670,31 @@
           "cells": [
             {
               "age_range": "10-12",
+              "ranges": [
+                "10-12"
+              ],
               "value": 11,
-              "hidden": "secondary",
-              "display": "hidden"
+              "display": "11"
             },
             {
               "age_range": "13-15",
+              "ranges": [
+                "13-15"
+              ],
               "value": 14,
-              "hidden": null,
               "display": "14"
             },
             {
-              "age_range": "16-18",
-              "value": 12,
-              "hidden": null,
-              "display": "12"
-            },
-            {
-              "age_range": "19-24",
-              "value": 3,
-              "hidden": "small",
-              "display": "<5"
+              "age_range": "16-24",
+              "ranges": [
+                "16-18",
+                "19-24"
+              ],
+              "value": 15,
+              "display": "15"
             }
           ],
-          "footnote": "Hidden so a small group can't be worked out from the total."
+          "footnote": "Age ranges are combined where one would show 1 to 4 people in this quarter or any month of it."
         },
         "goals": [
           {
@@ -710,6 +708,7 @@
             "target_display": "8",
             "due_date": "2026-08-31",
             "status": "Past due",
+            "shown_status": "Past due",
             "elapsed_days": 92,
             "window_days": 62,
             "forecast": null,
@@ -727,6 +726,7 @@
             "target_display": "1,050",
             "due_date": "2026-12-18",
             "status": "On track",
+            "shown_status": "On track",
             "elapsed_days": 92,
             "window_days": 171,
             "forecast": 1142.1684782608695,
@@ -744,6 +744,7 @@
             "target_display": "360",
             "due_date": "2026-12-18",
             "status": "Behind",
+            "shown_status": "Behind",
             "elapsed_days": 92,
             "window_days": 171,
             "forecast": 302.9673913043478,
@@ -761,6 +762,7 @@
             "target_display": "80%",
             "due_date": null,
             "status": "No due date",
+            "shown_status": "No due date",
             "elapsed_days": 92,
             "window_days": null,
             "forecast": null,
@@ -773,28 +775,49 @@
             "finding_id": "gap-coding-club-2026-07-23",
             "kind": "session_ran_not_recorded",
             "templates": [
-              "city-youth-grant",
-              "foundation-outcomes"
+              "city-youth-grant"
             ],
             "text": "Coding Club, Thu Jul 23: ran, but attendance wasn't recorded. Counted as delivered and left out of the attendance rate."
+          },
+          {
+            "finding_id": "gap-coding-club-2026-07-23",
+            "kind": "session_ran_not_recorded",
+            "templates": [
+              "foundation-outcomes"
+            ],
+            "text": "Coding Club, Thu Jul 23: ran, but attendance wasn't recorded. Left out of the attendance rate."
           },
           {
             "finding_id": "gap-mentor-circle-2026-09-14",
             "kind": "session_ran_not_recorded",
             "templates": [
-              "city-youth-grant",
-              "foundation-outcomes"
+              "city-youth-grant"
             ],
             "text": "Mentor Circle, Mon Sep 14: ran, but attendance wasn't recorded. Counted as delivered and left out of the attendance rate."
+          },
+          {
+            "finding_id": "gap-mentor-circle-2026-09-14",
+            "kind": "session_ran_not_recorded",
+            "templates": [
+              "foundation-outcomes"
+            ],
+            "text": "Mentor Circle, Mon Sep 14: ran, but attendance wasn't recorded. Left out of the attendance rate."
           },
           {
             "finding_id": "gap-weekend-leaders-2026-09-19",
             "kind": "session_ran_not_recorded",
             "templates": [
-              "city-youth-grant",
-              "foundation-outcomes"
+              "city-youth-grant"
             ],
             "text": "Weekend Leaders, Sat Sep 19: ran, but attendance wasn't recorded. Counted as delivered and left out of the attendance rate."
+          },
+          {
+            "finding_id": "gap-weekend-leaders-2026-09-19",
+            "kind": "session_ran_not_recorded",
+            "templates": [
+              "foundation-outcomes"
+            ],
+            "text": "Weekend Leaders, Sat Sep 19: ran, but attendance wasn't recorded. Left out of the attendance rate."
           },
           {
             "finding_id": "exit-by-answer",
@@ -868,16 +891,16 @@
             "display": "1.7"
           },
           "participants_checked_in": {
-            "value": 34,
-            "display": "34"
+            "value": 31,
+            "display": "31"
           },
           "confidence_improved": {
             "improved": 15,
-            "checked_in": 34,
+            "checked_in": 31,
             "numerator": 15,
-            "denominator": 34,
-            "value": 0.4411764705882353,
-            "display": "44%"
+            "denominator": 31,
+            "value": 0.4838709677419355,
+            "display": "48%"
           }
         },
         "attendance_rate_by_group": [
@@ -946,30 +969,31 @@
           "cells": [
             {
               "age_range": "10-12",
+              "ranges": [
+                "10-12"
+              ],
               "value": 8,
-              "hidden": "secondary",
-              "display": "hidden"
+              "display": "8"
             },
             {
               "age_range": "13-15",
+              "ranges": [
+                "13-15"
+              ],
               "value": 12,
-              "hidden": null,
               "display": "12"
             },
             {
-              "age_range": "16-18",
-              "value": 11,
-              "hidden": null,
-              "display": "11"
-            },
-            {
-              "age_range": "19-24",
-              "value": 3,
-              "hidden": "small",
-              "display": "<5"
+              "age_range": "16-24",
+              "ranges": [
+                "16-18",
+                "19-24"
+              ],
+              "value": 14,
+              "display": "14"
             }
           ],
-          "footnote": "Hidden so a small group can't be worked out from the total."
+          "footnote": "Age ranges are combined where one would show 1 to 4 people in this quarter or any month of it."
         },
         "goals": [
           {
@@ -983,6 +1007,7 @@
             "target_display": "8",
             "due_date": "2026-08-31",
             "status": "Behind",
+            "shown_status": "Behind",
             "elapsed_days": 31,
             "window_days": 62,
             "forecast": 0,
@@ -1000,6 +1025,7 @@
             "target_display": "1,050",
             "due_date": "2026-12-18",
             "status": "On track",
+            "shown_status": "On track",
             "elapsed_days": 31,
             "window_days": 171,
             "forecast": 1197,
@@ -1017,6 +1043,7 @@
             "target_display": "360",
             "due_date": "2026-12-18",
             "status": "Behind",
+            "shown_status": "Behind",
             "elapsed_days": 31,
             "window_days": 171,
             "forecast": 325.4516129032258,
@@ -1034,6 +1061,7 @@
             "target_display": "80%",
             "due_date": null,
             "status": "No due date",
+            "shown_status": "No due date",
             "elapsed_days": 31,
             "window_days": null,
             "forecast": null,
@@ -1103,16 +1131,16 @@
             "display": "1.7"
           },
           "participants_checked_in": {
-            "value": 34,
-            "display": "34"
+            "value": 31,
+            "display": "31"
           },
           "confidence_improved": {
             "improved": 15,
-            "checked_in": 34,
+            "checked_in": 31,
             "numerator": 15,
-            "denominator": 34,
-            "value": 0.4411764705882353,
-            "display": "44%"
+            "denominator": 31,
+            "value": 0.4838709677419355,
+            "display": "48%"
           }
         },
         "attendance_rate_by_group": [
@@ -1181,30 +1209,31 @@
           "cells": [
             {
               "age_range": "10-12",
+              "ranges": [
+                "10-12"
+              ],
               "value": 8,
-              "hidden": "secondary",
-              "display": "hidden"
+              "display": "8"
             },
             {
               "age_range": "13-15",
+              "ranges": [
+                "13-15"
+              ],
               "value": 12,
-              "hidden": null,
               "display": "12"
             },
             {
-              "age_range": "16-18",
-              "value": 11,
-              "hidden": null,
-              "display": "11"
-            },
-            {
-              "age_range": "19-24",
-              "value": 3,
-              "hidden": "small",
-              "display": "<5"
+              "age_range": "16-24",
+              "ranges": [
+                "16-18",
+                "19-24"
+              ],
+              "value": 14,
+              "display": "14"
             }
           ],
-          "footnote": "Hidden so a small group can't be worked out from the total."
+          "footnote": "Age ranges are combined where one would show 1 to 4 people in this quarter or any month of it."
         },
         "goals": [
           {
@@ -1218,6 +1247,7 @@
             "target_display": "8",
             "due_date": "2026-08-31",
             "status": "Behind",
+            "shown_status": "Behind",
             "elapsed_days": 31,
             "window_days": 62,
             "forecast": 0,
@@ -1235,6 +1265,7 @@
             "target_display": "1,050",
             "due_date": "2026-12-18",
             "status": "On track",
+            "shown_status": "On track",
             "elapsed_days": 31,
             "window_days": 171,
             "forecast": 1197,
@@ -1252,6 +1283,7 @@
             "target_display": "360",
             "due_date": "2026-12-18",
             "status": "Behind",
+            "shown_status": "Behind",
             "elapsed_days": 31,
             "window_days": 171,
             "forecast": 325.4516129032258,
@@ -1269,6 +1301,7 @@
             "target_display": "80%",
             "due_date": null,
             "status": "No due date",
+            "shown_status": "No due date",
             "elapsed_days": 31,
             "window_days": null,
             "forecast": null,
@@ -1281,10 +1314,17 @@
             "finding_id": "gap-coding-club-2026-07-23",
             "kind": "session_ran_not_recorded",
             "templates": [
-              "city-youth-grant",
-              "foundation-outcomes"
+              "city-youth-grant"
             ],
             "text": "Coding Club, Thu Jul 23: ran, but attendance wasn't recorded. Counted as delivered and left out of the attendance rate."
+          },
+          {
+            "finding_id": "gap-coding-club-2026-07-23",
+            "kind": "session_ran_not_recorded",
+            "templates": [
+              "foundation-outcomes"
+            ],
+            "text": "Coding Club, Thu Jul 23: ran, but attendance wasn't recorded. Left out of the attendance rate."
           },
           {
             "finding_id": "goal-no-due-G4",
@@ -1349,16 +1389,16 @@
             "display": "1.8"
           },
           "participants_checked_in": {
-            "value": 28,
-            "display": "28"
+            "value": 25,
+            "display": "25"
           },
           "confidence_improved": {
-            "improved": 14,
-            "checked_in": 28,
-            "numerator": 14,
-            "denominator": 28,
-            "value": 0.5,
-            "display": "50%"
+            "improved": 13,
+            "checked_in": 25,
+            "numerator": 13,
+            "denominator": 25,
+            "value": 0.52,
+            "display": "52%"
           }
         },
         "attendance_rate_by_group": [
@@ -1427,30 +1467,31 @@
           "cells": [
             {
               "age_range": "10-12",
+              "ranges": [
+                "10-12"
+              ],
               "value": 11,
-              "hidden": null,
               "display": "11"
             },
             {
               "age_range": "13-15",
+              "ranges": [
+                "13-15"
+              ],
               "value": 12,
-              "hidden": null,
               "display": "12"
             },
             {
-              "age_range": "16-18",
+              "age_range": "16-24",
+              "ranges": [
+                "16-18",
+                "19-24"
+              ],
               "value": 5,
-              "hidden": null,
               "display": "5"
-            },
-            {
-              "age_range": "19-24",
-              "value": 0,
-              "hidden": null,
-              "display": "0"
             }
           ],
-          "footnote": null
+          "footnote": "Age ranges are combined where one would show 1 to 4 people in this quarter or any month of it."
         },
         "goals": [
           {
@@ -1464,6 +1505,7 @@
             "target_display": "8",
             "due_date": "2026-08-31",
             "status": "Past due",
+            "shown_status": "Past due",
             "elapsed_days": 62,
             "window_days": 62,
             "forecast": null,
@@ -1481,6 +1523,7 @@
             "target_display": "1,050",
             "due_date": "2026-12-18",
             "status": "On track",
+            "shown_status": "On track",
             "elapsed_days": 62,
             "window_days": 171,
             "forecast": 1070.1290322580646,
@@ -1498,6 +1541,7 @@
             "target_display": "360",
             "due_date": "2026-12-18",
             "status": "Behind",
+            "shown_status": "Behind",
             "elapsed_days": 62,
             "window_days": 171,
             "forecast": 303.38709677419354,
@@ -1515,6 +1559,7 @@
             "target_display": "80%",
             "due_date": null,
             "status": "No due date",
+            "shown_status": "No due date",
             "elapsed_days": 62,
             "window_days": null,
             "forecast": null,
@@ -1584,16 +1629,16 @@
             "display": "1.8"
           },
           "participants_checked_in": {
-            "value": 28,
-            "display": "28"
+            "value": 25,
+            "display": "25"
           },
           "confidence_improved": {
-            "improved": 14,
-            "checked_in": 28,
-            "numerator": 14,
-            "denominator": 28,
-            "value": 0.5,
-            "display": "50%"
+            "improved": 13,
+            "checked_in": 25,
+            "numerator": 13,
+            "denominator": 25,
+            "value": 0.52,
+            "display": "52%"
           }
         },
         "attendance_rate_by_group": [
@@ -1662,30 +1707,31 @@
           "cells": [
             {
               "age_range": "10-12",
+              "ranges": [
+                "10-12"
+              ],
               "value": 11,
-              "hidden": null,
               "display": "11"
             },
             {
               "age_range": "13-15",
+              "ranges": [
+                "13-15"
+              ],
               "value": 12,
-              "hidden": null,
               "display": "12"
             },
             {
-              "age_range": "16-18",
+              "age_range": "16-24",
+              "ranges": [
+                "16-18",
+                "19-24"
+              ],
               "value": 5,
-              "hidden": null,
               "display": "5"
-            },
-            {
-              "age_range": "19-24",
-              "value": 0,
-              "hidden": null,
-              "display": "0"
             }
           ],
-          "footnote": null
+          "footnote": "Age ranges are combined where one would show 1 to 4 people in this quarter or any month of it."
         },
         "goals": [
           {
@@ -1699,6 +1745,7 @@
             "target_display": "8",
             "due_date": "2026-08-31",
             "status": "Past due",
+            "shown_status": "Past due",
             "elapsed_days": 62,
             "window_days": 62,
             "forecast": null,
@@ -1716,6 +1763,7 @@
             "target_display": "1,050",
             "due_date": "2026-12-18",
             "status": "On track",
+            "shown_status": "On track",
             "elapsed_days": 62,
             "window_days": 171,
             "forecast": 1070.1290322580646,
@@ -1733,6 +1781,7 @@
             "target_display": "360",
             "due_date": "2026-12-18",
             "status": "Behind",
+            "shown_status": "Behind",
             "elapsed_days": 62,
             "window_days": 171,
             "forecast": 303.38709677419354,
@@ -1750,6 +1799,7 @@
             "target_display": "80%",
             "due_date": null,
             "status": "No due date",
+            "shown_status": "No due date",
             "elapsed_days": 62,
             "window_days": null,
             "forecast": null,
@@ -1830,16 +1880,16 @@
             "display": "1.4"
           },
           "participants_checked_in": {
-            "value": 37,
-            "display": "37"
+            "value": 34,
+            "display": "34"
           },
           "confidence_improved": {
-            "improved": 27,
-            "checked_in": 37,
-            "numerator": 27,
-            "denominator": 37,
-            "value": 0.7297297297297297,
-            "display": "73%"
+            "improved": 25,
+            "checked_in": 34,
+            "numerator": 25,
+            "denominator": 34,
+            "value": 0.7352941176470589,
+            "display": "74%"
           }
         },
         "attendance_rate_by_group": [
@@ -1908,30 +1958,31 @@
           "cells": [
             {
               "age_range": "10-12",
+              "ranges": [
+                "10-12"
+              ],
               "value": 11,
-              "hidden": "secondary",
-              "display": "hidden"
-            },
-            {
-              "age_range": "13-15",
-              "value": 12,
-              "hidden": null,
-              "display": "12"
-            },
-            {
-              "age_range": "16-18",
-              "value": 11,
-              "hidden": null,
               "display": "11"
             },
             {
-              "age_range": "19-24",
-              "value": 3,
-              "hidden": "small",
-              "display": "<5"
+              "age_range": "13-15",
+              "ranges": [
+                "13-15"
+              ],
+              "value": 12,
+              "display": "12"
+            },
+            {
+              "age_range": "16-24",
+              "ranges": [
+                "16-18",
+                "19-24"
+              ],
+              "value": 14,
+              "display": "14"
             }
           ],
-          "footnote": "Hidden so a small group can't be worked out from the total."
+          "footnote": "Age ranges are combined where one would show 1 to 4 people in this quarter or any month of it."
         },
         "goals": [
           {
@@ -1945,6 +1996,7 @@
             "target_display": "8",
             "due_date": "2026-08-31",
             "status": "Past due",
+            "shown_status": "Past due",
             "elapsed_days": 92,
             "window_days": 62,
             "forecast": null,
@@ -1962,6 +2014,7 @@
             "target_display": "1,050",
             "due_date": "2026-12-18",
             "status": "On track",
+            "shown_status": "On track",
             "elapsed_days": 92,
             "window_days": 171,
             "forecast": 1142.1684782608695,
@@ -1979,6 +2032,7 @@
             "target_display": "360",
             "due_date": "2026-12-18",
             "status": "Behind",
+            "shown_status": "Behind",
             "elapsed_days": 92,
             "window_days": 171,
             "forecast": 302.9673913043478,
@@ -1996,6 +2050,7 @@
             "target_display": "80%",
             "due_date": null,
             "status": "No due date",
+            "shown_status": "No due date",
             "elapsed_days": 92,
             "window_days": null,
             "forecast": null,
@@ -2065,16 +2120,16 @@
             "display": "1.4"
           },
           "participants_checked_in": {
-            "value": 37,
-            "display": "37"
+            "value": 34,
+            "display": "34"
           },
           "confidence_improved": {
-            "improved": 27,
-            "checked_in": 37,
-            "numerator": 27,
-            "denominator": 37,
-            "value": 0.7297297297297297,
-            "display": "73%"
+            "improved": 25,
+            "checked_in": 34,
+            "numerator": 25,
+            "denominator": 34,
+            "value": 0.7352941176470589,
+            "display": "74%"
           }
         },
         "attendance_rate_by_group": [
@@ -2143,30 +2198,31 @@
           "cells": [
             {
               "age_range": "10-12",
+              "ranges": [
+                "10-12"
+              ],
               "value": 11,
-              "hidden": "secondary",
-              "display": "hidden"
-            },
-            {
-              "age_range": "13-15",
-              "value": 12,
-              "hidden": null,
-              "display": "12"
-            },
-            {
-              "age_range": "16-18",
-              "value": 11,
-              "hidden": null,
               "display": "11"
             },
             {
-              "age_range": "19-24",
-              "value": 3,
-              "hidden": "small",
-              "display": "<5"
+              "age_range": "13-15",
+              "ranges": [
+                "13-15"
+              ],
+              "value": 12,
+              "display": "12"
+            },
+            {
+              "age_range": "16-24",
+              "ranges": [
+                "16-18",
+                "19-24"
+              ],
+              "value": 14,
+              "display": "14"
             }
           ],
-          "footnote": "Hidden so a small group can't be worked out from the total."
+          "footnote": "Age ranges are combined where one would show 1 to 4 people in this quarter or any month of it."
         },
         "goals": [
           {
@@ -2180,6 +2236,7 @@
             "target_display": "8",
             "due_date": "2026-08-31",
             "status": "Past due",
+            "shown_status": "Past due",
             "elapsed_days": 92,
             "window_days": 62,
             "forecast": null,
@@ -2197,6 +2254,7 @@
             "target_display": "1,050",
             "due_date": "2026-12-18",
             "status": "On track",
+            "shown_status": "On track",
             "elapsed_days": 92,
             "window_days": 171,
             "forecast": 1142.1684782608695,
@@ -2214,6 +2272,7 @@
             "target_display": "360",
             "due_date": "2026-12-18",
             "status": "Behind",
+            "shown_status": "Behind",
             "elapsed_days": 92,
             "window_days": 171,
             "forecast": 302.9673913043478,
@@ -2231,6 +2290,7 @@
             "target_display": "80%",
             "due_date": null,
             "status": "No due date",
+            "shown_status": "No due date",
             "elapsed_days": 92,
             "window_days": null,
             "forecast": null,
@@ -2243,19 +2303,33 @@
             "finding_id": "gap-mentor-circle-2026-09-14",
             "kind": "session_ran_not_recorded",
             "templates": [
-              "city-youth-grant",
-              "foundation-outcomes"
+              "city-youth-grant"
             ],
             "text": "Mentor Circle, Mon Sep 14: ran, but attendance wasn't recorded. Counted as delivered and left out of the attendance rate."
+          },
+          {
+            "finding_id": "gap-mentor-circle-2026-09-14",
+            "kind": "session_ran_not_recorded",
+            "templates": [
+              "foundation-outcomes"
+            ],
+            "text": "Mentor Circle, Mon Sep 14: ran, but attendance wasn't recorded. Left out of the attendance rate."
           },
           {
             "finding_id": "gap-weekend-leaders-2026-09-19",
             "kind": "session_ran_not_recorded",
             "templates": [
-              "city-youth-grant",
-              "foundation-outcomes"
+              "city-youth-grant"
             ],
             "text": "Weekend Leaders, Sat Sep 19: ran, but attendance wasn't recorded. Counted as delivered and left out of the attendance rate."
+          },
+          {
+            "finding_id": "gap-weekend-leaders-2026-09-19",
+            "kind": "session_ran_not_recorded",
+            "templates": [
+              "foundation-outcomes"
+            ],
+            "text": "Weekend Leaders, Sat Sep 19: ran, but attendance wasn't recorded. Left out of the attendance rate."
           },
           {
             "finding_id": "exit-by-answer",
@@ -2292,11 +2366,11 @@
           "sessions_delivered": "42",
           "participant_hours": "615",
           "attendance_rate": "76%",
-          "g1_value": "6",
           "g1_target": "8",
+          "g1_due": "August 31, 2026",
           "g1_status": "past due",
-          "g2_value": "615",
           "g2_target": "1,050",
+          "g2_due": "December 18, 2026",
           "g2_status": "on track"
         },
         "all_answered": {
@@ -2306,11 +2380,11 @@
           "sessions_delivered": "45",
           "participant_hours": "615",
           "attendance_rate": "79%",
-          "g1_value": "6",
           "g1_target": "8",
+          "g1_due": "August 31, 2026",
           "g1_status": "past due",
-          "g2_value": "615",
           "g2_target": "1,050",
+          "g2_due": "December 18, 2026",
           "g2_status": "on track"
         }
       },
@@ -2318,29 +2392,29 @@
         "none_answered": {
           "period": "July 2026",
           "participants_served": "34",
-          "new_participants": "0",
+          "new_participants": "no",
           "sessions_delivered": "16",
           "participant_hours": "217",
           "attendance_rate": "77%",
-          "g1_value": "0",
           "g1_target": "8",
+          "g1_due": "August 31, 2026",
           "g1_status": "behind",
-          "g2_value": "217",
           "g2_target": "1,050",
+          "g2_due": "December 18, 2026",
           "g2_status": "on track"
         },
         "all_answered": {
           "period": "July 2026",
           "participants_served": "34",
-          "new_participants": "0",
+          "new_participants": "no",
           "sessions_delivered": "17",
           "participant_hours": "217",
           "attendance_rate": "77%",
-          "g1_value": "0",
           "g1_target": "8",
+          "g1_due": "August 31, 2026",
           "g1_status": "behind",
-          "g2_value": "217",
           "g2_target": "1,050",
+          "g2_due": "December 18, 2026",
           "g2_status": "on track"
         }
       },
@@ -2352,11 +2426,11 @@
           "sessions_delivered": "12",
           "participant_hours": "171",
           "attendance_rate": "76%",
-          "g1_value": "6",
           "g1_target": "8",
+          "g1_due": "August 31, 2026",
           "g1_status": "past due",
-          "g2_value": "388",
           "g2_target": "1,050",
+          "g2_due": "December 18, 2026",
           "g2_status": "on track"
         },
         "all_answered": {
@@ -2366,11 +2440,11 @@
           "sessions_delivered": "12",
           "participant_hours": "171",
           "attendance_rate": "78%",
-          "g1_value": "6",
           "g1_target": "8",
+          "g1_due": "August 31, 2026",
           "g1_status": "past due",
-          "g2_value": "388",
           "g2_target": "1,050",
+          "g2_due": "December 18, 2026",
           "g2_status": "on track"
         }
       },
@@ -2378,29 +2452,29 @@
         "none_answered": {
           "period": "September 2026",
           "participants_served": "37",
-          "new_participants": "0",
+          "new_participants": "no",
           "sessions_delivered": "14",
           "participant_hours": "227",
           "attendance_rate": "75%",
-          "g1_value": "6",
           "g1_target": "8",
+          "g1_due": "August 31, 2026",
           "g1_status": "past due",
-          "g2_value": "615",
           "g2_target": "1,050",
+          "g2_due": "December 18, 2026",
           "g2_status": "on track"
         },
         "all_answered": {
           "period": "September 2026",
           "participants_served": "37",
-          "new_participants": "0",
+          "new_participants": "no",
           "sessions_delivered": "16",
           "participant_hours": "227",
           "attendance_rate": "82%",
-          "g1_value": "6",
           "g1_target": "8",
+          "g1_due": "August 31, 2026",
           "g1_status": "past due",
-          "g2_value": "615",
           "g2_target": "1,050",
+          "g2_due": "December 18, 2026",
           "g2_status": "on track"
         }
       }
@@ -2410,152 +2484,136 @@
         "none_answered": {
           "period": "July to September 2026",
           "confidence_improved": "73%",
-          "participants_checked_in": "40",
+          "participants_checked_in": "37",
           "retention_rate": "95%",
           "attendance_rate": "76%",
           "assignment_submissions": "163",
           "submissions_per_participant": "4.1",
           "participants_served": "40",
-          "g2_value": "615",
           "g2_target": "1,050",
+          "g2_due": "December 18, 2026",
           "g2_status": "on track",
-          "g3_value": "163",
           "g3_target": "360",
-          "g3_status": "behind",
-          "g4_value": "76%",
-          "g4_target": "80%"
+          "g3_due": "December 18, 2026",
+          "g3_status": "behind"
         },
         "all_answered": {
           "period": "July to September 2026",
           "confidence_improved": "73%",
-          "participants_checked_in": "40",
+          "participants_checked_in": "37",
           "retention_rate": "90%",
           "attendance_rate": "79%",
           "assignment_submissions": "163",
           "submissions_per_participant": "4.1",
           "participants_served": "40",
-          "g2_value": "615",
           "g2_target": "1,050",
+          "g2_due": "December 18, 2026",
           "g2_status": "on track",
-          "g3_value": "163",
           "g3_target": "360",
-          "g3_status": "behind",
-          "g4_value": "79%",
-          "g4_target": "80%"
+          "g3_due": "December 18, 2026",
+          "g3_status": "behind"
         }
       },
       "jul": {
         "none_answered": {
           "period": "July 2026",
-          "confidence_improved": "44%",
-          "participants_checked_in": "34",
+          "confidence_improved": "48%",
+          "participants_checked_in": "31",
           "retention_rate": "100%",
           "attendance_rate": "77%",
           "assignment_submissions": "59",
           "submissions_per_participant": "1.7",
           "participants_served": "34",
-          "g2_value": "217",
           "g2_target": "1,050",
+          "g2_due": "December 18, 2026",
           "g2_status": "on track",
-          "g3_value": "59",
           "g3_target": "360",
-          "g3_status": "behind",
-          "g4_value": "77%",
-          "g4_target": "80%"
+          "g3_due": "December 18, 2026",
+          "g3_status": "behind"
         },
         "all_answered": {
           "period": "July 2026",
-          "confidence_improved": "44%",
-          "participants_checked_in": "34",
+          "confidence_improved": "48%",
+          "participants_checked_in": "31",
           "retention_rate": "100%",
           "attendance_rate": "77%",
           "assignment_submissions": "59",
           "submissions_per_participant": "1.7",
           "participants_served": "34",
-          "g2_value": "217",
           "g2_target": "1,050",
+          "g2_due": "December 18, 2026",
           "g2_status": "on track",
-          "g3_value": "59",
           "g3_target": "360",
-          "g3_status": "behind",
-          "g4_value": "77%",
-          "g4_target": "80%"
+          "g3_due": "December 18, 2026",
+          "g3_status": "behind"
         }
       },
       "aug": {
         "none_answered": {
           "period": "August 2026",
-          "confidence_improved": "50%",
-          "participants_checked_in": "28",
+          "confidence_improved": "52%",
+          "participants_checked_in": "25",
           "retention_rate": "100%",
           "attendance_rate": "76%",
           "assignment_submissions": "51",
           "submissions_per_participant": "1.8",
           "participants_served": "28",
-          "g2_value": "388",
           "g2_target": "1,050",
+          "g2_due": "December 18, 2026",
           "g2_status": "on track",
-          "g3_value": "110",
           "g3_target": "360",
-          "g3_status": "behind",
-          "g4_value": "77%",
-          "g4_target": "80%"
+          "g3_due": "December 18, 2026",
+          "g3_status": "behind"
         },
         "all_answered": {
           "period": "August 2026",
-          "confidence_improved": "50%",
-          "participants_checked_in": "28",
+          "confidence_improved": "52%",
+          "participants_checked_in": "25",
           "retention_rate": "95%",
           "attendance_rate": "78%",
           "assignment_submissions": "51",
           "submissions_per_participant": "1.8",
           "participants_served": "28",
-          "g2_value": "388",
           "g2_target": "1,050",
+          "g2_due": "December 18, 2026",
           "g2_status": "on track",
-          "g3_value": "110",
           "g3_target": "360",
-          "g3_status": "behind",
-          "g4_value": "77%",
-          "g4_target": "80%"
+          "g3_due": "December 18, 2026",
+          "g3_status": "behind"
         }
       },
       "sep": {
         "none_answered": {
           "period": "September 2026",
-          "confidence_improved": "73%",
-          "participants_checked_in": "37",
+          "confidence_improved": "74%",
+          "participants_checked_in": "34",
           "retention_rate": "97%",
           "attendance_rate": "75%",
           "assignment_submissions": "53",
           "submissions_per_participant": "1.4",
           "participants_served": "37",
-          "g2_value": "615",
           "g2_target": "1,050",
+          "g2_due": "December 18, 2026",
           "g2_status": "on track",
-          "g3_value": "163",
           "g3_target": "360",
-          "g3_status": "behind",
-          "g4_value": "76%",
-          "g4_target": "80%"
+          "g3_due": "December 18, 2026",
+          "g3_status": "behind"
         },
         "all_answered": {
           "period": "September 2026",
-          "confidence_improved": "73%",
-          "participants_checked_in": "37",
+          "confidence_improved": "74%",
+          "participants_checked_in": "34",
           "retention_rate": "97%",
           "attendance_rate": "82%",
           "assignment_submissions": "53",
           "submissions_per_participant": "1.4",
           "participants_served": "37",
-          "g2_value": "615",
           "g2_target": "1,050",
+          "g2_due": "December 18, 2026",
           "g2_status": "on track",
-          "g3_value": "163",
           "g3_target": "360",
-          "g3_status": "behind",
-          "g4_value": "79%",
-          "g4_target": "80%"
+          "g3_due": "December 18, 2026",
+          "g3_status": "behind"
         }
       }
     }

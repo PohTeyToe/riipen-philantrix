@@ -74,5 +74,9 @@ export const fmtShortDate = (iso: string): string => {
 /** "Sep 30, 2026" */
 export const fmtDate = (iso: string): string => `${fmtShortDate(iso)}, ${iso.slice(0, 4)}`;
 
+const LONG_MONTHS = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
+/** "December 18, 2026", for prose. */
+export const fmtLongDate = (iso: string): string => `${LONG_MONTHS[Number(iso.slice(5, 7)) - 1]} ${Number(iso.slice(8, 10))}, ${iso.slice(0, 4)}`;
+
 /** "Jul 23" inside the period, "Sep 9, 2025" outside it, so an old date never reads as this year's. */
 export const fmtDateIn = (iso: string, start: string, end: string): string => (iso >= start && iso <= end ? fmtShortDate(iso) : fmtDate(iso));

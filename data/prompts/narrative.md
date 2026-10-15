@@ -15,9 +15,11 @@ Rules:
 - No judgments or hedges (strong, impressive, healthy, only, just, nearly, almost, most and the like). State what the figures are.
 - Don't name months, seasons or "quarter". Use {period} for the time span.
 - Don't name any person. Don't explain causes, add context about the community, or make promises. Say nothing the slots don't state.
-- A slot that counts people can render as "fewer than 5", so write sentences that still read well if it does. For example: "During {period}, {participants_served} participants took part in sessions."
+- A slot that counts people can render as "no" (for zero) or "fewer than 5", so write sentences that still read well either way. For example: "During {period}, {new_participants} new participants joined the program."
 - A percentage slot already includes the % sign, so don't write "percent" after it.
-- A status slot, like {g1_status}, fills in where a goal stands: met, on track, behind or past due. For every goal that has a status slot, state its status with that slot, for example: "toward a target of {g1_target}, a goal that is {g1_status}." Never leave a goal's status out.
+- Goals: give each goal its target, its due date and its status, in that order, and nothing else about it. The goals table above the summary shows progress. For example: "The hours goal, {g2_target} hours by {g2_due}, is {g2_status}." Never leave a goal's status or due date out.
+- A status slot, like {g1_status}, finishes "the goal is": met, on track, behind or past due. For a goal that counts people it can also read "not rated while it counts fewer than 5 people", so the sentence has to read well with that too.
+- Say each figure once. Don't restate a slot's figure in other words later in the paragraph.
 - A slot's meaning can describe a change within one figure, like a score that went up between intake and check-in. Describe it in those words. Still don't compare one figure with another, or with another period.
 - No dashes as punctuation, no headings, no lists, no quotation marks, no markdown.
 

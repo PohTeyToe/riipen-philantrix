@@ -2,7 +2,7 @@
 
 import { useMemo, useState } from 'react';
 import { ATTENDANCES, PERIODS, sample } from '@/lib/data';
-import { needsAnswer, type AnswerId, type Answers, type Finding, type FindingKind } from '@/lib/findings';
+import { needsAnswer, unansweredCount, type AnswerId, type Answers, type Finding, type FindingKind } from '@/lib/findings';
 import { commas, fmtDate, fmtDay, fmtShortDate } from '@/lib/format';
 import { changedFigures } from '@/lib/report';
 import { TEMPLATES, templateById } from '@/lib/templates';
@@ -20,7 +20,7 @@ const KINDS: { kind: FindingKind; title: string; why: string }[] = [
     why: 'They still count as enrolled, which holds up retention, until someone says they left.',
   },
   { kind: 'goal_no_due_date', title: 'Goals with no due date', why: 'No question to answer. A report that shows the goal says why it has no forecast.' },
-  { kind: 'duplicate_record', title: 'Duplicate records', why: 'No question to answer. The engine counts the first record and leaves out the copy.' },
+  { kind: 'duplicate_record', title: 'Duplicate records', why: 'No question to answer. The engine counts the record once. If the copies disagree, the one with fewer hours counts.' },
 ];
 
 const q3 = PERIODS[0];
@@ -39,6 +39,9 @@ export function CheckStep({
   onNext: () => void;
 }) {
   const answerable = findings.filter(needsAnswer).length;
+  const left = unansweredCount(findings, answers);
+  const status =
+    left === answerable ? `${answerable} need a one-click answer.` : left > 0 ? `${left} of ${answerable} still ${left === 1 ? 'needs' : 'need'} a one-click answer.` : `All ${answerable} that needed an answer have one.`;
 
   return (
     <div className="mx-auto max-w-[920px] px-4 pb-16 pt-6 sm:px-6 sm:pt-8">
@@ -46,7 +49,7 @@ export function CheckStep({
         <div className="max-w-[60ch]">
           <h1 className="font-serif text-[26px] font-semibold leading-tight tracking-[-0.01em]">Check</h1>
           <p className="mt-1 text-[15px]">
-            {findings.length} findings for {fmtShortDate(q3.start)} to {fmtDate(q3.end)}. {answerable} need a one-click answer.
+            {findings.length} findings for {fmtShortDate(q3.start)} to {fmtDate(q3.end)}. {status}
           </p>
           <p className="text-[13.5px] text-muted">Nothing here blocks the report. Until a finding is answered, the report counts only what was logged, and the funder never sees the finding.</p>
         </div>
@@ -160,18 +163,19 @@ function FindingRow({ f, findings, answers, onAnswer }: { f: Finding; findings: 
   );
 }
 
-/** Every number an answer moves, on either template, right where the answer was given. */
+/**
+ * Every number an answer moves, on either template, right where the answer
+ * was given. Each answer is measured on its own, against no answers, so its
+ * line stays put when other answers go in.
+ */
 function Effect({ f, findings, answers }: { f: Finding; findings: Finding[]; answers: Answers }) {
-  const changes = useMemo(() => {
-    const without = { ...answers };
-    delete without[f.id];
-    return changedFigures(sample, findings, without, answers, q3.id);
-  }, [f.id, findings, answers]);
-  const adds = answers[f.id] === 'ran_not_recorded' || answers[f.id] === 'left_program';
+  const chosen = answers[f.id];
+  const changes = useMemo(() => changedFigures(sample, findings, {}, { [f.id]: chosen }, q3.id), [f.id, findings, chosen]);
+  const adds = chosen === 'ran_not_recorded' || chosen === 'left_program';
   if (!changes.length) return <p className="fade-in mt-1.5 text-[13.5px] text-muted">No figure changes.</p>;
   return (
     <div className="fade-in mt-1.5 text-[13.5px]">
-      <p className="text-muted">On the {q3.short} report{adds ? ', with a data note saying why' : ''}:</p>
+      <p className="text-muted">On its own, this answer changes the {q3.short} report{adds ? ' and adds a data note saying why' : ''}:</p>
       <ul className="num mt-0.5 space-y-0.5">
         {changes.map((c) => (
           <li key={c.key}>
@@ -243,7 +247,8 @@ function findingRows(f: Finding): MiniRows {
       rows: [{ cells: [g.name, g.metric === 'attendance_rate' ? `${Math.round(g.target * 100)}%` : commas(g.target), fmtDate(g.start_date), 'None'], flag: true }],
     };
   }
-  const recs = sample.engagements.filter((e) => f.recordIds.includes(e.id)).sort((a, b) => a.id.localeCompare(b.id));
+  // The counted copy first: fewest hours, then the lower id (lib/engine.ts).
+  const recs = sample.engagements.filter((e) => f.recordIds.includes(e.id)).sort((a, b) => a.units - b.units || a.id.localeCompare(b.id));
   return {
     columns: ['Record', 'Date', 'Participant', 'Activity type', 'Counted'],
     numeric: [],

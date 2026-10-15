@@ -3,7 +3,7 @@ export interface RefData {
   org: unknown;
   participants: unknown[];
   engagements: { id: string; date: string; group_id: string; participant_id: string; activity_type: string; units: number }[];
-  checkins: unknown[];
+  checkins: { id: string; date: string; participant_id: string; confidence: number; mock?: boolean }[];
   goals: unknown[];
 }
 export interface RefFigure { value: number | null; display: string }
@@ -12,8 +12,8 @@ export interface RefPeriod {
   metrics: Record<string, RefFigure>;
   attendance_rate_by_group: RefRate[];
   retention_by_group: RefRate[];
-  participants_by_age_range: { total: RefFigure; cells: { age_range: string; value: number; display: string; hidden: string | null }[]; footnote: string | null };
-  goals: { id: string; display: string; status: string; forecast: number | null; forecast_display: string | null; forecast_line: string | null }[];
+  participants_by_age_range: { total: RefFigure; cells: { age_range: string; ranges: string[]; value: number; display: string }[]; footnote: string | null };
+  goals: { id: string; display: string; status: string; shown_status: string; forecast: number | null; forecast_display: string | null; forecast_line: string | null }[];
   data_notes: { finding_id: string; kind: string; templates: string[]; text: string }[];
 }
 export const PERIODS: { id: string; start: string; end: string }[];

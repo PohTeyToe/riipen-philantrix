@@ -7,8 +7,8 @@ import { goalFigure, measure, type Measure } from './engine';
 import { applyAnswers, type Answers, type Finding, type State } from './findings';
 import { commas, fmtDate, fmtDateIn, fmtDay, fmtHoursExact, fmtShortDate, fmtWholePrecise } from './format';
 import { METRICS, type MetricId } from './metrics';
-import { isSmall, peopleForFunder, suppressBreakdown } from './privacy';
-import type { TraceRef } from './report';
+import { bandLabel, isSmall, peopleForFunder } from './privacy';
+import { ageBands, type TraceRef } from './report';
 
 export type RowTone = 'absent' | 'duplicate' | 'answered' | 'left';
 
@@ -37,6 +37,7 @@ export interface TraceView {
 }
 
 const plural = (n: number, one: string, many: string) => `${commas(n)} ${n === 1 ? one : many}`;
+const SMALL_NOTE = 'Counts of 1 to 4 people could identify someone.';
 
 function metricRows(metric: MetricId, m: Measure, ds: Dataset, st: State): Pick<TraceView, 'columns' | 'numeric' | 'rows' | 'rowsCaption'> {
   const person = new Map(st.people.map((p) => [p.id, p]));
@@ -176,7 +177,7 @@ export function explain(ds: Dataset, findings: Finding[], answers: Answers, peri
       scope: groupName ? `${scope}, ${groupName} only` : scope,
       value: v.value === null ? empty : v.staffDisplay,
       funderShows: v.display !== v.staffDisplay ? v.display : null,
-      staffNote: v.display !== v.staffDisplay ? 'Counts of 1 to 4 people could identify someone.' : null,
+      staffNote: v.display !== v.staffDisplay ? SMALL_NOTE : null,
       facts: metricFacts(ref.metric),
       formula: def.formula,
       arithmetic: [v.arithmetic],
@@ -188,29 +189,27 @@ export function explain(ds: Dataset, findings: Finding[], answers: Answers, peri
     const m = measure(ds, st, period.start, period.end);
     const base = metricRows('participants_served', m, ds, st);
     const person = new Map(st.people.map((p) => [p.id, p]));
-    const ids = ref.ageRange ? m.served.filter((pid) => person.get(pid)?.age_range === ref.ageRange) : m.served;
-    const rows = ref.ageRange ? base.rows.filter((r) => r.cells[2] === ref.ageRange) : base.rows;
-    const n = ids.length;
-    // What the funder copy shows for this cell, from the same rule the report uses.
-    const counts = ds.ageRanges.map((r) => ({ key: r, value: m.served.filter((pid) => person.get(pid)?.age_range === r).length }));
-    const cell = ref.ageRange ? suppressBreakdown(counts).cells.find((c) => c.key === ref.ageRange) : null;
-    const shown = cell ? cell.display : peopleForFunder(n);
-    let staffNote: string | null = null;
-    if (isSmall(n)) {
-      staffNote = 'Counts of 1 to 4 people could identify someone.';
-    } else if (cell?.hidden === 'secondary') {
-      const small = counts.filter((c) => isSmall(c.value)).map((c) => c.key);
-      staffNote = `This cell isn't under 5. It's hidden so the ${small.join(' and ')} ${small.length === 1 ? 'cell' : 'cells'} under 5 can't be worked out from the total.`;
-    }
+    const ranges = ref.band ? ageBands(ds).find((r) => bandLabel(r) === ref.band) ?? [ref.band] : null;
+    const inBand = (range: string | undefined) => !ranges || (range !== undefined && ranges.includes(range));
+    const rows = base.rows.filter((r) => inBand(r.cells[2]));
+    const n = m.served.filter((pid) => inBand(person.get(pid)?.age_range)).length;
+    const shown = peopleForFunder(n);
+    const each = ranges && ranges.length > 1 ? ranges.map((r) => `${commas(m.served.filter((pid) => person.get(pid)?.age_range === r).length)} aged ${r}`) : null;
     return {
-      title: ref.ageRange ? `Participants served, age ${ref.ageRange}` : 'Participants served, all ages',
+      title: ref.band ? `Participants served, age ${ref.band}` : 'Participants served, all ages',
       scope,
       value: commas(n),
       funderShows: shown !== commas(n) ? shown : null,
-      staffNote,
+      staffNote: isSmall(n) ? SMALL_NOTE : null,
       facts: [...metricFacts('participants_served'), { label: 'Grouped by', value: 'Age range, a custom field on each participant' }],
-      formula: `${METRICS.participants_served.formula} Then split by age range. Counts of 1 to 4 people show as "<5" in funder copy.`,
-      arithmetic: [ref.ageRange ? `${plural(n, 'participant', 'participants')} aged ${ref.ageRange} with an Attendances record` : `${plural(n, 'participant', 'participants')} with an Attendances record`],
+      formula: `${METRICS.participants_served.formula} Then split by age range. An age range with 1 to 4 people in this quarter or any month of it is combined with the next range, the same way in every period, so a small group never shows on its own.`,
+      arithmetic: [
+        each
+          ? `${each.join(' + ')} = ${plural(n, 'participant', 'participants')} with an Attendances record`
+          : ref.band
+            ? `${plural(n, 'participant', 'participants')} aged ${ref.band} with an Attendances record`
+            : `${plural(n, 'participant', 'participants')} with an Attendances record`,
+      ],
       columns: base.columns,
       numeric: base.numeric,
       rows,
@@ -231,14 +230,14 @@ export function explain(ds: Dataset, findings: Finding[], answers: Answers, peri
   }
   arithmetic.push(statusReason(g.status, g.dueDate, g.targetDisplay, g.forecastStaffDisplay));
   const rows = metricRows(metricId, g.measure, ds, st);
-  const hides =
-    (ref.part === 'value' && g.display !== g.staffDisplay) || (ref.part === 'forecast' && g.forecastDisplay !== null && g.forecastDisplay !== g.forecastStaffDisplay);
+  const withheld = g.shownStatus === 'Not shown';
+  const hides = ref.part !== 'target' && (withheld || g.display !== g.staffDisplay);
   return {
     title: goal.name,
     scope: `Tracked Goal, as of ${fmtDate(g.asOf)}`,
     value: ref.part === 'target' ? g.targetDisplay : ref.part === 'forecast' && g.forecastStaffDisplay ? g.forecastStaffDisplay : g.staffDisplay,
-    funderShows: hides ? (ref.part === 'forecast' ? g.forecastDisplay : g.display) : null,
-    staffNote: hides ? 'Counts of 1 to 4 people could identify someone.' : null,
+    funderShows: hides ? `${g.display}${withheld ? ', with no status or forecast' : ''}` : null,
+    staffNote: hides ? (withheld ? `${SMALL_NOTE} The status and the forecast are worked out from the count, so either would give it away.` : SMALL_NOTE) : null,
     facts: [
       { label: 'Measures', value: METRICS[metricId].label },
       { label: 'Target', value: g.targetDisplay },

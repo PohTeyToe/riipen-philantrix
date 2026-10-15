@@ -1,8 +1,11 @@
+import type { Metadata } from 'next';
 import Link from 'next/link';
 import { SampleBar } from '@/components/SampleBar';
 import { ForwardIcon } from '@/components/icons';
 import { sample } from '@/lib/data';
-import { LINKS, REPO_PUBLIC, RLS_SHIPPED } from '@/lib/site';
+import { LINKS, NO_INDEX, REPO_PUBLIC, RLS_SHIPPED } from '@/lib/site';
+
+export const metadata: Metadata = { robots: NO_INDEX };
 
 const ORG = sample.orgName.replace(' (sample)', '');
 
@@ -24,7 +27,7 @@ const STEPS: { text: string; img: string; w: number; h: number; alt: string; pag
   {
     text: "Click any number. You'll see the formula in plain words and the rows behind it.",
     img: '/walkthrough/trace.webp',
-    w: 1608,
+    w: 1948,
     h: 1400,
     alt: 'The staff view of the attendance rate: the formula, the arithmetic, and one row per seat, absences included.',
   },
@@ -99,6 +102,13 @@ export default function Walkthrough() {
             <p className="mt-4 text-[18px] leading-snug text-muted sm:text-[20px]">
               A working slice I built for Philantrix&apos;s Platform Expansion project on Riipen. Sample data, your stack.
             </p>
+            <p className="mt-5 max-w-[38rem] border-l-2 border-accent pl-4 text-[16px] leading-[1.55]">
+              If you take on three students, I&apos;d lead them. Week one needs the repo and a dev Supabase project. By the Dec 11 spotlight, we&apos;d do a dry
+              run of this report on one pilot org&apos;s real data, if you&apos;re OK with that.{' '}
+              <a href="#plan" className="whitespace-nowrap font-semibold text-accent underline decoration-accent/30 underline-offset-2 hover:decoration-accent">
+                The 8-week plan
+              </a>
+            </p>
             <div className="mt-7 flex flex-wrap gap-3">
               <Link href="/demo" className="btn btn-primary h-11 px-5 text-[15.5px]">
                 Open the demo <ForwardIcon />
@@ -158,7 +168,7 @@ export default function Walkthrough() {
               <ul className="mt-5 space-y-3.5 text-[16px] leading-[1.55]">
                 {[
                   ['Real', 'The words and data shapes. Workstreams, Groups, Participants, Engagements, Custom Fields, Tracked Goals, Attendances and Assignment Submissions all come from the product screenshots on your site.'],
-                  ['Real', 'The stack. Next.js, TypeScript and Tailwind, with Supabase migrations and tests in the repo.'],
+                  ['Real', REPO_PUBLIC ? 'The stack. Next.js, TypeScript and Tailwind, with Supabase migrations and tests in the repo.' : 'The stack. Next.js, TypeScript and Tailwind, with a Supabase migration and its tests.'],
                   ['Sample', `The org, ${ORG}, and everyone in it. A script made them up, and every screen and export says so.`],
                   ['Sample', "The two funder templates. They're examples to correct, not real funders' forms."],
                   ['Sample', 'The summary paragraph. Claude drafted the words ahead of time, and the report fills in every number.'],
@@ -281,9 +291,9 @@ export default function Walkthrough() {
 
           <section className="mt-16 border-t border-rule pt-8" aria-label="About me">
             <p className="max-w-[44rem] text-[16px] leading-[1.6]">
-              I&apos;m Abdallah Safi, a 4th-year Computer Engineering student at TMU. On two Riipen work terms with BESI, I was the sole developer of the portal they
-              use to show an auditor which workers are certified, and BESI hired me back for the second term. I&apos;m also the lead developer on an AI paperwork app
-              that a Calgary real estate brokerage runs its live deals on.
+              I&apos;m Abdallah Safi, a 4th-year Computer Engineering student at TMU. Over two Riipen work terms with BESI, I built their safety-certification portal
+              as the sole developer, so they can show an auditor who is certified. They hired me back for the second term. I&apos;m also the lead developer on an AI
+              paperwork app that a Calgary real estate brokerage runs its live deals on, and I led the brokerage&apos;s dev interns through September.
             </p>
             <p className="mt-3 flex gap-5 text-[15px] font-semibold">
               <a href={LINKS.github} className="text-accent underline decoration-accent/30 underline-offset-2 hover:decoration-accent">GitHub</a>

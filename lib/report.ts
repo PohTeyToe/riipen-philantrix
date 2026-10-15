@@ -3,13 +3,13 @@
 // Nothing in this file carries a participant's name. The trace panel (staff
 // view) rebuilds its rows separately, in lib/trace.ts.
 
-import { periodById, type Dataset, type Period } from './data';
-import { goalFigure, measure, type GoalFigure } from './engine';
+import { PERIODS, periodById, type Dataset, type Period } from './data';
+import { goalFigure, measure, type GoalFigure, type ShownStatus } from './engine';
 import { applyAnswers, type Answers, type Finding, type State } from './findings';
-import { commas, fmtDate, fmtDay, fmtHours, fmtPercent, toHundredths } from './format';
+import { commas, fmtDate, fmtDay, fmtHours, fmtLongDate, fmtPercent, toHundredths } from './format';
 import { METRICS, type MetricId, type MetricKind, type MetricValue } from './metrics';
-import { peopleForFunder, suppressBreakdown, type BreakdownCell } from './privacy';
-import { SUMMARY_LABEL, TEMPLATES, templateById, templateGoals, type Slot, type Template, type TemplateId } from './templates';
+import { COMBINED_FOOTNOTE, bandLabel, combineBands, peopleForFunder } from './privacy';
+import { SUMMARY_LABEL, TEMPLATES, templateById, templateGoals, templateMetrics, type Slot, type Template, type TemplateId } from './templates';
 
 // ---------- figures for one period ----------
 
@@ -29,14 +29,46 @@ export interface DataNote {
   text: string;
 }
 
+/** One band of the age breakdown: an age range, or ranges combined (lib/privacy.ts). */
+export interface AgeBand {
+  /** "13-15", or "16-24" for 16-18 and 19-24 combined. */
+  key: string;
+  ranges: string[];
+  value: number;
+  /** What the funder copy shows. */
+  display: string;
+}
+
 export interface PeriodFigures {
   period: Period;
   metrics: Record<MetricId, MetricValue>;
   attendanceByGroup: GroupRate[];
   retentionByGroup: GroupRate[];
-  ageBreakdown: { total: { value: number; display: string }; cells: BreakdownCell[]; footnote: string | null };
+  ageBreakdown: { total: { value: number; display: string }; cells: AgeBand[]; footnote: string | null };
   goals: GoalFigure[];
   notes: DataNote[];
+}
+
+const bandsCache = new WeakMap<Dataset, string[][]>();
+
+/**
+ * The age bands funder copy uses, the same in every period a reader can switch
+ * to, from participants served in each. Answers don't change who attended, so
+ * this depends on the records alone.
+ */
+export function ageBands(ds: Dataset): string[][] {
+  let bands = bandsCache.get(ds);
+  if (!bands) {
+    const st = applyAnswers(ds, [], {});
+    const age = new Map(ds.participants.map((p) => [p.id, p.age_range]));
+    const counts = PERIODS.map((p) => {
+      const served = measure(ds, st, p.start, p.end).served;
+      return ds.ageRanges.map((r) => served.filter((pid) => age.get(pid) === r).length);
+    });
+    bands = combineBands(ds.ageRanges, counts);
+    bandsCache.set(ds, bands);
+  }
+  return bands;
 }
 
 export function computePeriod(ds: Dataset, st: State, findings: Finding[], period: Period): PeriodFigures {
@@ -50,17 +82,25 @@ export function computePeriod(ds: Dataset, st: State, findings: Finding[], perio
   const retentionByGroup = byGroup.map(({ g, gm }) => ({ groupId: g.id, groupName: g.name, ...groupRate(gm.retained.length, gm.enrolledAny.length, `No participants in ${period.short}`) }));
 
   const byId = new Map(st.people.map((p) => [p.id, p]));
-  const ageCounts = ds.ageRanges.map((r) => ({ key: r, value: m.served.filter((pid) => byId.get(pid)?.age_range === r).length }));
-  const suppressed = suppressBreakdown(ageCounts);
+  const bands = ageBands(ds);
+  const cells = bands.map((ranges) => {
+    const value = m.served.filter((pid) => ranges.includes(byId.get(pid)?.age_range ?? '')).length;
+    return { key: bandLabel(ranges), ranges, value, display: peopleForFunder(value) };
+  });
+  const goals = ds.goals.map((g) => goalFigure(ds, st, g, period.end));
 
   return {
     period,
     metrics,
     attendanceByGroup,
     retentionByGroup,
-    ageBreakdown: { total: { value: m.served.length, display: peopleForFunder(m.served.length) }, cells: suppressed.cells, footnote: suppressed.footnote },
-    goals: ds.goals.map((g) => goalFigure(ds, st, g, period.end)),
-    notes: dataNotes(ds, st, findings, period),
+    ageBreakdown: {
+      total: { value: m.served.length, display: peopleForFunder(m.served.length) },
+      cells,
+      footnote: bands.some((b) => b.length > 1) ? COMBINED_FOOTNOTE : null,
+    },
+    goals,
+    notes: dataNotes(ds, st, findings, period, goals),
   };
 }
 
@@ -68,19 +108,26 @@ export const EXIT_NOTE = 'Where staff confirmed that a participant with no activ
 
 /**
  * Notes a funder needs to read the figures: how an answer on Check changed the
- * counting, and goals without a forecast. A finding nobody answered stays on
- * the staff side, and the report counts only what was logged.
+ * counting, goals without a forecast, and a goal whose status isn't shown. A
+ * finding nobody answered stays on the staff side, and the report counts only
+ * what was logged. A note shows only on the templates it applies to.
  */
-export function dataNotes(ds: Dataset, st: State, findings: Finding[], period: Period): DataNote[] {
+export function dataNotes(ds: Dataset, st: State, findings: Finding[], period: Period, goals: GoalFigure[]): DataNote[] {
   const inPeriod = (d: string) => d >= period.start && d <= period.end;
   const groupName = (id: string) => ds.groups.find((g) => g.id === id)?.name ?? id;
   const all = TEMPLATES.map((t) => t.id);
+  const showing = (goalId: string) => TEMPLATES.filter((t) => templateGoals(t).includes(goalId)).map((t) => t.id);
+  // Only a template that reports sessions delivered is told the session counted there.
+  const delivered = TEMPLATES.filter((t) => templateMetrics(t).includes('sessions_delivered')).map((t) => t.id);
+  const notDelivered = all.filter((t) => !delivered.includes(t));
   const notes: DataNote[] = [];
   let exitNote = false;
   for (const f of findings) {
     const a = st.answers[f.id];
     if (f.kind === 'session_not_logged' && inPeriod(f.date) && a === 'ran_not_recorded') {
-      notes.push({ findingId: f.id, kind: 'session_ran_not_recorded', templates: all, text: `${groupName(f.groupId)}, ${fmtDay(f.date)}: ran, but attendance wasn't recorded. Counted as delivered and left out of the attendance rate.` });
+      const head = `${groupName(f.groupId)}, ${fmtDay(f.date)}: ran, but attendance wasn't recorded.`;
+      notes.push({ findingId: f.id, kind: 'session_ran_not_recorded', templates: delivered, text: `${head} Counted as delivered and left out of the attendance rate.` });
+      notes.push({ findingId: f.id, kind: 'session_ran_not_recorded', templates: notDelivered, text: `${head} Left out of the attendance rate.` });
     }
     // One note for every exit set by an answer, in any period it changes. No
     // group or date, so it can't point to a person.
@@ -90,11 +137,15 @@ export function dataNotes(ds: Dataset, st: State, findings: Finding[], period: P
     }
     if (f.kind === 'goal_no_due_date') {
       const goal = ds.goals.find((g) => g.id === f.goalId);
-      const shownIn = TEMPLATES.filter((t) => templateGoals(t).includes(f.goalId)).map((t) => t.id);
-      if (goal) notes.push({ findingId: f.id, kind: f.kind, templates: shownIn, text: `${goal.name} has no due date, so it shows progress without a forecast.` });
+      if (goal) notes.push({ findingId: f.id, kind: f.kind, templates: showing(f.goalId), text: `${goal.name} has no due date, so it shows progress without a forecast.` });
     }
   }
-  return notes;
+  for (const g of goals) {
+    if (g.shownStatus === 'Not shown') {
+      notes.push({ findingId: `withheld-${g.id}`, kind: 'goal_status_withheld', templates: showing(g.id), text: `${g.name}: fewer than 5 so far, so its status and forecast aren't shown. Either one would say how many.` });
+    }
+  }
+  return notes.filter((n) => n.templates.length);
 }
 
 // ---------- the report model ----------
@@ -102,11 +153,11 @@ export function dataNotes(ds: Dataset, st: State, findings: Finding[], period: P
 /** Points at the rows behind a number. Resolved by lib/trace.ts. */
 export type TraceRef =
   | { kind: 'metric'; metric: MetricId; groupId?: string }
-  | { kind: 'age'; ageRange: string | null }
+  | { kind: 'age'; band: string | null }
   | { kind: 'goal'; goalId: string; part: 'value' | 'target' | 'forecast' };
 
 export const refKey = (r: TraceRef): string =>
-  r.kind === 'metric' ? `metric:${r.metric}${r.groupId ? `:${r.groupId}` : ''}` : r.kind === 'age' ? `age:${r.ageRange ?? 'total'}` : `goal:${r.goalId}:${r.part}`;
+  r.kind === 'metric' ? `metric:${r.metric}${r.groupId ? `:${r.groupId}` : ''}` : r.kind === 'age' ? `age:${r.band ?? 'total'}` : `goal:${r.goalId}:${r.part}`;
 
 export interface FigureView {
   ref: TraceRef;
@@ -133,7 +184,7 @@ export interface GoalView {
   target: number;
   targetDisplay: string;
   due: string;
-  status: GoalFigure['status'];
+  status: ShownStatus;
   forecastDisplay: string | null;
   forecastLine: string | null;
 }
@@ -146,7 +197,7 @@ export type SectionView =
       id: string;
       title: string;
       figures: FigureView[];
-      breakdown?: { title: string; cells: (BreakdownCell & { ref: TraceRef })[]; total: { value: number; display: string; ref: TraceRef }; footnote: string | null };
+      breakdown?: { title: string; cells: (AgeBand & { ref: TraceRef })[]; total: { value: number; display: string; ref: TraceRef }; footnote: string | null };
       chart?: { title: string; metric: MetricId; bars: BarView[] };
     }
   | { type: 'goals'; id: string; title: string; asOf: string; goals: GoalView[] }
@@ -173,12 +224,13 @@ const GOAL_KIND: Record<GoalFigure['metric'], MetricKind> = {
 };
 
 /** A goal status as words that finish "the goal is ...". */
-export const STATUS_PHRASE: Record<GoalFigure['status'], string> = {
+export const STATUS_PHRASE: Record<ShownStatus, string> = {
   Met: 'met',
   'On track': 'on track',
   Behind: 'behind',
   'Past due': 'past due',
   'No due date': 'open, with no due date',
+  'Not shown': 'not rated while it counts fewer than 5 people',
 };
 
 export function renderSlot(slot: Slot, f: PeriodFigures): SummaryPart {
@@ -193,13 +245,16 @@ export function renderSlot(slot: Slot, f: PeriodFigures): SummaryPart {
   } else {
     const g = f.goals.find((x) => x.id === src.goalId);
     if (!g) throw new Error(`no goal ${src.goalId}`);
-    if (src.part === 'status') return { text: STATUS_PHRASE[g.status], ref: { kind: 'goal', goalId: src.goalId, part: 'value' } };
-    ({ value, display } = src.part === 'value' ? g : { value: g.target, display: g.targetDisplay });
-    ref = { kind: 'goal', goalId: src.goalId, part: src.part };
+    const goalRef: TraceRef = { kind: 'goal', goalId: src.goalId, part: 'value' };
+    if (src.part === 'status') return { text: STATUS_PHRASE[g.shownStatus], ref: goalRef };
+    if (src.part === 'due') return { text: g.dueDate ? fmtLongDate(g.dueDate) : 'no due date', ref: goalRef };
+    ({ value, display } = { value: g.target, display: g.targetDisplay });
+    ref = { kind: 'goal', goalId: src.goalId, part: 'target' };
   }
   if (value === null) return { text: display, ref };
   switch (slot.kind) {
-    case 'people': return { text: value >= 1 && value <= 4 ? 'fewer than 5' : commas(value), ref };
+    // A 0 reads "no": "no new participants joined", not "0 new participants joined".
+    case 'people': return { text: value === 0 ? 'no' : value <= 4 ? 'fewer than 5' : commas(value), ref };
     case 'count': return { text: commas(value), ref };
     case 'hours': return { text: fmtHours(toHundredths(value)), ref };
     default: return { text: display, ref };
@@ -243,8 +298,8 @@ export function reportFromFigures(ds: Dataset, f: PeriodFigures, templateId: Tem
       if (s.breakdown === 'age_range') {
         view.breakdown = {
           title: 'Participants served by age range',
-          cells: f.ageBreakdown.cells.map((c) => ({ ...c, ref: { kind: 'age', ageRange: c.key } })),
-          total: { ...f.ageBreakdown.total, ref: { kind: 'age', ageRange: null } },
+          cells: f.ageBreakdown.cells.map((c) => ({ ...c, ref: { kind: 'age', band: c.key } })),
+          total: { ...f.ageBreakdown.total, ref: { kind: 'age', band: null } },
           footnote: f.ageBreakdown.footnote,
         };
       }
@@ -276,7 +331,7 @@ export function reportFromFigures(ds: Dataset, f: PeriodFigures, templateId: Tem
             target: g.target,
             targetDisplay: g.targetDisplay,
             due: g.dueDate ? fmtDate(g.dueDate) : 'Not set',
-            status: g.status,
+            status: g.shownStatus,
             forecastDisplay: g.forecastDisplay,
             forecastLine: g.forecastLine,
           };
@@ -323,6 +378,26 @@ export function reportFigures(r: Report): Map<string, { label: string; display: 
         out.set(`goal:${g.id}:status`, { label: `${g.name}, status`, display: g.status });
       }
     }
+  }
+  return out;
+}
+
+/** Every trace a report can open: each number, the goal targets, and the summary's links. */
+export function reportRefs(r: Report): Set<string> {
+  const out = new Set<string>();
+  for (const s of r.sections) {
+    if (s.type === 'figures') {
+      for (const f of s.figures) out.add(refKey(f.ref));
+      if (s.breakdown) for (const c of [...s.breakdown.cells, s.breakdown.total]) out.add(refKey(c.ref));
+      if (s.chart) for (const b of s.chart.bars) out.add(refKey(b.ref));
+    }
+    if (s.type === 'goals') {
+      for (const g of s.goals) {
+        out.add(`goal:${g.id}:value`).add(`goal:${g.id}:target`);
+        if (g.forecastDisplay) out.add(`goal:${g.id}:forecast`);
+      }
+    }
+    if (s.type === 'summary') for (const p of s.parts) if (p.ref) out.add(refKey(p.ref));
   }
   return out;
 }

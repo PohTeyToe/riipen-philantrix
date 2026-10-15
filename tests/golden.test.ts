@@ -57,17 +57,17 @@ for (const period of PERIODS) {
         );
       });
 
-      it('age breakdown with suppression', () => {
+      it('age breakdown, with small ranges combined', () => {
         const r = ref.participants_by_age_range;
         expect(f.ageBreakdown.total).toEqual(r.total);
-        expect(f.ageBreakdown.cells.map((c) => [c.key, c.value, c.display, c.hidden])).toEqual(r.cells.map((c) => [c.age_range, c.value, c.display, c.hidden]));
+        expect(f.ageBreakdown.cells.map((c) => [c.key, c.ranges, c.value, c.display])).toEqual(r.cells.map((c) => [c.age_range, c.ranges, c.value, c.display]));
         expect(f.ageBreakdown.footnote).toBe(r.footnote);
       });
 
       it('goals', () => {
         expect(
-          f.goals.map((g) => ({ id: g.id, display: g.display, target: g.targetDisplay, status: g.status, forecast: g.forecastDisplay, line: g.forecastLine })),
-        ).toEqual(ref.goals.map((g) => ({ id: g.id, display: g.display, target: g.target_display, status: g.status, forecast: g.forecast_display, line: g.forecast_line })));
+          f.goals.map((g) => ({ id: g.id, display: g.display, target: g.targetDisplay, status: g.status, shown: g.shownStatus, forecast: g.forecastDisplay, line: g.forecastLine })),
+        ).toEqual(ref.goals.map((g) => ({ id: g.id, display: g.display, target: g.target_display, status: g.status, shown: g.shown_status, forecast: g.forecast_display, line: g.forecast_line })));
         for (const [i, g] of f.goals.entries()) {
           const r = ref.goals[i];
           if (r.forecast === null) expect(g.forecast).toBeNull();

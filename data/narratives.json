@@ -6,7 +6,7 @@
     {
       "template_id": "city-youth-grant",
       "template_name": "City youth grant (example): reach and attendance",
-      "text": "During {period}, {participants_served} participants took part in sessions, and {new_participants} new participants joined the program. The program ran {sessions_delivered} group sessions for a total of {participant_hours} participant hours, and {attendance_rate} of seats were filled at sessions with attendance logged. Since the enrollment goal began, {g1_value} new participants have enrolled toward a target of {g1_target}, a goal that is {g1_status}. Since the hours goal began, participants have logged {g2_value} hours toward a target of {g2_target}, a goal that is {g2_status}.",
+      "text": "During {period}, {participants_served} participants attended sessions, and {new_participants} new participants joined the program. The program ran {sessions_delivered} group sessions, and participants spent {participant_hours} hours in them. At sessions with attendance logged, {attendance_rate} of seats were filled. The new participants goal, {g1_target} new participants by {g1_due}, is {g1_status}, and the participant hours goal, {g2_target} hours by {g2_due}, is {g2_status}.",
       "model": "claude-opus-5-5",
       "cli": "2.1.299 (Claude Code)",
       "drafted_on": "2026-10-15",
@@ -18,7 +18,7 @@
     {
       "template_id": "foundation-outcomes",
       "template_name": "Foundation (example): outcomes and retention",
-      "text": "During {period}, {participants_served} participants took part in sessions, {attendance_rate} of seats were filled at sessions with attendance logged, and {retention_rate} of participants enrolled during the period were still enrolled on its last day. Of the {participants_checked_in} participants who rated their confidence at intake and at a check-in, {confidence_improved} saw their confidence score go up between intake and their latest check-in. Participants handed in {assignment_submissions} assignments, or {submissions_per_participant} per participant served, and have handed in {g3_value} since the assignment goal started toward a target of {g3_target}, a goal that is {g3_status}. Participant hours since the hours goal started stand at {g2_value} toward a target of {g2_target}, a goal that is {g2_status}, and the attendance rate since its goal started is {g4_value} against a target of {g4_target}.",
+      "text": "During {period}, {participants_served} participants attended sessions, those sessions filled {attendance_rate} of seats, and {retention_rate} of enrolled participants were still enrolled when the period ended. Confidence ratings from intake and from a check-in were recorded for {participants_checked_in} participants, and {confidence_improved} of them saw their score go up. Participants handed in {assignment_submissions} assignments, or {submissions_per_participant} per participant served. The participant hours goal, {g2_target} hours by {g2_due}, is {g2_status}, and the assignment submissions goal, {g3_target} assignments by {g3_due}, is {g3_status}.",
       "model": "claude-opus-5-5",
       "cli": "2.1.299 (Claude Code)",
       "drafted_on": "2026-10-15",
@@ -28,9 +28,9 @@
       "check": "scripts/check-narrative.mjs passed",
       "human_edits": [
         {
-          "from": "Participant hours since that goal started stand at",
-          "to": "Participant hours since the hours goal started stand at",
-          "why": "\"that goal\" could be read as the assignment goal from the sentence before."
+          "from": "At check-ins, {participants_checked_in} participants had confidence ratings from intake and from a check-in, and {confidence_improved} of them saw their confidence score go up.",
+          "to": "Confidence ratings from intake and from a check-in were recorded for {participants_checked_in} participants, and {confidence_improved} of them saw their score go up.",
+          "why": "\"At check-ins\" and \"from a check-in\" said the same thing twice."
         }
       ]
     }

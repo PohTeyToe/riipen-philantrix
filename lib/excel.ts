@@ -15,9 +15,9 @@ export interface Sheet {
 
 const FORMAT: Record<MetricKind, string> = { people: '#,##0', count: '#,##0', hours: '#,##0', percent: '0%', decimal: '0.0' };
 
-/** A number keeps its format; a hidden or empty value stays as the text shown on the page. */
+/** A number keeps its format; a "<5" or an empty value stays as the text shown on the page. */
 function cell(kind: MetricKind, value: number | null, display: string): Cell {
-  if (value === null || display === '<5' || display === 'hidden') return display;
+  if (value === null || display === '<5') return display;
   return { v: value, z: FORMAT[kind] };
 }
 
@@ -46,7 +46,7 @@ export function workbookSheets(r: Report): Sheet[] {
     for (const c of b.cells) rows.push([c.key, cell('people', c.value, c.display)]);
     rows.push(['Total', cell('people', b.total.value, b.total.display)]);
     rows.push([]);
-    if (b.cells.some((c) => c.display === '<5')) rows.push(['<5 means 1 to 4 people, not shown so no one can be identified.']);
+    if (b.cells.some((c) => c.display === '<5')) rows.push(['<5 means 1 to 4 people.']);
     if (b.footnote) rows.push([b.footnote]);
     sheets.push({ name: 'Age range', rows, widths: [22, 22] });
   }

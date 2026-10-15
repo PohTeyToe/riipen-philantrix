@@ -103,7 +103,7 @@ export const METRICS: Record<MetricId, MetricDef> = {
     period: REPORT_PERIOD,
     definition: 'Group sessions with attendance logged, plus sessions confirmed as run.',
     formula:
-      'Count each group and date with at least one Attendances record. Add scheduled sessions answered "Ran, attendance not recorded". A scheduled session with no records and no answer is not counted, and shows as a data note.',
+      'Count each group and date with at least one Attendances record. Add scheduled sessions answered "Ran, attendance not recorded". A scheduled session with no records and no answer is not counted.',
     compute: (m) => {
       const logged = m.sessions.filter((s) => s.source === 'logged').length;
       const answered = m.sessions.length - logged;
@@ -126,7 +126,7 @@ export const METRICS: Record<MetricId, MetricDef> = {
     denominator: null,
     period: REPORT_PERIOD,
     definition: "Hours in sessions attended, each counted at the session's length.",
-    formula: 'Add up the units on every Attendances record in the period. Units are the session\'s hours. A person logged twice for the same session counts once.',
+    formula: 'Add up the units on every Attendances record in the period. Units are the session\'s hours. A person logged twice for the same session counts once, and if the copies disagree, the one with fewer hours counts.',
     compute: (m) => {
       const shown = fmtHours(m.hoursHundredths);
       const dup = m.duplicates.length ? `, ${m.duplicates.length} duplicate left out` : '';
@@ -221,7 +221,7 @@ export const METRICS: Record<MetricId, MetricDef> = {
     period: REPORT_PERIOD,
     definition: 'Rated their confidence higher at their latest check-in than at intake.',
     formula:
-      "Take each participant's latest check-in in the period and compare it with their intake score, both on a scale of 1 to 5. Improved ÷ everyone with both. A score that stayed the same or went down is not improved.",
+      "Take each participant's latest check-in in the period and compare it with their intake score, both on a scale of 1 to 5. Improved ÷ everyone with both. A score that stayed the same or went down is not improved. If someone has two check-ins on the same day, the lower score counts.",
     compute: (m) =>
       rate(
         m.checkins.filter((c) => c.improved).length,
