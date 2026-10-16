@@ -1,10 +1,10 @@
 'use client';
 
-import { useEffect, useId, useRef, useState } from 'react';
+import { memo, useEffect, useId, useRef, useState, type ReactNode } from 'react';
 import { choiceFor, SEP, withoutOptions, type Choice } from '@/lib/choices';
 import type { Period } from '@/lib/data';
 import { fmtDate } from '@/lib/format';
-import { fieldName, OP_WORD, parseStaffNumber, type FilledField, type FilledForm, type FilledItem } from '@/lib/forms';
+import { fieldName, OP_WORD, parseStaffNumber, type FilledField, type FilledForm, type FilledItem, type FormRun } from '@/lib/forms';
 import { DownloadIcon, ShieldIcon } from '../icons';
 import { printReport } from './print';
 import { staffKey } from './model';
@@ -30,7 +30,7 @@ interface Props {
   focusItems: string[] | null;
   onHoverItem: (id: string | null) => void;
   onStaff: (key: string, text: string, label: string) => void;
-  onWhy: (itemId: string, fieldId: string) => void;
+  onWhy: (run: FormRun, itemId: string, fieldId: string) => void;
 }
 
 type FieldCb = {
@@ -39,8 +39,8 @@ type FieldCb = {
   onWhy: (itemId: string, fieldId: string) => void;
 };
 
-/** One funder's own form, filled from the records. This element is what prints. */
-export function FormReport({ filled, period, orgName, replay, focusItems, onHoverItem, onStaff, onWhy }: Props) {
+/** One funder's own form, filled from the records. This element is what prints. Memoized: a replay re-renders it only when a question comes in. */
+export const FormReport = memo(function FormReport({ filled, period, orgName, replay, focusItems, onHoverItem, onStaff, onWhy }: Props) {
   const { run, counts } = filled;
   const form = run.form;
   const grid = LAYOUT[form.id] === 'grid';
@@ -51,7 +51,7 @@ export function FormReport({ filled, period, orgName, replay, focusItems, onHove
   const cb: FieldCb = {
     formId: form.id,
     onStaff: (item, f, text) => onStaff(staffKey(form.id, period.id, f.field.id), text, fieldName(item, f.field)),
-    onWhy,
+    onWhy: (itemId, fieldId) => onWhy(run, itemId, fieldId),
   };
 
   return (
@@ -80,11 +80,11 @@ export function FormReport({ filled, period, orgName, replay, focusItems, onHove
         <Tally counts={counts} />
       </header>
 
-      {reading ? (
-        <Skeleton />
-      ) : (
-        // Keyed by form and period: an answer box half typed on one form or period must not carry into another.
-        <div key={`${form.id}|${period.id}`} className={grid ? '' : 'divide-y divide-line'}>
+      {/* During a replay the questions keep their place, hidden while the form is read, so the page doesn't jump. */}
+      <div className="relative">
+        {reading && <Skeleton />}
+        {/* Keyed by form and period: an answer box half typed on one form or period must not carry into another. */}
+        <div key={`${form.id}|${period.id}`} className={`${grid ? '' : 'divide-y divide-line'} ${reading ? 'invisible' : ''}`}>
           {grid ? (
             <GridForm items={live} shown={shown} focusItems={focusItems} onHoverItem={onHoverItem} {...cb} />
           ) : (
@@ -92,10 +92,10 @@ export function FormReport({ filled, period, orgName, replay, focusItems, onHove
           )}
           {untracked.length > 0 && <Untracked items={untracked} shown={shown} />}
         </div>
-      )}
+      </div>
     </article>
   );
-}
+});
 
 /** What code filled leads; what's left for staff is one orange count. */
 function Tally({ counts }: { counts: FilledForm['counts'] }) {
@@ -123,7 +123,7 @@ function Tally({ counts }: { counts: FilledForm['counts'] }) {
 
 function Skeleton() {
   return (
-    <div className="space-y-4 px-5 py-5 @[34rem]:px-7" aria-label="Reading the form">
+    <div className="absolute inset-x-0 top-0 space-y-4 px-5 py-5 @[34rem]:px-7" aria-label="Reading the form">
       {[70, 52, 84, 60].map((w, i) => (
         <div key={i} className="space-y-2">
           <div className="h-3 rounded bg-sunken" style={{ width: `${w}%` }} />
@@ -155,18 +155,31 @@ function Question({ item, shown, dim, onHoverItem, ...cb }: { item: FilledItem; 
       </h3>
       {!echoes(q.title, quote) && <p className="mt-1 max-w-[70ch] text-[12.5px] leading-snug text-muted">{quote}</p>}
       <div className={`mt-2.5 ${many ? 'space-y-2.5' : ''}`}>
-        {live.map((f) =>
-          shown ? (
-            <div key={f.field.id} className="fade-in">
-              <FieldAnswer f={f} item={q} label={many ? f.field.label : null} {...cb} />
-            </div>
-          ) : (
-            <div key={f.field.id} className="h-7 w-1/2 animate-pulse rounded-md bg-sunken" />
-          ),
+        {live.map((f) => (
+          <Held key={f.field.id} shown={shown} bar="max-h-7 w-1/2">
+            <FieldAnswer f={f} item={q} label={many ? f.field.label : null} {...cb} />
+          </Held>
+        ))}
+        {missing.length > 0 && (
+          <Held shown={shown}>
+            <NotTracked fields={missing} />
+          </Held>
         )}
-        {shown && missing.length > 0 && <NotTracked fields={missing} />}
       </div>
     </section>
+  );
+}
+
+/**
+ * A field during a replay. Until its worker has finished, the answer keeps its space, hidden under
+ * a placeholder bar, so nothing below it moves when it fills in.
+ */
+function Held({ shown, bar, className = '', children }: { shown: boolean; bar?: string; className?: string; children: ReactNode }) {
+  return (
+    <div className={`relative ${shown ? 'fade-in' : ''} ${className}`}>
+      <div className={shown ? undefined : 'invisible'}>{children}</div>
+      {!shown && bar && <div aria-hidden className={`absolute left-0 top-0 h-full animate-pulse rounded-md bg-sunken ${bar}`} />}
+    </div>
   );
 }
 
@@ -238,19 +251,15 @@ function GridForm({ items, shown, focusItems, onHoverItem, ...cb }: { items: Fil
                   <p className="text-[12.5px] leading-snug text-muted">
                     <span className="num font-semibold text-ink">{letter(f.field.id)}</span> {f.field.label}
                   </p>
-                  {shown(q.id) ? (
-                    <div className="fade-in min-w-0">
-                      <FieldAnswer f={f} item={q} label={null} compact {...cb} />
-                    </div>
-                  ) : (
-                    <div className="h-5 w-2/3 animate-pulse rounded-md bg-sunken" />
-                  )}
+                  <Held shown={shown(q.id)} bar="max-h-5 w-2/3" className="min-w-0">
+                    <FieldAnswer f={f} item={q} label={null} compact {...cb} />
+                  </Held>
                 </div>
               ))}
-              {shown(q.id) && missing.length > 0 && (
-                <div className="pl-[2.75rem]">
+              {missing.length > 0 && (
+                <Held shown={shown(q.id)} className="pl-[2.75rem]">
                   <NotTracked fields={missing} />
-                </div>
+                </Held>
               )}
             </div>
           </section>
@@ -268,9 +277,9 @@ const letter = (id: string) => {
 /** Questions the records hold nothing for, folded into one list that says what to start tracking. Each keeps its id, so the form's source can point at it. */
 function Untracked({ items, shown }: { items: FilledItem[]; shown: (id: string) => boolean }) {
   const ready = items.filter((i) => shown(i.item.id));
-  if (!ready.length) return null;
+  // Hidden, not removed, until one is in: its line keeps its place during a replay.
   return (
-    <details className="group border-t border-line px-5 py-3.5 @[34rem]:px-7">
+    <details className={`group border-t border-line px-5 py-3.5 @[34rem]:px-7 ${ready.length ? '' : 'invisible'}`}>
       <summary className="flex cursor-pointer list-none items-center justify-between gap-3 text-left [&::-webkit-details-marker]:hidden">
         <span className="text-[13px]">
           <span className="font-semibold">

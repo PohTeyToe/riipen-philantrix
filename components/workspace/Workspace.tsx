@@ -22,6 +22,7 @@ import { useWorkspace } from './useWorkspace';
 type Pane = Step | 'sources';
 const HASHES: Pane[] = ['form', 'agent', 'records', 'check', 'count', 'guard'];
 const ORG = sample.orgName.replace(' (sample)', '');
+const NOOP = () => {};
 
 /** Wide screens show the inspector beside the report; narrower ones open it as a sheet. */
 function useWide() {
@@ -131,10 +132,19 @@ export function Workspace() {
   const counts = b.output.kind === 'form' ? b.output.form.counts : null;
   const forYou = counts ? counts.forStaff - counts.staffDone : 0;
 
-  const replayDone = useMemo(() => {
-    if (!form || replayT === null) return null;
-    return form.items.filter((i) => form.events.some((e) => ((e.detail.items as string[] | undefined) ?? []).includes(i.id)) && Math.max(...form.events.filter((e) => ((e.detail.items as string[] | undefined) ?? []).includes(i.id)).map((e) => e.end)) <= replayT).length;
-  }, [form, replayT]);
+  // When each question's worker finished with it, and when the form had been read: fixed for a run.
+  const marks = useMemo(() => {
+    if (!form) return null;
+    const doneAt = new Map<string, number>();
+    for (const e of form.events) for (const id of (e.detail.items as string[] | undefined) ?? []) doneAt.set(id, Math.max(doneAt.get(id) ?? 0, e.end));
+    const readAt = Math.max(...form.events.filter((e) => e.lane === 'Read form').map((e) => e.end));
+    return { doneAt, readAt, times: [0, readAt, ...doneAt.values()].sort((a, b) => a - b) };
+  }, [form]);
+  // The report only changes when a question comes in, so its clock steps from one of those times to the
+  // next instead of moving every frame, and the report renders a few dozen times per replay, not 600.
+  const step = marks && replayT !== null ? marks.times.reduce((at, m) => (m <= replayT ? m : at), 0) : null;
+  const replay: ReplayState | null = useMemo(() => (marks && step !== null ? { t: step, doneAt: marks.doneAt, readAt: marks.readAt } : null), [marks, step]);
+  const replayDone = form && replay ? form.items.filter((i) => (replay.doneAt.get(i.id) ?? Infinity) <= replay.t).length : null;
 
   const nodes: Record<Step, Node> = {
     form: form
@@ -150,27 +160,24 @@ export function Workspace() {
     report: replayDone !== null ? { id: 'report', label: 'Report', stat: `${replayDone} of ${form?.items.length} questions in` } : { id: 'report', label: 'Report', stat: counts ? (forYou ? <>{counts.fromRecords} filled · <span className="text-orange-ink">{forYou}</span> for staff</> : `${counts.fromRecords} filled · staff done`) : 'Every field filled' },
   };
 
-  const replay: ReplayState | null = useMemo(() => {
-    if (!form || replayT === null) return null;
-    const doneAt = new Map<string, number>();
-    for (const e of form.events) for (const id of (e.detail.items as string[] | undefined) ?? []) doneAt.set(id, Math.max(doneAt.get(id) ?? 0, e.end));
-    const readAt = Math.max(...form.events.filter((e) => e.lane === 'Read form').map((e) => e.end));
-    return { t: replayT, doneAt, readAt };
-  }, [form, replayT]);
-
   /** Why the agent answered a field: looked up in the run of the report that was clicked, which becomes the one on screen. */
-  const onWhy = (run: FormRun, itemId: string, fieldId: string) => {
-    const item = run.items.find((i) => i.id === itemId);
-    const field = item?.fields.find((f) => f.id === fieldId);
-    if (!item || !field) return;
-    if (run.form.id !== funderId) ws.setFunderId(run.form.id);
-    setReplayT(null);
-    setWhy({ item, field });
-    const ev = run.events.find((e) => e.kind === 'llm' && ((e.detail.items as string[] | undefined) ?? []).includes(itemId));
-    setEvent(ev ?? null);
-    setFocusItems([itemId]);
-    open('agent');
-  };
+  const { setFunderId } = ws;
+  const onWhy = useCallback(
+    (run: FormRun, itemId: string, fieldId: string) => {
+      const item = run.items.find((i) => i.id === itemId);
+      const field = item?.fields.find((f) => f.id === fieldId);
+      if (!item || !field) return;
+      if (run.form.id !== funderId) setFunderId(run.form.id);
+      setReplayT(null);
+      setWhy({ item, field });
+      const ev = run.events.find((e) => e.kind === 'llm' && ((e.detail.items as string[] | undefined) ?? []).includes(itemId));
+      setEvent(ev ?? null);
+      setFocusItems([itemId]);
+      open('agent');
+    },
+    [funderId, setFunderId, open],
+  );
+  const hoverItem = useCallback((id: string | null) => setLitItems(id ? [id] : null), []);
 
   /** A question picked on the form's source: open it if it's folded away, scroll to it and flash it. */
   const pickQuestion = (id: string) => {
@@ -233,9 +240,9 @@ export function Workspace() {
         orgName={ORG}
         replay={live ? replay : null}
         focusItems={live && pane === 'agent' ? (litItems ? null : focusItems) : null}
-        onHoverItem={(i) => live && setLitItems(i ? [i] : null)}
+        onHoverItem={live ? hoverItem : NOOP}
         onStaff={ws.answerStaff}
-        onWhy={(itemId, fieldId) => onWhy(out.form.run, itemId, fieldId)}
+        onWhy={onWhy}
       />
     ) : (
       <ReportPage report={out.report} template={templateById(id as TemplateId)} />
@@ -313,16 +320,16 @@ export function Workspace() {
             </div>
           ) : (
           <div className="mt-4 grid gap-5 min-[72rem]:grid-cols-[minmax(0,34rem)_minmax(0,1fr)]">
-            {wide ? (
-              <aside className="no-print scroll-y sticky top-4 max-h-[calc(100dvh-2rem)] self-start pb-2 pr-1" aria-label="Inspector">
+            {/* The static page can't know the screen, so it carries both and CSS shows the right one until the script decides: no jump on load. */}
+            {wide && (
+              <aside className="no-print scroll-y sticky top-4 max-h-[calc(100dvh-2rem)] self-start pb-2 pr-1 max-[72rem]:hidden" aria-label="Inspector">
                 {inspector}
               </aside>
-            ) : (
-              form && (
-                <div className="no-print">
-                  <RunCard run={form} litItems={null} selected={null} onSelect={() => {}} replayT={null} onReplay={() => {}} onFocusItems={() => {}} compact onExpand={() => open('agent')} />
-                </div>
-              )
+            )}
+            {(!wide || !mounted) && form && (
+              <div className="no-print min-[72rem]:hidden">
+                <RunCard run={form} litItems={null} selected={null} onSelect={() => {}} replayT={null} onReplay={() => {}} onFocusItems={() => {}} compact onExpand={() => open('agent')} />
+              </div>
             )}
             <main id="main" className="print-root min-w-0">
               {report}

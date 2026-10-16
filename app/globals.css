@@ -41,10 +41,30 @@
   --color-orange-on-mah: oklch(78% 0.15 52);
   --color-green-on-mah: oklch(82% 0.13 150);
 
-  --font-sans: 'DM Sans Variable', ui-sans-serif, system-ui, -apple-system, 'Segoe UI', sans-serif;
-  --font-serif: 'Lora Variable', ui-serif, Georgia, serif;
+  --font-sans: 'DM Sans Variable', 'DM Sans Fallback', ui-sans-serif, system-ui, -apple-system, 'Segoe UI', sans-serif;
+  --font-serif: 'Lora Variable', 'Lora Fallback', ui-serif, Georgia, serif;
 
   --ease-out-quint: cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+/* Until the web fonts arrive, text sets in Arial and Times sized to DM Sans and Lora, so nothing
+   rewraps when they swap in (on a phone the pipeline gained a row). The values are what next/font
+   computes from the latin files (getFallbackMetricsFromFontFile); rerun it if the fonts change. */
+@font-face {
+  font-family: 'DM Sans Fallback';
+  src: local('Arial');
+  size-adjust: 105.13%;
+  ascent-override: 94.36%;
+  descent-override: 29.49%;
+  line-gap-override: 0%;
+}
+@font-face {
+  font-family: 'Lora Fallback';
+  src: local('Times New Roman');
+  size-adjust: 114.93%;
+  ascent-override: 87.53%;
+  descent-override: 23.84%;
+  line-gap-override: 0%;
 }
 
 @layer base {

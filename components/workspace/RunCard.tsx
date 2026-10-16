@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
+import { useEffect, useId, useLayoutEffect, useMemo, useRef, useState } from 'react';
 import { fieldName, fmtSeconds, lanes as laneList, peakParallel, type FormRun, type RunEvent } from '@/lib/forms';
 import { BackIcon, ForwardIcon } from '../icons';
 import { Readable } from './Readable';
@@ -38,6 +38,7 @@ const items = (e: RunEvent): string[] => (Array.isArray(e.detail.items) ? (e.det
 
 /** The recorded agent run: one lane per worker, every model call, tool call, check and review on a shared clock. */
 export function RunCard({ run, litItems, selected, onSelect, replayT, onReplay, onFocusItems, compact = false, onExpand, autoplay = false }: Props) {
+  const titleId = useId();
   const wrap = useRef<HTMLDivElement>(null);
   const [width, setWidth] = useState(520);
   useLayoutEffect(() => {
@@ -87,6 +88,8 @@ export function RunCard({ run, litItems, selected, onSelect, replayT, onReplay, 
       raf.current = requestAnimationFrame(tick);
     };
     onSelect(null);
+    // Report the start now, not on the first frame: a hidden tab runs no frames until it's shown.
+    onReplay(from);
     raf.current = requestAnimationFrame(tick);
   };
   const stop = () => {
@@ -97,11 +100,22 @@ export function RunCard({ run, litItems, selected, onSelect, replayT, onReplay, 
   useEffect(() => () => {
     if (raf.current) cancelAnimationFrame(raf.current);
   }, []);
-  // First visit: the run plays once by itself, a moment after the page settles.
+  // First visit: the run plays once by itself, a moment after the page settles. A tab opened in
+  // the background waits until it's shown, so the visitor sees it.
   useEffect(() => {
     if (!autoplay || compact) return;
-    const t = window.setTimeout(() => play(0), 600);
-    return () => window.clearTimeout(t);
+    let t = 0;
+    const start = () => {
+      if (document.visibilityState !== 'visible') return;
+      document.removeEventListener('visibilitychange', start);
+      t = window.setTimeout(() => play(0), 600);
+    };
+    document.addEventListener('visibilitychange', start);
+    start();
+    return () => {
+      document.removeEventListener('visibilitychange', start);
+      window.clearTimeout(t);
+    };
   }, [autoplay]); // eslint-disable-line react-hooks/exhaustive-deps
   // A new form stops the old replay.
   useEffect(() => stop, [run.form.id]); // eslint-disable-line react-hooks/exhaustive-deps
@@ -143,10 +157,10 @@ export function RunCard({ run, litItems, selected, onSelect, replayT, onReplay, 
   };
 
   return (
-    <section aria-labelledby="run-title" className="rounded-2xl bg-mah text-on-mah">
+    <section aria-labelledby={titleId} className="rounded-2xl bg-mah text-on-mah">
       <div className="flex flex-wrap items-start justify-between gap-x-4 gap-y-2 px-5 pt-4">
         <div className="min-w-0">
-          <h2 id="run-title" className="eyebrow !text-on-mah-muted">
+          <h2 id={titleId} className="eyebrow !text-on-mah-muted">
             Agent run <span className="font-medium normal-case tracking-normal text-on-mah-faint">· recorded {fmtDay(run.recorded_on)}</span>
           </h2>
           <p className="num mt-1.5 text-[13px] leading-snug text-on-mah-muted">
