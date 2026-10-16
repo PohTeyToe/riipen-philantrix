@@ -8,8 +8,8 @@ import { allChoices } from '../lib/choices';
 import { PERIODS, sample } from '../lib/data';
 import { measure } from '../lib/engine';
 import { applyAnswers, detectFindings } from '../lib/findings';
-import { countsPeople, fillForm, parseStaffNumber, runById, type FilledForm } from '../lib/forms';
-import { buildReport, computePeriod } from '../lib/report';
+import { countsPeople, fillForm, parseStaffNumber, RUNS, runById, type FilledForm } from '../lib/forms';
+import { buildReport, computePeriod, WITHHELD_SHARE } from '../lib/report';
 import { build, staffKey } from '../components/workspace/model';
 
 const findings = detectFindings(sample);
@@ -132,6 +132,49 @@ describe('staff answers belong to a period', () => {
     expect(view(july.form, 'q7.A')).toMatchObject({ staff: null, question: 'How many enrolled youth were matched with a mentor in July 2026?' });
     expect(view(quarter.form, 'q7.A')).toMatchObject({ question: 'How many enrolled youth were matched with a mentor between July and September 2026?' });
     expect(view(july.form, 'q7.C')).toMatchObject({ state: 'waiting' });
+  });
+});
+
+describe('drafts', () => {
+  // The metric slots a draft rendered as something other than their number, as the guard log names them.
+  const changedSlots = (text: string, parts: { text: string; ref?: { kind: string; metric?: string } }[]) =>
+    [...new Set(parts.filter((x) => x.ref?.kind === 'metric' && (x.text === WITHHELD_SHARE || x.text.startsWith('fewer than'))).map((x) => x.ref!.metric!))].sort();
+  const logged = (f: FilledForm, fieldId: string) =>
+    f.guard.filter((a) => a.fieldId.startsWith(`${fieldId}:`)).map((a) => `${a.fieldId.slice(fieldId.length + 1)} ${a.shows}`).sort();
+  const draftRun = (text: string) =>
+    ({
+      ...RUNS[0],
+      items: [{ id: 'd', number: '1', title: 'Summary', quote: '', quote_match: 'exact', fields: [{ id: 'd.1', label: 'Summary', quote: '', quote_match: 'exact', wants: 'text', answer: 'draft', metric: null, age_range: null, formula: null, text, ask: null, to_staff: null, missing: null, reason: '', history: [] }] }],
+    }) as unknown as typeof RUNS[number];
+
+  it('log exactly the slots the guard changed in every agent draft, once each', () => {
+    for (const run of RUNS) {
+      for (const p of PERIODS) {
+        for (let below = 2; below <= 10; below++) {
+          const f = fillForm(run, figures(below, p));
+          for (const { field, view: v } of f.items.flatMap((i) => i.fields)) {
+            if (v.state !== 'draft') continue;
+            const ids = changedSlots(field.text ?? '', v.parts);
+            const shows = (id: string) => v.parts.find((x) => x.ref?.kind === 'metric' && x.ref.metric === id)!.text;
+            expect(logged(f, field.id), `${run.form.id} ${p.id} ${below} ${field.id}`).toEqual(ids.map((id) => `${id} ${shows(id)}`));
+          }
+        }
+      }
+    }
+  });
+
+  it('log a small people count, a share and a repeated slot, and leave 0 people alone', () => {
+    // 6 new participants this quarter: under a cutoff of 7 they read "fewer than 7".
+    const f = fillForm(draftRun('{new_participants} joined; {new_participants} again; {retention_rate} stayed; {sessions_delivered} sessions.'), figures(7));
+    expect(f.items[0].fields[0].view).toMatchObject({ state: 'draft' });
+    expect(logged(f, 'd.1')).toEqual(['new_participants fewer than 7', `retention_rate ${WITHHELD_SHARE}`]);
+    expect(f.guard.find((a) => a.fieldId === 'd.1:new_participants')).toMatchObject({ kind: 'small' });
+    expect(logged(fillForm(draftRun('{new_participants} joined.'), figures(5)), 'd.1')).toEqual([]);
+  });
+
+  it("list the Geist outcomes draft's retention share, so the guard doesn't say nothing was hidden", () => {
+    const f = fillForm(runById('geist-foster-youth'), figures());
+    expect(f.guard.map((a) => a.shows)).toContain(WITHHELD_SHARE);
   });
 });
 

@@ -10,7 +10,7 @@ import greyHighlands from '../data/agent-runs/grey-highlands.json';
 import { commas, fmtPercent, halfUp } from './format';
 import { METRICS, type MetricId, type MetricKind } from './metrics';
 import { WITHHELD, isSmall, peopleForFunder, shareIsSmall, smallRange } from './privacy';
-import { renderSlot, type PeriodFigures, type SummaryPart, type TraceRef } from './report';
+import { renderSlot, WITHHELD_SHARE, type PeriodFigures, type SummaryPart, type TraceRef } from './report';
 import type { SlotKind } from './templates';
 
 export type AnswerType = 'metric' | 'formula' | 'draft' | 'ask' | 'missing';
@@ -120,8 +120,8 @@ export interface FormRun {
   items: FormItem[];
 }
 
-/** The OJJDP grid first: the biggest form, and the run with the most workers at once. */
-export const RUNS: FormRun[] = [ojjdp, greyHighlands, geist] as unknown as FormRun[];
+/** Grey Highlands first: its first questions are a one-click choice and a paragraph filled from the records, and a gap answer moves numbers on it. */
+export const RUNS: FormRun[] = [greyHighlands, ojjdp, geist] as unknown as FormRun[];
 export type FormId = string;
 export const runById = (id: FormId): FormRun => {
   const r = RUNS.find((x) => x.form.id === id);
@@ -373,8 +373,20 @@ export function fillForm(run: FormRun, f: PeriodFigures, staff: Record<string, s
           const display = people ? peopleForFunder(v, below) : a.kind === 'hours' ? commas(halfUp(Math.round(v * 100), 100)) : commas(v);
           return { field: fd, view: { state: 'value', display, value: v, ref: null, kind: people ? 'people' : a.kind, guarded: small ? 'small' : null, working } };
         }
-        case 'draft':
+        case 'draft': {
+          // A draft's number slots are funder copy too: log each one the guard changed, once.
+          const seen = new Set<MetricId>();
+          for (const m of (fd.text ?? '').matchAll(/\{([a-z0-9_]+)\}/g)) {
+            const id = m[1] as MetricId;
+            if (!(id in METRICS) || seen.has(id)) continue;
+            seen.add(id);
+            const mv = f.metrics[id];
+            const label = `${fieldName(item, fd)}, ${METRICS[id].label.toLowerCase()}`;
+            if (mv.display === WITHHELD) guard.push({ fieldId: `${fd.id}:${id}`, label, kind: 'derived', shows: WITHHELD_SHARE, why: `The people it counts, or the people it leaves out, are ${range}.` });
+            else if (METRICS[id].kind === 'people' && mv.value !== null && isSmall(mv.value, below)) guard.push({ fieldId: `${fd.id}:${id}`, label, kind: 'small', shows: `fewer than ${below}`, why: smallWhy(below) });
+          }
           return { field: fd, view: { state: 'draft', parts: renderDraft(fd.text ?? '', f), ask: fd.ask, staff: staff[fd.id]?.trim() || null } };
+        }
         case 'ask': {
           const numeric = STAFF_NUMBER.includes(fd.wants);
           const n = numeric ? nums.get(fd.id) : undefined;
