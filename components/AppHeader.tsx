@@ -11,7 +11,7 @@ const HOW: [string, string][] = [
   ['Agent', "Claude read each funder's public form. Parallel workers mapped each field to the records with the engine's tools. Code checks and a separate review call tested every answer; rejects went back once, then to a person. Recorded Oct 16, replayed here."],
   ['Numbers', 'Code in your browser counts every figure the records hold and rebuilds on every change. No model writes a number.'],
   ['Gaps', 'The check compares records with the schedule. Unanswered, a report counts only what was logged.'],
-  ['Privacy', 'No names in funder copy. Counts of 1 to 4 people show as "<5", typed ones too. Shares and gaps that would reveal one are hidden.'],
+  ['Privacy', 'No names in funder copy. Counts of 1 to 4 people show as "<5", typed ones too. A percent, or a count beside its total, that would reveal one is hidden.'],
   ['Data', 'A made-up mentorship org. Not made or endorsed by Philantrix or the funders.'],
 ];
 

@@ -49,6 +49,33 @@ describe('numbers staff type', () => {
   });
 });
 
+describe('typed numbers the guard checks against the whole page', () => {
+  // Codex's cases on the fix commit: each gave a small count away by subtraction or by a typed percent.
+  it('holds back a typed count 1 to 4 below another people count on the page', () => {
+    // 38 tracked beside 40 served says 2 weren't.
+    const f = fillForm(ojjdp, figures(), { 'q11.B': '38' });
+    expect(view(f, 'q11.B')).toMatchObject({ staff: '38', shows: 'Not shown' });
+    expect(view(fillForm(ojjdp, figures(), { 'q11.B': '30' }), 'q11.B')).toMatchObject({ staff: '30', shows: null });
+  });
+
+  it('holds back a field that repeats a hidden one', () => {
+    // 4.B asks for 3.A again: 18 of 20 completed, so 2 didn't.
+    const f = fillForm(ojjdp, figures(), { 'q3.A': '18', 'q3.B': '20', 'q4.B': '18' });
+    expect(view(f, 'q3.A')).toMatchObject({ shows: 'Not shown' });
+    expect(view(f, 'q4.B')).toMatchObject({ shows: 'Not shown' });
+    expect(view(f, 'q3.C')).toMatchObject({ state: 'withheld' });
+    expect(view(f, 'q3.B')).toMatchObject({ shows: null });
+  });
+
+  it('checks a typed percent against the counts on its question', () => {
+    // 95% of 40 mentors says 2 left, whether or not 2 was typed too.
+    expect(view(fillForm(ojjdp, figures(), { 'q5.A': '2', 'q5.B': '40', 'q5.C': '95%' }), 'q5.C')).toMatchObject({ shows: 'Not shown' });
+    expect(view(fillForm(ojjdp, figures(), { 'q5.B': '40', 'q5.C': '95' }), 'q5.C')).toMatchObject({ shows: 'Not shown' });
+    expect(view(fillForm(ojjdp, figures(), { 'q5.B': '40', 'q5.C': '75%' }), 'q5.C')).toMatchObject({ staff: '75%', shows: null });
+    expect(view(fillForm(ojjdp, figures(), { 'q5.C': '140%' }), 'q5.C')).toMatchObject({ staff: null });
+  });
+});
+
 describe('numbers that give each other away', () => {
   it('holds back enrolled at the start when enrolled during the period, minus it, is a small count', () => {
     // Jul to Sep: 34 at the start, 40 during. At a cutoff of 10 the 6 who joined show as "<10",

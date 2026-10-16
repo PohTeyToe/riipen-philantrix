@@ -269,6 +269,11 @@
     border-color: var(--color-mah);
     color: var(--color-mah);
   }
+  @media (pointer: coarse) {
+    .answer {
+      min-height: 44px;
+    }
+  }
   .answer[aria-pressed='true'] {
     background: var(--color-mah);
     border-color: var(--color-mah);

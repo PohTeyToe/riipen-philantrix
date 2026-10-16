@@ -83,8 +83,8 @@ export function FormReport({ filled, period, orgName, replay, focusItems, onHove
       {reading ? (
         <Skeleton />
       ) : (
-        // Keyed by period: a typed answer belongs to the period it was typed for.
-        <div key={period.id} className={grid ? '' : 'divide-y divide-line'}>
+        // Keyed by form and period: an answer box half typed on one form or period must not carry into another.
+        <div key={`${form.id}|${period.id}`} className={grid ? '' : 'divide-y divide-line'}>
           {grid ? (
             <GridForm items={live} shown={shown} focusItems={focusItems} onHoverItem={onHoverItem} {...cb} />
           ) : (
@@ -180,9 +180,12 @@ const echoes = (title: string, quote: string) => {
 /** Fields with an answer first; the ones the records hold nothing for fold into one line. */
 const split = (fields: FilledField[]): [FilledField[], FilledField[]] => [fields.filter((f) => f.view.state !== 'missing'), fields.filter((f) => f.view.state === 'missing')];
 
+/** What the program would have to start tracking, each sentence once: several fields of one question often need the same thing. */
+const toTrack = (fields: FilledField[]): string[] => [...new Set(fields.flatMap((f) => (f.view.state === 'missing' ? f.view.what.split(/(?<=\.)\s+/) : [])))].filter(Boolean);
+
 function NotTracked({ fields }: { fields: FilledField[] }) {
   const letters = fields.map((f) => letter(f.field.id).replace('.', '')).filter(Boolean);
-  const what = [...new Set(fields.map((f) => (f.view.state === 'missing' ? f.view.what : '')))].filter(Boolean);
+  const what = toTrack(fields);
   return (
     <details className="group text-[12.5px] leading-snug text-muted">
       <summary className="inline-flex cursor-pointer list-none items-center gap-1.5 hover:text-ink [&::-webkit-details-marker]:hidden">
@@ -284,7 +287,7 @@ function Untracked({ items, shown }: { items: FilledItem[]; shown: (id: string) 
             <span className="num font-semibold text-muted">{item.number ?? ''}</span>
             <span>
               <span className="font-semibold">{item.title}.</span>{' '}
-              <span className="text-muted">To track: {[...new Set(fields.map((f) => (f.view.state === 'missing' ? f.view.what : '')))].filter(Boolean).join(' ')}</span>
+              <span className="text-muted">To track: {toTrack(fields).join(' ')}</span>
             </span>
           </li>
         ))}
@@ -296,7 +299,7 @@ function Untracked({ items, shown }: { items: FilledItem[]; shown: (id: string) 
 function FieldAnswer({ f, item, label, compact = false, formId, onStaff, onWhy }: { f: FilledField; item: FilledItem['item']; label: string | null; compact?: boolean } & FieldCb) {
   const { field, view } = f;
   const why = (
-    <button type="button" onClick={() => onWhy(item.id, field.id)} className="why no-print text-[11.5px] font-semibold text-faint hover:text-mah" aria-label={`Why the agent answered ${field.label} this way`}>
+    <button type="button" onClick={() => onWhy(item.id, field.id)} className="why no-print text-[11.5px] font-semibold text-faint hover:text-mah pointer-coarse:-my-3 pointer-coarse:px-1.5 pointer-coarse:py-3.5" aria-label={`Why the agent answered ${field.label} this way`}>
       Why
     </button>
   );
@@ -423,7 +426,7 @@ function Guarded({ children }: { children: React.ReactNode }) {
   );
 }
 
-const NUMBER_HINT: Record<string, string> = { count: 'A whole number, like 30.', hours: 'A number of hours, like 12.5.', money: 'An amount, like 1,200.' };
+const NUMBER_HINT: Record<string, string> = { count: 'A whole number, like 30.', hours: 'A number of hours, like 12.5.', money: 'An amount, like 1,200.', percent: 'A percent up to 100, like 75%.' };
 
 /**
  * A field only a person can answer. Closed, it's one quiet line. Choice
@@ -496,7 +499,7 @@ function StaffInput({
       <div className="mt-0.5">
         {numeric ? (
           <p className="flex flex-wrap items-baseline gap-x-2">
-            <span className={`num font-semibold tracking-[-0.01em] ${compact ? 'text-[17px]' : 'text-[24px] leading-none'}`}>{shows ?? value}</span>
+            <span className={`num font-semibold tracking-[-0.01em] ${compact ? 'text-[17px]' : 'text-[24px] leading-none'}`}>{shows ?? (wants === 'percent' && !value.endsWith('%') ? `${value}%` : value)}</span>
             {shows && <Guarded>{shows.startsWith('<') ? 'Small count hidden' : 'Privacy guard'}</Guarded>}
           </p>
         ) : (
@@ -504,10 +507,10 @@ function StaffInput({
         )}
         <p className="mt-0.5 flex items-center gap-2.5 text-[11.5px] text-muted">
           <span className="font-semibold text-green-ink">Entered by staff</span>
-          <button type="button" className="no-print font-semibold text-faint hover:text-mah" onClick={() => setOpen(true)}>
+          <button type="button" className="no-print font-semibold text-faint hover:text-mah pointer-coarse:-my-3 pointer-coarse:py-3.5" onClick={() => setOpen(true)}>
             Edit
           </button>
-          <button type="button" className="no-print font-semibold text-faint hover:text-mah" onClick={() => onChange('')}>
+          <button type="button" className="no-print font-semibold text-faint hover:text-mah pointer-coarse:-my-3 pointer-coarse:py-3.5" onClick={() => onChange('')}>
             Clear
           </button>
           {why}
@@ -518,7 +521,7 @@ function StaffInput({
   if (!open) {
     return (
       <p className="flex min-w-0 items-baseline gap-2 text-[12.5px] leading-snug">
-        <button type="button" onClick={() => setOpen(true)} className="no-print shrink-0 font-semibold text-mah hover:underline" aria-label={`Answer: ${question}`}>
+        <button type="button" onClick={() => setOpen(true)} className="no-print shrink-0 font-semibold text-mah hover:underline pointer-coarse:-my-3 pointer-coarse:py-3.5" aria-label={`Answer: ${question}`}>
           Answer
         </button>
         <span className="min-w-0 truncate text-muted" title={question}>
@@ -553,7 +556,7 @@ function StaffInput({
             inputMode={wants === 'count' ? 'numeric' : 'decimal'}
             aria-invalid={error ? true : undefined}
             aria-describedby={error ? `${id}-err` : undefined}
-            placeholder={wants === 'money' ? '$' : wants === 'hours' ? 'Hours' : 'Number'}
+            placeholder={wants === 'money' ? '$' : wants === 'hours' ? 'Hours' : wants === 'percent' ? '%' : 'Number'}
             className={`h-8 w-32 rounded-md border bg-surface px-2.5 text-[13.5px] outline-none placeholder:text-faint focus:border-mah ${error ? 'border-orange' : 'border-line-strong'}`}
           />
         ) : (

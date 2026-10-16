@@ -179,10 +179,11 @@ export function Workspace() {
     const fold = el.closest('details');
     if (fold) fold.open = true;
     if (!wide) setSheet(false);
+    const still = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
     requestAnimationFrame(() => {
-      el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      el.scrollIntoView({ behavior: still ? 'auto' : 'smooth', block: 'center' });
       const tint = getComputedStyle(document.documentElement).getPropertyValue('--color-mah-tint');
-      el.animate([{ backgroundColor: tint }, { backgroundColor: 'transparent' }], { duration: 1400, easing: 'cubic-bezier(0.22, 1, 0.36, 1)' });
+      el.animate([{ backgroundColor: tint }, { backgroundColor: 'transparent' }], { duration: still ? 1 : 1400, easing: 'cubic-bezier(0.22, 1, 0.36, 1)' });
     });
   };
 
@@ -241,10 +242,12 @@ export function Workspace() {
     );
   const report = render(b.output, funderId, true);
   const comparing = wide && compareWith !== null && second !== null;
+  const modal = !wide && sheet;
 
   return (
     <TraceContext.Provider value={trace}>
-      <div className="flex min-h-dvh flex-col">
+      {/* While the phone sheet is open, the page behind it can't take focus. */}
+      <div className="flex min-h-dvh flex-col" inert={modal}>
         <AppHeader />
         <section aria-label="Organization, period and funder" className="no-print border-b border-line bg-surface">
           <div className="mx-auto max-w-[1480px] px-4 pb-3 pt-3 sm:px-6">
@@ -328,14 +331,11 @@ export function Workspace() {
           )}
         </div>
 
-        {!wide && sheet && (
-          <Sheet onClose={closeSheet}>{inspector}</Sheet>
-        )}
-
         <footer className="no-print mx-auto w-full max-w-[1480px] px-4 pb-6 text-[12px] text-faint sm:px-6">
           Sample data. Not made or endorsed by Philantrix or any funder shown.
         </footer>
       </div>
+      {modal && <Sheet onClose={closeSheet}>{inspector}</Sheet>}
     </TraceContext.Provider>
   );
 }

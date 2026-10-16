@@ -195,10 +195,10 @@ function SessionTools({ ws, sel, roster }: { ws: Workspace; sel: Sel; roster: bo
           <b className="font-semibold">{name}</b> · {s.attended} of {s.enrolled} attended
         </span>
         <span className="flex gap-1">
-          <button type="button" className="btn btn-quiet !min-h-7 !px-2 text-[12px]" onClick={() => ws.commit({ ...ws.snap, edits: setSeats(sample, ws.snap.edits, keys, true) }, `${name}: everyone ticked`)}>
+          <button type="button" className="btn btn-quiet !min-h-7 !px-2 text-[12px] pointer-coarse:!min-h-11 pointer-coarse:!px-3" onClick={() => ws.commit({ ...ws.snap, edits: setSeats(sample, ws.snap.edits, keys, true) }, `${name}: everyone ticked`)}>
             Tick all
           </button>
-          <button type="button" className="btn btn-quiet !min-h-7 !px-2 text-[12px]" onClick={() => ws.commit({ ...ws.snap, edits: setSeats(sample, ws.snap.edits, keys, false) }, `${name}: cleared`)}>
+          <button type="button" className="btn btn-quiet !min-h-7 !px-2 text-[12px] pointer-coarse:!min-h-11 pointer-coarse:!px-3" onClick={() => ws.commit({ ...ws.snap, edits: setSeats(sample, ws.snap.edits, keys, false) }, `${name}: cleared`)}>
             Clear session
           </button>
         </span>

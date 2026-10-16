@@ -170,12 +170,13 @@ export interface FilledForm {
   counts: { fromRecords: number; forStaff: number; staffDone: number; notTracked: number };
 }
 
-const STAFF_NUMBER = ['count', 'hours', 'money'];
+const STAFF_NUMBER = ['count', 'hours', 'money', 'percent'];
 
-/** What a person typed, as a number: whole for a count, "1,200.50" or "$1,200" for hours and money. Anything else is not an answer yet. */
+/** What a person typed, as a number: whole for a count, "1,200.50" or "$1,200" for hours and money, "95%" for a percent. Anything else is not an answer yet. */
 export function parseStaffNumber(wants: string, s: string | undefined): number | null {
   const t = s?.replace(/[$,\s]/g, '') ?? '';
   if (wants === 'count') return /^\d+$/.test(t) ? Number(t) : null;
+  if (wants === 'percent') return /^\d+(\.\d+)?%?$/.test(t) && parseFloat(t) <= 100 ? parseFloat(t) : null;
   return /^\d+(\.\d+)?$/.test(t) ? Number(t) : null;
 }
 
@@ -275,27 +276,62 @@ export function fillForm(run: FormRun, f: PeriodFigures, staff: Record<string, s
       const typed = parseStaffNumber(fd.wants, staff[fd.id]);
       if (typed === null) continue;
       const people = countsPeople(fd);
-      nums.set(fd.id, { value: typed, kind: people ? 'people' : fd.wants === 'hours' ? 'hours' : 'count', display: people ? peopleForFunder(typed, below) : commas(typed), ref: null, small: people && isSmall(typed, below) });
+      const kind: MetricKind = people ? 'people' : fd.wants === 'percent' ? 'percent' : fd.wants === 'hours' ? 'hours' : 'count';
+      nums.set(fd.id, { value: typed, kind, display: people ? peopleForFunder(typed, below) : kind === 'percent' ? `${typed}%` : commas(typed), ref: null, small: people && isSmall(typed, below) });
     }
   }
 
-  // Pairs where one number counts some of the other's people: enrolled at the
-  // start inside enrolled during the period, the top of a share inside its
-  // bottom. When the gap between them is small, the smaller one is held back.
+  // Two people counts give away their gap: 40 enrolled beside 38 matched says
+  // 2 weren't. The guard checks the pairs it knows are nested: a metric
+  // declared inside another, the top of a share inside its bottom, and any two
+  // people counts on the same question, which is how forms group a count with
+  // its total. When a gap is 1 to cutoff-1, the smaller number is held back.
+  // A shown count equal to a held-back one is the same number told twice
+  // ("trained mentors, from 3A"), so it's held back too. Repeats until stable.
+  const people = (id: string) => nums.get(id)?.kind === 'people';
   const pairs: [string, string][] = [];
-  for (const { fd } of all) {
+  for (const { item, fd } of all) {
     const within = fd.answer === 'metric' && fd.metric && !fd.age_range ? METRICS[fd.metric].within : undefined;
     if (within) for (const { fd: o } of all) if (o.answer === 'metric' && o.metric === within && !o.age_range) pairs.push([fd.id, o.id]);
     if (fd.answer === 'formula' && fd.formula?.op === 'percent') {
       const [a, b] = fd.formula.of;
-      if (nums.get(a)?.kind === 'people' && nums.get(b)?.kind === 'people') pairs.push([a, b]);
+      if (people(a) && people(b)) pairs.push([a, b]);
+    }
+    if (people(fd.id)) for (const o of item.fields) if (o.id > fd.id && people(o.id)) pairs.push([fd.id, o.id]);
+  }
+  const shown = (n: Numeric | undefined): n is Numeric & { value: number } => !!n && !n.withheld && !n.small && n.value !== null;
+  const hold = (id: string, why: string) => {
+    nums.get(id)!.withheld = { display: WITHHELD, kind: 'derived', why };
+  };
+  for (let moved = true; moved; ) {
+    moved = false;
+    for (const [x, y] of pairs) {
+      const a = nums.get(x);
+      const b = nums.get(y);
+      if (!shown(a) || !shown(b) || !isSmall(Math.abs(a.value - b.value), below)) continue;
+      const [lo, hi] = a.value <= b.value ? [x, y] : [y, x];
+      hold(lo, `Taken from ${name(hi)}, it would leave ${range}.`);
+      moved = true;
+    }
+    const held = [...nums.entries()].filter(([, n]) => n.kind === 'people' && n.withheld?.kind === 'derived' && n.value !== null);
+    for (const [id, n] of nums) {
+      const same = shown(n) && n.kind === 'people' ? held.find(([, h]) => h.value === n.value) : undefined;
+      if (!same) continue;
+      hold(id, `It repeats ${name(same[0])}, which is not shown.`);
+      moved = true;
     }
   }
-  for (const [sub, sup] of pairs) {
-    const s = nums.get(sub);
-    const p = nums.get(sup);
-    if (!s || !p || s.withheld || p.withheld || s.small || p.small || s.value === null || p.value === null) continue;
-    if (isSmall(p.value - s.value, below)) s.withheld = { display: WITHHELD, kind: 'derived', why: `Taken from ${name(sup)}, it would leave ${range}.` };
+
+  // A percent staff type is checked like a share against each people count on
+  // its question: 95% of 40 mentors says 2 left. Worked out from a count the
+  // guard holds back, it's held back too.
+  for (const { item, fd } of all) {
+    const n = nums.get(fd.id);
+    if (!n || n.kind !== 'percent' || fd.answer !== 'ask' || n.value === null) continue;
+    const counts = item.fields.map((o) => nums.get(o.id)).filter((o): o is Numeric => !!o && o.kind === 'people');
+    const p = n.value / 100;
+    if (counts.some((c) => c.withheld || c.small)) n.withheld = { display: WITHHELD, kind: 'derived', why: 'It may be worked out from a count on this question that is not shown.' };
+    else if (counts.some((c) => c.value !== null && shareIsSmall(Math.round(p * c.value), c.value, below))) n.withheld = { display: WITHHELD, kind: 'derived', why: `With a count on this question, it would show ${range}.` };
   }
 
   const log = (item: FormItem, fd: FormField, n: Numeric) => {
