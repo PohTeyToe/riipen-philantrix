@@ -101,7 +101,8 @@ export function RunCard({ run, litItems, selected, onSelect, replayT, onReplay, 
     if (raf.current) cancelAnimationFrame(raf.current);
   }, []);
   // First visit: the run plays once by itself, a moment after the page settles. A tab opened in
-  // the background waits until it's shown, so the visitor sees it.
+  // the background waits until it's shown, so the visitor sees it. Another form picked before it
+  // starts plays that form's run.
   useEffect(() => {
     if (!autoplay || compact) return;
     let t = 0;
@@ -115,7 +116,7 @@ export function RunCard({ run, litItems, selected, onSelect, replayT, onReplay, 
       document.removeEventListener('visibilitychange', arm);
       window.clearTimeout(t);
     };
-  }, [autoplay]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [autoplay, run.form.id]); // eslint-disable-line react-hooks/exhaustive-deps
   // A new form stops the old replay.
   useEffect(() => stop, [run.form.id]); // eslint-disable-line react-hooks/exhaustive-deps
 
