@@ -50,7 +50,7 @@ export function ReportPage({ report, template }: { report: Report; template: Tem
               {s.type === 'summary' && (
                 <>
                   <p className="max-w-[62ch] text-[14px] leading-[1.6]">
-                    {s.parts.map((p, j) => (p.ref ? <T key={j} r={p.ref}>{p.text}</T> : <span key={j}>{p.text}</span>))}
+                    {s.parts.map((p, j) => (p.ref ? <T key={j} r={p.ref} inline>{p.text}</T> : <span key={j}>{p.text}</span>))}
                   </p>
                   <p className="mt-2 text-[11.5px] text-muted">{s.label}</p>
                 </>

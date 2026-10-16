@@ -15,22 +15,26 @@ interface TraceCtx {
 
 export const TraceContext = createContext<TraceCtx>({ activeKey: null, changed: new Map(), version: 0, open: () => {} });
 
-/** Any number on a report. Opens its sources: the rows it was counted from, lit up on the register. */
-export function T({ r, children, className = '', changeKey, label }: { r: TraceRef; children: ReactNode; className?: string; changeKey?: string; label?: string }) {
+/**
+ * Any number on a report. Opens its sources: the rows it was counted from, lit
+ * up on the register. inline: a number inside a sentence, which keeps the
+ * sentence's spacing and marks a change without a label over the line above.
+ */
+export function T({ r, children, className = '', changeKey, label, inline = false }: { r: TraceRef; children: ReactNode; className?: string; changeKey?: string; label?: string; inline?: boolean }) {
   const { activeKey, changed, version, open } = useContext(TraceContext);
   const key = refKey(r);
   const was = changed.get(changeKey ?? key);
   return (
     <button
       type="button"
-      className={`trace ${was !== undefined ? 'changed' : ''} ${className}`}
+      className={`trace ${inline ? 'trace-inline' : ''} ${was !== undefined ? 'changed' : ''} ${className}`}
       aria-pressed={activeKey === key}
       aria-label={label}
       onClick={() => open(r)}
       key={was !== undefined ? `c${version}` : 'n'}
     >
       {children}
-      {was !== undefined && (
+      {was !== undefined && !inline && (
         <span className="was" aria-hidden>
           was <s>{was}</s>
         </span>

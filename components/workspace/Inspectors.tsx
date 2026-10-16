@@ -179,7 +179,7 @@ export function CheckView({ ws, ms }: { ws: Workspace; ms: number }) {
       <PanelHead title="Gap check" meta={`${findings.length} found in ${fmtMs(ms)} · ${open ? `${open} need an answer` : 'all answered'}`}>
         <UndoBar ws={ws} />
       </PanelHead>
-      <p className="text-[12.5px] text-muted">Until answered, reports count only what was logged.</p>
+      <p className="text-[12.5px] text-muted">Until answered, only logged records count.</p>
       <ReceiptLine ws={ws} />
       {KINDS.map(({ kind, title }) => {
         const list = findings.filter((f) => f.kind === kind);
@@ -241,7 +241,7 @@ function headline(f: Finding): string {
 
 function detail(f: Finding): string {
   switch (f.kind) {
-    case 'session_not_logged': return `On the schedule (${sample.groups.find((g) => g.id === f.groupId)?.schedule_label}). No attendance logged.`;
+    case 'session_not_logged': return `Scheduled ${sample.groups.find((g) => g.id === f.groupId)?.schedule_label}.`;
     case 'inactive_participant': return `Last activity ${fmtDay(f.lastActivity)}, ${f.daysInactive} days before ${fmtShortDate(sample.asOf)}. No exit date.`;
     case 'goal_no_due_date': return 'Shows progress without a forecast. No answer needed.';
     case 'duplicate_record': return `${groupName(f.groupId)}. Counted once. No answer needed.`;
@@ -255,7 +255,7 @@ export function CountView({ ws, ms, period }: { ws: Workspace; ms: number; perio
   return (
     <div className="space-y-3">
       <PanelHead title="Count" meta={`${Object.keys(METRICS).length} metrics for ${period.label}, counted in ${fmtMs(ms)}`} />
-      <p className="text-[12.5px] text-muted">Code counts every figure. Click one for its rows.</p>
+      <p className="text-[12.5px] text-muted">Click a figure for its rows.</p>
       <table className="w-full border-collapse text-[13px]">
         <thead>
           <tr className="border-b border-line text-left text-[11.5px] text-muted">
@@ -328,11 +328,20 @@ export function GuardView({ ws, actions, ms }: { ws: Workspace; actions: GuardAc
             <span>Nothing on this report needed hiding.</span>
           </li>
         )}
-        {actions.map((a) => (
-          <li key={a.fieldId} className="flex gap-2">
+        {[...new Set(actions.map((a) => a.why))].map((why) => (
+          <li key={why} className="flex gap-2">
             <ShieldIcon className="mt-0.5 size-3.5 shrink-0 text-mah" />
             <span>
-              <b className="num font-semibold">{a.label}</b>: shows <b className="num font-semibold">{a.shows}</b>. <span className="text-muted">{a.why}</span>
+              <span className="text-muted">{why}</span>
+              <span className="mt-0.5 block space-y-0.5">
+                {actions
+                  .filter((a) => a.why === why)
+                  .map((a) => (
+                    <span key={a.fieldId} className="num block">
+                      {a.label}: <b className="font-semibold">{a.shows}</b>
+                    </span>
+                  ))}
+              </span>
             </span>
           </li>
         ))}
@@ -375,7 +384,10 @@ export function SourcesView({ ws, traceRef, periodId, onBack }: { ws: Workspace;
           <p key={a} className="num text-[13px] leading-snug">{a}</p>
         ))}
       </div>
-      <p className="text-[12.5px] leading-snug text-muted">{view.formula}</p>
+      <details className="text-[12.5px] leading-snug text-muted">
+        <summary className="cursor-pointer font-semibold text-ink">How it&apos;s counted</summary>
+        <p className="mt-1">{view.formula}</p>
+      </details>
       <Register model={b.register} range={{ start: period.start, end: period.end }} sources={sources} spot={spot} selected={null} onSelect={() => {}} onToggle={() => {}} />
       <p className="num text-[12px] text-muted">
         Staff view, names shown. {view.rowsCaption}

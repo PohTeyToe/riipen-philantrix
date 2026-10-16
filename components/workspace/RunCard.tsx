@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
-import { fmtSeconds, lanes as laneList, peakParallel, type FormRun, type RunEvent } from '@/lib/forms';
+import { fieldName, fmtSeconds, lanes as laneList, peakParallel, type FormRun, type RunEvent } from '@/lib/forms';
 import { BackIcon, ForwardIcon } from '../icons';
 
 const LABEL_W = 70;
@@ -19,6 +19,9 @@ interface Props {
   replayT: number | null;
   onReplay: (t: number | null) => void;
   onFocusItems: (items: string[] | null) => void;
+  /** Phones: the lanes only, and a tap opens the full run. */
+  compact?: boolean;
+  onExpand?: () => void;
 }
 
 const stamp = (ms: number) => {
@@ -29,7 +32,7 @@ const stamp = (ms: number) => {
 const items = (e: RunEvent): string[] => (Array.isArray(e.detail.items) ? (e.detail.items as string[]) : []);
 
 /** The recorded agent run: one lane per worker, every model call, tool call, check and review on a shared clock. */
-export function RunCard({ run, litItems, selected, onSelect, replayT, onReplay, onFocusItems }: Props) {
+export function RunCard({ run, litItems, selected, onSelect, replayT, onReplay, onFocusItems, compact = false, onExpand }: Props) {
   const wrap = useRef<HTMLDivElement>(null);
   const [width, setWidth] = useState(520);
   useLayoutEffect(() => {
@@ -111,6 +114,15 @@ export function RunCard({ run, litItems, selected, onSelect, replayT, onReplay, 
     return out;
   }, [dur, track]);
 
+  // Every mark but tool calls, in time order, for stepping through the run.
+  const order = useMemo(() => run.events.filter((x) => x.kind !== 'tool').sort((a, b) => a.start - b.start || a.id.localeCompare(b.id)), [run]);
+  const step = (d: 1 | -1) => {
+    if (!selected) return;
+    const at = order.findIndex((x) => x.id === (selected.kind === 'tool' ? selected.detail.parent : selected.id));
+    const next = order[at + d];
+    if (next) pick(next);
+  };
+
   const pick = (e: RunEvent | null) => {
     setPicked(e !== null);
     onSelect(e);
@@ -134,7 +146,7 @@ export function RunCard({ run, litItems, selected, onSelect, replayT, onReplay, 
             )}
           </p>
         </div>
-        {replayT === null ? (
+        {compact ? null : replayT === null ? (
           <button type="button" onClick={() => play()} className="btn !min-h-8 border border-mah-line bg-mah-well text-on-mah hover:border-on-mah-faint">
             <PlayIcon /> Replay
           </button>
@@ -184,7 +196,7 @@ export function RunCard({ run, litItems, selected, onSelect, replayT, onReplay, 
                   const common = {
                     opacity: on ? 1 : 0.35,
                     onMouseEnter: () => setHover(e),
-                    onClick: () => pick(selected?.id === e.id ? null : e),
+                    onClick: () => (compact ? onExpand?.() : pick(selected?.id === e.id ? null : e)),
                     style: { cursor: 'pointer' },
                   };
                   const sel = selected?.id === e.id;
@@ -231,29 +243,31 @@ export function RunCard({ run, litItems, selected, onSelect, replayT, onReplay, 
         {hover && !selected && <Tip e={hover} run={run} x={(x(hover.start) / width) * 100} y={((AXIS + lanes.findIndex((l) => l.id === hover.lane) * ROW) / height) * 100} />}
       </div>
 
-      <Legend />
-
-      <div className="mt-3 rounded-b-2xl border-t border-mah-line bg-mah-well px-5 py-4" aria-live="polite">
-        {replayT !== null ? (
-          <p className="num text-[13px] text-on-mah-muted">
-            Replaying the recorded run, {replayT < readEnd ? `reading at ${readSpeed}×` : `mapping at ${speed}×`}: <b className="font-semibold text-on-mah">{stamp(replayT)}</b> of {stamp(dur)}.
-          </p>
-        ) : selected ? (
-          <Detail e={selected} run={run} onClose={() => pick(null)} onStep={(d) => {
-            const order = run.events.filter((x) => x.kind !== 'tool').sort((a, b) => a.start - b.start || a.id.localeCompare(b.id));
-            const at = order.findIndex((x) => x.id === (selected.kind === 'tool' ? selected.detail.parent : selected.id));
-            const next = order[at + d];
-            if (next) pick(next);
-          }} />
-        ) : (
-          <p className="flex flex-wrap items-center justify-between gap-2 text-[13px] text-on-mah-muted">
-            Click any mark for its inputs, tool calls and verdict.
-            <button type="button" onClick={() => pick(run.events.filter((x) => x.kind !== 'tool').sort((a, b) => a.start - b.start)[0])} className="font-semibold text-on-mah hover:underline">
-              Step through
-            </button>
-          </p>
-        )}
-      </div>
+      {compact ? (
+        <button type="button" onClick={onExpand} className="mt-2 flex w-full items-center justify-between rounded-b-2xl border-t border-mah-line bg-mah-well px-5 py-3 text-left text-[13px] font-semibold text-on-mah">
+          Open the run: every call, tool and check <ForwardIcon className="size-3.5" />
+        </button>
+      ) : (
+        <>
+          <Legend />
+          <div className="mt-3 rounded-b-2xl border-t border-mah-line bg-mah-well px-5 py-4" aria-live="polite">
+            {replayT !== null ? (
+              <p className="num text-[13px] text-on-mah-muted">
+                Replay of the recorded run · {replayT < readEnd ? `reading at ${readSpeed}×` : `mapping at ${speed}×`} · <b className="font-semibold text-on-mah">{stamp(replayT)}</b> of {stamp(dur)}
+              </p>
+            ) : selected ? (
+              <Detail e={selected} run={run} onClose={() => pick(null)} onStep={step} />
+            ) : (
+              <p className="flex flex-wrap items-center justify-between gap-2 text-[13px] text-on-mah-muted">
+                Click any mark for its inputs, tool calls and verdict.
+                <button type="button" onClick={() => pick(order[0])} className="font-semibold text-on-mah hover:underline">
+                  Step through
+                </button>
+              </p>
+            )}
+          </div>
+        </>
+      )}
     </section>
   );
 }
@@ -318,8 +332,8 @@ function Detail({ e, run, onClose, onStep }: { e: RunEvent; run: FormRun; onClos
         <div className="min-w-0">
           <p className="font-semibold text-on-mah">{e.kind === 'tool' ? `Tool call: ${e.label}` : e.label}</p>
           <p className="num mt-0.5 text-[12px] text-on-mah-muted">
-            {e.lane} · {stamp(e.start)} to {stamp(e.end)}
-            {e.kind === 'check' ? ` · ran in ${e.detail.micros ?? 0} µs` : ` · ${fmtSeconds(Math.max(1, e.end - e.start))}`}
+            {e.lane} · {e.end - e.start < 500 ? `at ${stamp(e.start)}` : `${stamp(e.start)} to ${stamp(e.end)} · ${fmtSeconds(e.end - e.start)}`}
+            {e.kind === 'check' && ` · ran in ${((e.detail.micros ?? 0) / 1000).toFixed(1)} ms`}
             {e.kind === 'llm' && e.detail.tokens_in ? ` · ${e.detail.model} · ${e.detail.tokens_in.toLocaleString('en-US')} tokens in, ${e.detail.tokens_out?.toLocaleString('en-US')} out` : ''}
           </p>
         </div>
@@ -346,12 +360,18 @@ function Detail({ e, run, onClose, onStep }: { e: RunEvent; run: FormRun; onClos
         <div className="mt-2">
           {e.detail.problems?.length ? (
             <ul className="space-y-1">
-              {e.detail.problems.slice(0, 6).map((p) => (
-                <li key={p} className="flex gap-2 leading-snug">
-                  <span aria-hidden className="mt-1.5 size-1.5 shrink-0 rounded-full bg-orange-on-mah" />
-                  <span className="text-on-mah">{p}</span>
-                </li>
-              ))}
+              {e.detail.problems.slice(0, 6).map((p) => {
+                const [where, what] = problemParts(p, run);
+                return (
+                  <li key={p} className="flex gap-2 leading-snug">
+                    <span aria-hidden className="mt-1.5 size-1.5 shrink-0 rounded-full bg-orange-on-mah" />
+                    <span className="text-on-mah">
+                      {where && <b className="font-semibold">{where}: </b>}
+                      {what}
+                    </span>
+                  </li>
+                );
+              })}
               {e.detail.problems.length > 6 && <li className="text-on-mah-muted">and {e.detail.problems.length - 6} more</li>}
             </ul>
           ) : (
@@ -364,7 +384,7 @@ function Detail({ e, run, onClose, onStep }: { e: RunEvent; run: FormRun; onClos
         <ul className="mt-2 space-y-1.5">
           {reviewNotes.slice(0, 5).map((n) => (
             <li key={n.id} className="leading-snug">
-              <span className="font-semibold text-orange-on-mah">{n.label}:</span> <span className="text-on-mah">{n.reason}</span>
+              <span className="font-semibold text-orange-on-mah">{n.label}:</span> <span className="text-on-mah">{slots(n.reason)}</span>
             </li>
           ))}
         </ul>
@@ -385,6 +405,31 @@ function Detail({ e, run, onClose, onStep }: { e: RunEvent; run: FormRun; onClos
       )}
     </div>
   );
+}
+
+/** Recorded text with "{confidence_improved}" slots shown as the figures they stand for. */
+function slots(text: string): React.ReactNode[] {
+  return text.split(/(\{[a-z0-9_]+\})/g).map((part, i) =>
+    /^\{[a-z0-9_]+\}$/.test(part) ? (
+      <span key={i} className="rounded bg-mah px-1 font-mono text-[11px] text-on-mah-muted">
+        {part.slice(1, -1).replace(/_/g, ' ')}
+      </span>
+    ) : (
+      part
+    ),
+  );
+}
+
+/** "q5.1: comparison word ..." as the field's name on the form and the problem. */
+function problemParts(p: string, run: FormRun): [string | null, string] {
+  const m = /^([\w.-]+): (.*)$/.exec(p);
+  if (!m) return [null, p];
+  for (const item of run.items) {
+    if (item.id === m[1]) return [item.number ? `${item.number} ${item.title}` : item.title, m[2]];
+    const fd = item.fields.find((f) => f.id === m[1]);
+    if (fd) return [fieldName(item, fd), m[2]];
+  }
+  return [m[1], m[2]];
 }
 
 function ToolIO({ e, compact = false }: { e: RunEvent; compact?: boolean }) {

@@ -112,7 +112,7 @@
     font: inherit;
     color: inherit;
     font-variant-numeric: tabular-nums lining-nums;
-    text-decoration: underline dotted oklch(26.2% 0.107 29.2 / 0.4);
+    text-decoration: underline dotted oklch(26.2% 0.107 29.2 / 0.6);
     text-decoration-thickness: 1.5px;
     text-underline-offset: 0.16em;
     border-radius: 5px;
@@ -120,6 +120,10 @@
     transition:
       background-color 150ms var(--ease-out-quint),
       color 150ms var(--ease-out-quint);
+  }
+  .trace-inline {
+    padding: 0 1px;
+    margin: 0;
   }
   .trace:hover {
     color: var(--color-mah);

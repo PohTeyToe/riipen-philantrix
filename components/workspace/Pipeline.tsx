@@ -91,7 +91,7 @@ export function Pipeline({ nodes, selected, onSelect, pulse }: Props) {
         } ${className}`}
       >
         <span className="flex items-baseline justify-between gap-2 md:w-full">
-          <span className={`whitespace-nowrap text-[11px] font-semibold uppercase tracking-[0.07em] md:text-[11.5px] ${on || isAgent ? 'text-mah' : 'text-muted'}`}>{n.label}</span>
+          <span className={`whitespace-nowrap text-[12px] font-semibold ${on || isAgent ? 'text-mah' : 'text-muted'}`}>{n.label}</span>
           {n.time && (
             <span key={LIVE.includes(s) ? pulse : 0} className={`num shrink-0 rounded px-0.5 text-[11px] font-medium text-faint max-md:hidden ${LIVE.includes(s) && pulse ? 'tick-flash' : ''}`}>
               {n.time}

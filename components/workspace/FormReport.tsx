@@ -89,22 +89,26 @@ export function FormReport({ filled, period, orgName, replay, focusItems, onHove
 function Tally({ counts }: { counts: FilledForm['counts'] }) {
   const left = counts.forStaff - counts.staffDone;
   return (
-    <ul className="num mt-3 flex flex-wrap gap-x-4 gap-y-1 text-[12.5px]" aria-label="Fields">
-      <li className="flex items-center gap-1.5">
-        <span aria-hidden className="size-2 rounded-[2px] bg-mah" />
-        <span className="font-semibold">{counts.fromRecords}</span> from records
-      </li>
-      <li className="flex items-center gap-1.5">
-        <span aria-hidden className={`size-2 rounded-full ${left ? 'bg-orange' : 'bg-green'}`} />
-        <span className="font-semibold">{left}</span> need you{counts.staffDone > 0 && <span className="text-muted">, {counts.staffDone} answered</span>}
-      </li>
-      {counts.notTracked > 0 && (
-        <li className="flex items-center gap-1.5 text-muted">
-          <span aria-hidden className="size-2 rounded-full border border-faint" />
-          <span className="font-semibold text-ink">{counts.notTracked}</span> not in records
+    <div className="mt-3 flex flex-wrap items-baseline justify-between gap-x-6 gap-y-1">
+      <ul className="num flex flex-wrap gap-x-4 gap-y-1 text-[12.5px]" aria-label="Fields">
+        <li className="flex items-center gap-1.5">
+          <span aria-hidden className="size-2 rounded-[2px] bg-mah" />
+          <span className="font-semibold">{counts.fromRecords}</span> from records
         </li>
-      )}
-    </ul>
+        <li className="flex items-center gap-1.5">
+          <span aria-hidden className={`size-2 rounded-full ${left ? 'bg-orange' : 'bg-green'}`} />
+          <span className="font-semibold">{left}</span> need you
+          {counts.staffDone > 0 && <span className="text-muted">· {counts.staffDone} answered</span>}
+        </li>
+        {counts.notTracked > 0 && (
+          <li className="flex items-center gap-1.5 text-muted">
+            <span aria-hidden className="size-2 rounded-full border border-faint" />
+            <span className="font-semibold text-ink">{counts.notTracked}</span> not in records
+          </li>
+        )}
+      </ul>
+      <p className="no-print text-[12px] text-muted">Click any underlined number for its rows.</p>
+    </div>
   );
 }
 
@@ -139,7 +143,7 @@ function Question({ item, shown, dim, onHoverItem, onStaff, onWhy }: { item: Fil
         {q.number && <span className="num grid h-[20px] min-w-[20px] shrink-0 place-items-center rounded-[5px] bg-sunken px-1 text-[11.5px]">{q.number}</span>}
         <span>{q.title}</span>
       </h3>
-      <p className="mt-1 max-w-[70ch] text-[12.5px] leading-snug text-muted">{q.quote}</p>
+      {!echoes(q.title, q.quote) && <p className="mt-1 max-w-[70ch] text-[12.5px] leading-snug text-muted">{q.quote}</p>}
       <div className={`mt-2.5 ${many ? 'space-y-2.5' : ''}`}>
         {live.map((f) =>
           shown ? (
@@ -155,6 +159,13 @@ function Question({ item, shown, dim, onHoverItem, onStaff, onWhy }: { item: Fil
     </section>
   );
 }
+
+/** The form's own words add nothing when they only repeat the title ("Amount received: $"). */
+const echoes = (title: string, quote: string) => {
+  const t = title.toLowerCase().replace(/[^a-z0-9]/g, '');
+  const q = quote.toLowerCase().replace(/[^a-z0-9]/g, '');
+  return q.startsWith(t) && q.length - t.length < 12;
+};
 
 /** Fields with an answer first; the ones the records hold nothing for fold into one line. */
 const split = (fields: FilledField[]): [FilledField[], FilledField[]] => [fields.filter((f) => f.view.state !== 'missing'), fields.filter((f) => f.view.state === 'missing')];
@@ -355,7 +366,7 @@ function FieldAnswer({ f, itemId, label, compact = false, onStaff, onWhy }: { f:
         <p className="max-w-[66ch] text-[14px] leading-[1.6]">
           {view.parts.map((p, i) =>
             p.ref ? (
-              <T key={i} r={p.ref} changeKey={`field:${field.id}:${i}`}>
+              <T key={i} r={p.ref} changeKey={`field:${field.id}:${i}`} inline>
                 {p.text}
               </T>
             ) : (
@@ -364,7 +375,7 @@ function FieldAnswer({ f, itemId, label, compact = false, onStaff, onWhy }: { f:
           )}
         </p>
         <p className="mt-1 flex items-center gap-2 text-[11.5px] text-muted">
-          <span className="font-semibold text-mah">Drafted by the agent</span> numbers filled from records {why}
+          <span className="font-semibold text-mah">Agent draft</span> · numbers from records {why}
         </p>
         {view.ask && <StaffInput question={view.ask} value={view.staff} onChange={(t) => onStaff(field.id, t)} />}
       </div>
@@ -434,8 +445,8 @@ function StaffInput({
       <p className="flex items-start gap-1.5 text-[12.5px] leading-snug">
         <span aria-hidden className="mt-[5px] size-[7px] shrink-0 rounded-full bg-orange" />
         <span className="min-w-0">
-          <span className="text-orange-ink">{question}</span>{' '}
-          <button type="button" onClick={() => setOpen(true)} className="no-print font-semibold text-mah hover:underline">
+          <span className="text-muted">{question}</span>{' '}
+          <button type="button" onClick={() => setOpen(true)} className="no-print font-semibold text-orange-ink hover:underline">
             Answer
           </button>
         </span>

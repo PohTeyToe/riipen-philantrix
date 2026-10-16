@@ -76,6 +76,13 @@ describe.each(RUNS.map((r) => [r.form.id, r] as [string, FormRun]))('%s', (id, r
     expect(lanes(run)[0].id).toBe('Read form');
   });
 
+  it('never saw a name: no participant name anywhere in the run, tool output included', () => {
+    // The check can fail: the same pattern finds a name in the staff-side records.
+    expect(JSON.stringify(sample.participants)).toMatch(new RegExp(`\\b${firstNames[0]}\\b`));
+    const all = JSON.stringify(run);
+    for (const n of firstNames) expect(all, n).not.toMatch(new RegExp(`\\b${n}\\b`));
+  });
+
   it('never shows a name, at any cutoff or period', () => {
     for (const below of [2, 5, 10]) {
       for (const period of PERIODS) {

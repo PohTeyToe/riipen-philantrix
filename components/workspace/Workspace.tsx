@@ -20,7 +20,6 @@ import { useWorkspace } from './useWorkspace';
 type Pane = Step | 'sources';
 const HASHES: Pane[] = ['form', 'agent', 'records', 'check', 'count', 'guard'];
 const ORG = sample.orgName.replace(' (sample)', '');
-const q3 = PERIODS[0];
 
 /** Wide screens show the inspector beside the report; narrower ones open it as a sheet. */
 function useWide() {
@@ -68,7 +67,7 @@ export function Workspace() {
     (p: Pane) => {
       setPane(p);
       setCompareWith(null);
-      if (!wide) setSheet(p !== 'agent');
+      if (!wide) setSheet(true);
       if (HASHES.includes(p) && window.location.hash !== `#${p}`) history.replaceState(null, '', `#${p}`);
     },
     [wide],
@@ -79,7 +78,7 @@ export function Workspace() {
     const h = window.location.hash.slice(1);
     if ((HASHES as string[]).includes(h)) {
       setPane(h as Pane);
-      if (window.matchMedia('(max-width: 71.99rem)').matches) setSheet(h !== 'agent');
+      if (window.matchMedia('(max-width: 71.99rem)').matches) setSheet(true);
     }
   }, []);
 
@@ -92,12 +91,6 @@ export function Workspace() {
     if (!form && (pane === 'agent' || pane === 'form')) setPane('agent');
   }, [funderId]); // eslint-disable-line react-hooks/exhaustive-deps
 
-  // The first rejection is the most telling moment of a run, so it's what the detail opens on.
-  useEffect(() => {
-    if (!form) return;
-    const first = form.events.find((e) => (e.kind === 'gate' || e.kind === 'check') && e.status === 'fail' && e.lane !== 'Read form') ?? form.events.find((e) => e.kind === 'llm' && e.lane.startsWith('Worker'));
-    setEvent(first ?? null);
-  }, [form]);
 
   const openTrace = useCallback(
     (ref: TraceRef) => {
@@ -137,7 +130,7 @@ export function Workspace() {
     records: { id: 'records', label: 'Records', stat: `${b.ds.engagements.length} rows${edited ? ` · ${edited} edited` : ` · ${sample.participants.length} people`}`, time: fmtMs(t.records) },
     check: { id: 'check', label: 'Gap check', stat: open_ ? <><span>{b.findings.length} found · </span><span className="text-orange-ink">{open_} open</span></> : `${b.findings.length} found · all answered`, time: fmtMs(t.check) },
     count: { id: 'count', label: 'Count', stat: `${Object.keys(b.figures.metrics).length} metrics`, time: fmtMs(t.count) },
-    guard: { id: 'guard', label: 'Privacy guard', stat: `${actions.length} hidden · 0 names`, time: fmtMs(t.report) },
+    guard: { id: 'guard', label: 'Privacy guard', stat: `${actions.length} hidden · no names`, time: fmtMs(t.report) },
     report: replayDone !== null ? { id: 'report', label: 'Report', stat: `${replayDone} of ${form?.items.length} questions in` } : { id: 'report', label: 'Report', stat: counts ? (forYou ? <><span>{counts.fromRecords} filled · </span><span className="text-orange-ink">{forYou} need you</span></> : `${counts.fromRecords} filled`) : 'Every field filled' },
   };
 
@@ -228,7 +221,7 @@ export function Workspace() {
                 <p className="eyebrow mt-0.5 flex flex-wrap gap-x-1.5">
                   <span className="text-mah">Sample data</span>
                   <span aria-hidden>·</span>
-                  <span>{q3.range}</span>
+                  <span>{period.range}</span>
                 </p>
               </div>
               <div className="seg" role="group" aria-label="Period">
@@ -292,7 +285,11 @@ export function Workspace() {
                 {inspector}
               </aside>
             ) : (
-              pane === 'agent' && <div className="no-print">{inspector}</div>
+              form && (
+                <div className="no-print">
+                  <RunCard run={form} litItems={null} selected={null} onSelect={() => {}} replayT={null} onReplay={() => {}} onFocusItems={() => {}} compact onExpand={() => open('agent')} />
+                </div>
+              )
             )}
             <main id="main" className="print-root min-w-0">
               {report}
@@ -301,7 +298,7 @@ export function Workspace() {
           )}
         </div>
 
-        {!wide && sheet && pane !== 'agent' && (
+        {!wide && sheet && (
           <Sheet onClose={() => setSheet(false)}>{inspector}</Sheet>
         )}
 
@@ -331,10 +328,10 @@ function FunderTabs({ value, onChange, compare, onCompare }: { value: string; on
   return (
     <div className="-mb-3 mt-2 flex items-end gap-x-5">
       <div className="flex min-w-0 flex-1 items-end gap-x-5 overflow-x-auto [scrollbar-width:none] max-md:[mask-image:linear-gradient(to_right,black_82%,transparent)]" role="tablist" aria-label="Funder">
-        <span role="presentation" className="eyebrow shrink-0 pb-2.5 !text-faint">Real forms</span>
+        <span role="presentation" className="shrink-0 pb-2.5 text-[12px] font-semibold text-faint">Real forms</span>
         {real.map(tab)}
         <span aria-hidden className="mb-3 h-4 w-px shrink-0 bg-line-strong" />
-        <span role="presentation" className="eyebrow shrink-0 pb-2.5 !text-faint">Examples</span>
+        <span role="presentation" className="shrink-0 pb-2.5 text-[12px] font-semibold text-faint">Examples</span>
         {examples.map(tab)}
       </div>
       {compare !== null && (

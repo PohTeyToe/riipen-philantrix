@@ -33,14 +33,16 @@ Fixed rem scale: 11.5 eyebrow (uppercase, 0.08em tracking, like their "TRACKED G
 ## Layout
 
 - App shell: a one-line header, a funder bar (form tabs and period), then a two-column workspace.
-- Left column, sticky: the pipeline graph (the funder's form and the records flowing into one report), then the inspector for the selected step. The agent run is the default.
+- Full width under the funder bar: the pipeline graph (the funder's form and the records flowing into one report). Each step opens its inspector.
+- Left column, sticky: the inspector for the selected step. The agent run is the default.
 - Right column: the report in the funder's own layout. The OJJDP form is a measures grid; the others are numbered questions.
-- Phone: stacked. Graph, then report; the inspector opens as a bottom sheet.
+- Phone: stacked. Graph chips, the run's lanes in a compact card, then the report; every inspector, the full run included, opens as a bottom sheet.
+- Side by side: two funders' reports from the same build, for comparing formats.
 - Panels: 12px radius, 1px line border, no heavy shadows, no nested cards.
 
 ## Components
 
-- Pipeline graph: two input lanes (form, records) merging into guard and report. Each node: name, a count, a time. Selected node is mahogany.
+- Pipeline graph: two input lanes (form, records) merging into guard and report. Each node: name, a count, a time. The selected node gets a mahogany outline on the rose tint, so the run card stays the one dark object. On phones the nodes become one-line chips.
 - Run card: mahogany. Stats row, swimlane timeline (one lane per worker), event detail. Bars: model call (on-mah), tool call (tick), check (green pass, orange fail), review verdict, gate.
 - Report field: their number and words, our answer. States: filled from records, drafted (slots linked), needs you (orange, answerable), not in records (muted, says what to track), withheld by the guard.
 - Traceable number: dotted underline; selected is mahogany fill.
