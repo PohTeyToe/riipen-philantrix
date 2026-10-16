@@ -259,7 +259,7 @@ export function RunCard({ run, litItems, selected, onSelect, replayT, onReplay, 
               <Detail e={selected} run={run} onClose={() => pick(null)} onStep={step} />
             ) : (
               <p className="flex flex-wrap items-center justify-between gap-2 text-[13px] text-on-mah-muted">
-                Click any mark for its inputs, tool calls and verdict.
+                Click a mark for its inputs and verdict.
                 <button type="button" onClick={() => pick(order[0])} className="font-semibold text-on-mah hover:underline">
                   Step through
                 </button>
