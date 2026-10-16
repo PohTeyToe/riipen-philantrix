@@ -7,7 +7,7 @@ export const NO_INDEX: Metadata['robots'] = { index: false, follow: false };
 
 export const LINKS = {
   /** The public repo for this demo. Update if the repo gets a different name. */
-  repo: 'https://github.com/PohTeyToe/philantrix-funder-report',
+  repo: 'https://github.com/PohTeyToe/riipen-philantrix',
   github: 'https://github.com/PohTeyToe',
   linkedin: 'https://linkedin.com/in/abdallah-safi',
 };
@@ -16,7 +16,7 @@ export const LINKS = {
  * True only once LINKS.repo is public and its CI run is green. While false,
  * the walkthrough has no "See the code" button, so it never links to a 404.
  */
-export const REPO_PUBLIC = false;
+export const REPO_PUBLIC = true;
 
 /**
  * True only while the row-level security tests pass: `npm test` runs

@@ -291,9 +291,10 @@ export default function Walkthrough() {
 
           <section className="mt-16 border-t border-rule pt-8" aria-label="About me">
             <p className="max-w-[44rem] text-[16px] leading-[1.6]">
-              I&apos;m Abdallah Safi, a 4th-year Computer Engineering student at TMU. Over two Riipen work terms with BESI, I built their safety-certification portal
-              as the sole developer, so they can show an auditor who is certified. They hired me back for the second term. I&apos;m also the lead developer on an AI
-              paperwork app that a Calgary real estate brokerage runs its live deals on, and I led the brokerage&apos;s dev interns through September.
+              I&apos;m Abdallah Safi, the lead developer for MaxWell Canyon Creek, a Calgary real estate brokerage that runs live deals on MyDocuFlow,
+              the AI paperwork app I rebuilt for them. I led their dev interns through September. Over two Riipen work terms with BESI, I built their
+              safety-certification portal as the sole developer, so they can show an auditor who is certified, and they hired me back for the second term.
+              Computer Engineering at TMU.
             </p>
             <p className="mt-3 flex gap-5 text-[15px] font-semibold">
               <a href={LINKS.github} className="text-accent underline decoration-accent/30 underline-offset-2 hover:decoration-accent">GitHub</a>
