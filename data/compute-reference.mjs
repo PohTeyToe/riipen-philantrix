@@ -71,7 +71,7 @@ export const TEMPLATES = [
       period: { kind: 'text', meaning: 'The reporting period, written out, for example "July to September 2026".' },
       confidence_improved: { kind: 'percent', meaning: 'Share of participants with a check-in during the period whose confidence score (1 to 5) went up between intake and their latest check-in.' },
       participants_checked_in: { kind: 'people', meaning: 'Participants who rated their confidence at intake and at a check-in during the period.' },
-      retention_rate: { kind: 'percent', meaning: 'Participants still enrolled on the last day of the period, as a share of everyone enrolled at any point in it.' },
+      retention_rate: { kind: 'percent', meaning: 'Participants enrolled during the period who did not leave in it (an exit on the last day counts as leaving), as a share of everyone enrolled at any point in it.' },
       attendance_rate: { kind: 'percent', meaning: 'Share of seats filled at sessions with attendance logged. Each enrolled group member is one seat at each of those sessions.' },
       assignment_submissions: { kind: 'count', meaning: 'Assignments handed in during the period.' },
       submissions_per_participant: { kind: 'decimal', meaning: 'Assignments handed in per participant served.' },
@@ -242,7 +242,8 @@ export function computeReference({ org, participants, engagements, checkins, goa
     for (const e of att.values()) hoursCents += cents(e.units);
     const served = new Set([...att.keys()].map((k) => k.split('|')[0]));
     const enrolledAny = people.filter((p) => p.join_date <= end && (p.exit_date === null || p.exit_date >= start));
-    const retained = enrolledAny.filter((p) => enrolledOn(p, end));
+    // An exit date inside the period, its last day included, is an exit in it.
+    const retained = enrolledAny.filter((p) => p.exit_date === null || p.exit_date > end);
 
     // Confidence: each participant's latest check-in in range against their
     // intake score. Two on the same day: the lower score.
@@ -279,6 +280,14 @@ export function computeReference({ org, participants, engagements, checkins, goa
   function rateFigure(num, den, emptyText) {
     if (den === 0) return { numerator: 0, denominator: 0, value: null, display: emptyText };
     return { numerator: num, denominator: den, value: num / den, display: fmtPercent(num, den) };
+  }
+
+  // A share of people: funder copy shows "Not shown" when the people counted,
+  // or the people left out, are 1 to 4.
+  function peopleShare(num, den, emptyText) {
+    const fig = rateFigure(num, den, emptyText);
+    const small = (n) => n >= 1 && n <= 4;
+    return den > 0 && (small(num) || small(den - num)) ? { ...fig, display: 'Not shown' } : fig;
   }
 
   // ---------- goals ----------
@@ -398,13 +407,13 @@ export function computeReference({ org, participants, engagements, checkins, goa
       sessions_delivered: { value: m.sessions_delivered, display: fmtCount(m.sessions_delivered), with_records: m.sessions_with_records, ran_not_recorded: m.sessions_ran_not_recorded },
       participant_hours: { value: m.hours_cents / 100, display: fmtCents(m.hours_cents) },
       attendance_rate: { attended: m.attended, offered: m.offered, ...rateFigure(m.attended, m.offered, 'No sessions in this period') },
-      retention_rate: { retained: m.retained, enrolled: m.enrolled_any, ...rateFigure(m.retained, m.enrolled_any, 'No participants in this period') },
+      retention_rate: { retained: m.retained, enrolled: m.enrolled_any, ...peopleShare(m.retained, m.enrolled_any, 'No participants in this period') },
       assignment_submissions: { value: m.submissions, display: fmtCount(m.submissions) },
       submissions_per_participant: m.served.size
         ? { submissions: m.submissions, served: m.served.size, value: m.submissions / m.served.size, display: fmtDecimal1(m.submissions, m.served.size) }
         : { submissions: m.submissions, served: 0, value: null, display: 'No participants served' },
       participants_checked_in: { value: m.checked_in, display: fmtPeople(m.checked_in) },
-      confidence_improved: { improved: m.improved, checked_in: m.checked_in, ...rateFigure(m.improved, m.checked_in, 'No check-ins in this period') },
+      confidence_improved: { improved: m.improved, checked_in: m.checked_in, ...peopleShare(m.improved, m.checked_in, 'No check-ins in this period') },
       enrolled_at_start: { value: m.enrolled_at_start, display: fmtPeople(m.enrolled_at_start) },
       enrolled_in_period: { value: m.enrolled_any, display: fmtPeople(m.enrolled_any) },
       participants_exited: { value: m.enrolled_any - m.retained, display: fmtPeople(m.enrolled_any - m.retained) },
@@ -414,7 +423,7 @@ export function computeReference({ org, participants, engagements, checkins, goa
     return {
       metrics,
       attendance_rate_by_group: byGroup.map(({ g, gm }) => ({ group_id: g.id, attended: gm.attended, offered: gm.offered, ...rateFigure(gm.attended, gm.offered, `No sessions in ${period.short}`) })),
-      retention_by_group: byGroup.map(({ g, gm }) => ({ group_id: g.id, retained: gm.retained, enrolled: gm.enrolled_any, ...rateFigure(gm.retained, gm.enrolled_any, `No participants in ${period.short}`) })),
+      retention_by_group: byGroup.map(({ g, gm }) => ({ group_id: g.id, retained: gm.retained, enrolled: gm.enrolled_any, ...peopleShare(gm.retained, gm.enrolled_any, `No participants in ${period.short}`) })),
       participants_by_age_range: ageBreakdown(m.served),
       goals: goalFigs,
       data_notes: dataNotes(period, st, findings, goalFigs),
@@ -435,7 +444,7 @@ export function computeReference({ org, participants, engagements, checkins, goa
       case 'people': return fig.value === 0 ? 'no' : fig.value <= 4 ? 'fewer than 5' : commas(fig.value);
       case 'count': return commas(fig.value);
       case 'hours': return fmtCents(cents(fig.value));
-      case 'percent': return fig.display;
+      case 'percent': return fig.display === 'Not shown' ? 'a withheld share' : fig.display;
       case 'decimal': return fig.display;
       default: throw new Error(`unknown slot kind ${kind}`);
     }

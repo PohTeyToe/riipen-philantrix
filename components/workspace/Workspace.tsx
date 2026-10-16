@@ -3,7 +3,8 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { PERIODS, periodById, sample } from '@/lib/data';
 import { needsAnswer } from '@/lib/findings';
-import { fmtSeconds, runById, type FormField, type FormItem, type RunEvent } from '@/lib/forms';
+import { fieldName, fmtSeconds, OP_WORD, runById, type FormField, type FormItem, type FormRun, type RunEvent } from '@/lib/forms';
+import { METRICS } from '@/lib/metrics';
 import { refKey, type TraceRef } from '@/lib/report';
 import { templateById, type TemplateId } from '@/lib/templates';
 import { AppHeader } from '../AppHeader';
@@ -12,6 +13,7 @@ import { FormReport, type ReplayState } from './FormReport';
 import { CheckView, CountView, FormSourceView, fmtMs, GuardView, RecordsView, SourcesView } from './Inspectors';
 import { diffNumbers, FUNDERS, guardActions, isForm, outputFor, type Output } from './model';
 import { Pipeline, type Node, type Step } from './Pipeline';
+import { Readable } from './Readable';
 import { ReportPage } from './ReportPage';
 import { RunCard } from './RunCard';
 import { TraceContext } from './Traceable';
@@ -43,6 +45,10 @@ export function Workspace() {
 
   const [pane, setPane] = useState<Pane>('agent');
   const [sheet, setSheet] = useState(false);
+  const closeSheet = useCallback(() => setSheet(false), []);
+  // The first visit replays the run once, unless a link asked for a step.
+  const [autoplay, setAutoplay] = useState(false);
+  useEffect(() => setAutoplay(!window.location.hash), []);
   const [traceRef, setTraceRef] = useState<TraceRef | null>(null);
   const [event, setEvent] = useState<RunEvent | null>(null);
   const [replayT, setReplayT] = useState<number | null>(null);
@@ -73,23 +79,33 @@ export function Workspace() {
     [wide],
   );
 
-  // Older links: #report opens the report, #check and #records their steps.
+  // Step links (#check, #records, #guard...) open their step, on load and on any later hash change; #report scrolls to the report.
   useEffect(() => {
-    const h = window.location.hash.slice(1);
-    if ((HASHES as string[]).includes(h)) {
-      setPane(h as Pane);
-      if (window.matchMedia('(max-width: 71.99rem)').matches) setSheet(true);
-    }
+    const go = () => {
+      const h = window.location.hash.slice(1);
+      if ((HASHES as string[]).includes(h)) {
+        setPane(h as Pane);
+        setCompareWith(null);
+        if (window.matchMedia('(max-width: 71.99rem)').matches) setSheet(true);
+      } else if (h === 'report') {
+        requestAnimationFrame(() => document.querySelector('[data-report]')?.scrollIntoView({ block: 'start' }));
+      }
+    };
+    go();
+    window.addEventListener('hashchange', go);
+    return () => window.removeEventListener('hashchange', go);
   }, []);
 
-  // A new funder: start its run fresh.
-  useEffect(() => {
+  /** Another funder: its run starts fresh. */
+  const switchFunder = (id: string) => {
+    ws.setFunderId(id);
     setEvent(null);
     setFocusItems(null);
     setWhy(null);
     setReplayT(null);
-    if (!form && (pane === 'agent' || pane === 'form')) setPane('agent');
-  }, [funderId]); // eslint-disable-line react-hooks/exhaustive-deps
+    if (!isForm(id) && pane === 'form') setPane('agent');
+    if (id === compareWith) setCompareWith(null);
+  };
 
 
   const openTrace = useCallback(
@@ -130,8 +146,8 @@ export function Workspace() {
     records: { id: 'records', label: 'Records', stat: `${b.ds.engagements.length} rows${edited ? ` · ${edited} edited` : ` · ${sample.participants.length} people`}`, time: fmtMs(t.records) },
     check: { id: 'check', label: 'Gap check', stat: open_ ? <><span>{b.findings.length} found · </span><span className="text-orange-ink">{open_} open</span></> : `${b.findings.length} found · all answered`, time: fmtMs(t.check) },
     count: { id: 'count', label: 'Count', stat: `${Object.keys(b.figures.metrics).length} metrics`, time: fmtMs(t.count) },
-    guard: { id: 'guard', label: 'Privacy guard', stat: `${actions.length} hidden · no names`, time: fmtMs(t.report) },
-    report: replayDone !== null ? { id: 'report', label: 'Report', stat: `${replayDone} of ${form?.items.length} questions in` } : { id: 'report', label: 'Report', stat: counts ? (forYou ? <><span>{counts.fromRecords} filled · </span><span className="text-orange-ink">{forYou} need you</span></> : `${counts.fromRecords} filled`) : 'Every field filled' },
+    guard: { id: 'guard', label: 'Fill + privacy guard', stat: `${actions.length} hidden · no names`, time: fmtMs(t.report) },
+    report: replayDone !== null ? { id: 'report', label: 'Report', stat: `${replayDone} of ${form?.items.length} questions in` } : { id: 'report', label: 'Report', stat: counts ? (forYou ? <>{counts.fromRecords} filled · <span className="text-orange-ink">{forYou}</span> for staff</> : `${counts.fromRecords} filled · staff done`) : 'Every field filled' },
   };
 
   const replay: ReplayState | null = useMemo(() => {
@@ -142,16 +158,32 @@ export function Workspace() {
     return { t: replayT, doneAt, readAt };
   }, [form, replayT]);
 
-  const onWhy = (itemId: string, fieldId: string) => {
-    if (!form) return;
-    const item = form.items.find((i) => i.id === itemId);
+  /** Why the agent answered a field: looked up in the run of the report that was clicked, which becomes the one on screen. */
+  const onWhy = (run: FormRun, itemId: string, fieldId: string) => {
+    const item = run.items.find((i) => i.id === itemId);
     const field = item?.fields.find((f) => f.id === fieldId);
     if (!item || !field) return;
+    if (run.form.id !== funderId) ws.setFunderId(run.form.id);
+    setReplayT(null);
     setWhy({ item, field });
-    const ev = form.events.find((e) => e.kind === 'llm' && ((e.detail.items as string[] | undefined) ?? []).includes(itemId));
+    const ev = run.events.find((e) => e.kind === 'llm' && ((e.detail.items as string[] | undefined) ?? []).includes(itemId));
     setEvent(ev ?? null);
     setFocusItems([itemId]);
     open('agent');
+  };
+
+  /** A question picked on the form's source: open it if it's folded away, scroll to it and flash it. */
+  const pickQuestion = (id: string) => {
+    const el = document.getElementById(`q-${id}`);
+    if (!el) return;
+    const fold = el.closest('details');
+    if (fold) fold.open = true;
+    if (!wide) setSheet(false);
+    requestAnimationFrame(() => {
+      el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      const tint = getComputedStyle(document.documentElement).getPropertyValue('--color-mah-tint');
+      el.animate([{ backgroundColor: tint }, { backgroundColor: 'transparent' }], { duration: 1400, easing: 'cubic-bezier(0.22, 1, 0.36, 1)' });
+    });
   };
 
   const inspector = (() => {
@@ -160,7 +192,7 @@ export function Workspace() {
     if (pane === 'check') return <CheckView ws={ws} ms={t.check} />;
     if (pane === 'count') return <CountView ws={ws} ms={t.count} period={period} />;
     if (pane === 'guard') return <GuardView ws={ws} actions={actions} ms={t.report} />;
-    if (pane === 'form' && form) return <FormSourceView run={form} onPick={(id) => document.getElementById(`q-${id}`)?.scrollIntoView({ behavior: 'smooth', block: 'center' })} />;
+    if (pane === 'form' && form) return <FormSourceView run={form} onPick={pickQuestion} />;
     if (form) {
       return (
         <div className="space-y-3">
@@ -174,8 +206,12 @@ export function Workspace() {
               setWhy(null);
             }}
             replayT={replayT}
-            onReplay={setReplayT}
+            onReplay={(t) => {
+              setReplayT(t);
+              if (t !== null) setAutoplay(false);
+            }}
             onFocusItems={setFocusItems}
+            autoplay={autoplay}
           />
         </div>
       );
@@ -198,10 +234,7 @@ export function Workspace() {
         focusItems={live && pane === 'agent' ? (litItems ? null : focusItems) : null}
         onHoverItem={(i) => live && setLitItems(i ? [i] : null)}
         onStaff={ws.answerStaff}
-        onWhy={(itemId, fieldId) => {
-          if (!live) ws.setFunderId(id);
-          onWhy(itemId, fieldId);
-        }}
+        onWhy={(itemId, fieldId) => onWhy(out.form.run, itemId, fieldId)}
       />
     ) : (
       <ReportPage report={out.report} template={templateById(id as TemplateId)} />
@@ -234,10 +267,7 @@ export function Workspace() {
             </div>
             <FunderTabs
               value={funderId}
-              onChange={(id) => {
-                ws.setFunderId(id);
-                if (id === compareWith) setCompareWith(null);
-              }}
+              onChange={switchFunder}
               compare={wide ? compareWith !== null : null}
               onCompare={() => setCompareWith(compareWith ? null : FUNDERS.find((f) => f.id !== funderId)!.id)}
             />
@@ -256,11 +286,11 @@ export function Workspace() {
           </section>
 
           {comparing ? (
-            <div className="mt-4 grid grid-cols-2 gap-5">
-              <main id="main" className="print-root min-w-0">
+            <div className="print-flat mt-4 grid grid-cols-2 gap-5">
+              <main id="main" className="print-root print-flat min-w-0">
                 {report}
               </main>
-              <div className="min-w-0">
+              <div className="print-flat min-w-0">
                 <div className="no-print mb-2 flex items-center justify-between gap-3">
                   <label className="flex items-center gap-2 text-[12.5px] font-semibold text-muted">
                     Beside it
@@ -299,7 +329,7 @@ export function Workspace() {
         </div>
 
         {!wide && sheet && (
-          <Sheet onClose={() => setSheet(false)}>{inspector}</Sheet>
+          <Sheet onClose={closeSheet}>{inspector}</Sheet>
         )}
 
         <footer className="no-print mx-auto w-full max-w-[1480px] px-4 pb-6 text-[12px] text-faint sm:px-6">
@@ -355,29 +385,40 @@ function CompareIcon() {
 function WhyNote({ item, field, onClose }: { item: FormItem; field: FormField; onClose: () => void }) {
   const verdicts = field.history.filter((h) => h.step === 'review');
   const checks = field.history.filter((h) => h.step === 'check');
+  const name = (id: string) => {
+    const f = item.fields.find((x) => x.id === id);
+    return f ? fieldName(item, f) : id;
+  };
   const answer =
-    field.answer === 'metric' ? `Mapped to the metric ${field.metric}${field.age_range ? `, age ${field.age_range}` : ''}.` : field.answer === 'formula' ? `Worked out: ${field.formula?.op} of ${field.formula?.of.join(' and ')}.` : field.answer === 'draft' ? 'Drafted from the records, numbers as slots.' : field.answer === 'ask' ? 'Left for a person.' : 'Not in the records.';
+    field.answer === 'metric'
+      ? `Mapped to ${METRICS[field.metric!]?.label.toLowerCase() ?? field.metric}${field.age_range ? `, age ${field.age_range}` : ''}.`
+      : field.answer === 'formula'
+        ? `Worked out: ${field.formula?.of.map(name).join(` ${OP_WORD[field.formula.op]} `)}.`
+        : field.answer === 'draft'
+          ? 'Drafted from the records, numbers as slots.'
+          : field.answer === 'ask'
+            ? 'Left for a person.'
+            : 'Not in the records.';
   return (
-    <div className="fade-in rounded-xl border border-line bg-surface px-4 py-3 text-[13px]">
+    <div className="fade-in rounded-xl border border-line bg-surface px-4 py-3 text-[13px]" role="region" aria-label="Why the agent answered this way">
       <div className="flex items-start justify-between gap-3">
-        <p className="font-semibold">
-          {item.number ? `${item.number} · ` : ''}
-          {field.label}
-        </p>
+        <p className="font-semibold">{fieldName(item, field)}</p>
         <button type="button" onClick={onClose} className="-mr-1 grid size-7 shrink-0 place-items-center rounded-md text-muted hover:bg-sunken hover:text-ink" aria-label="Close">
           <CloseIcon className="size-3.5" />
         </button>
       </div>
       <p className="mt-1 text-muted">&ldquo;{field.quote}&rdquo;</p>
       <p className="mt-1.5">
-        <b className="font-semibold">{answer}</b> {field.reason}
+        <b className="font-semibold">{answer}</b> <Readable text={field.reason} />
       </p>
       {checks.map((c, i) => (
-        <p key={i} className="mt-1 text-[12.5px] text-orange-ink">Code check: {c.problems?.join('; ')}</p>
+        <p key={i} className="mt-1 text-[12.5px] text-orange-ink">
+          Code check: <Readable text={c.problems?.join('; ') ?? ''} />
+        </p>
       ))}
       {verdicts.map((v, i) => (
         <p key={i} className={`mt-1 text-[12.5px] ${v.verdict === 'pass' ? 'text-green-ink' : 'text-orange-ink'}`}>
-          Reviewer {v.verdict === 'pass' ? 'passed it' : 'rejected it'}: {v.reason}
+          Review call {v.verdict === 'pass' ? 'passed it' : 'rejected it'}: <Readable text={v.reason ?? ''} />
         </p>
       ))}
     </div>
@@ -395,8 +436,12 @@ function ExampleNote({ id }: { id: TemplateId }) {
   );
 }
 
+/** Phones: an inspector in a bottom sheet. Focus moves into it on open and back to where it was on close. */
 function Sheet({ onClose, children }: { onClose: () => void; children: React.ReactNode }) {
+  const close = useRef<HTMLButtonElement>(null);
   useEffect(() => {
+    const back = document.activeElement as HTMLElement | null;
+    close.current?.focus();
     const onKey = (e: KeyboardEvent) => e.key === 'Escape' && onClose();
     window.addEventListener('keydown', onKey);
     const root = document.documentElement;
@@ -405,14 +450,15 @@ function Sheet({ onClose, children }: { onClose: () => void; children: React.Rea
     return () => {
       window.removeEventListener('keydown', onKey);
       root.style.overflow = was;
+      back?.focus?.();
     };
   }, [onClose]);
   return (
     <>
       <div aria-hidden className="no-print fixed inset-0 z-30 bg-ink/30" onClick={onClose} />
-      <div role="dialog" aria-modal="true" className="no-print sheet-in fixed inset-x-0 bottom-0 z-40 flex max-h-[86dvh] flex-col rounded-t-2xl bg-canvas shadow-[0_-12px_40px_-12px_oklch(20.5%_0.006_29/0.3)]">
+      <div role="dialog" aria-modal="true" aria-label="Inspector" className="no-print sheet-in fixed inset-x-0 bottom-0 z-40 flex max-h-[86dvh] flex-col rounded-t-2xl bg-canvas shadow-[0_-12px_40px_-12px_oklch(20.5%_0.006_29/0.3)]">
         <div className="flex justify-end px-2 pt-2">
-          <button type="button" onClick={onClose} className="grid size-10 place-items-center rounded-md text-muted hover:bg-sunken hover:text-ink" aria-label="Close">
+          <button ref={close} type="button" onClick={onClose} className="grid size-11 place-items-center rounded-md text-muted hover:bg-sunken hover:text-ink" aria-label="Close">
             <CloseIcon />
           </button>
         </div>

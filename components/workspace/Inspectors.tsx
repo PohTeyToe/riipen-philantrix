@@ -83,52 +83,148 @@ function UndoBar({ ws }: { ws: Workspace }) {
 
 // ---------- Records ----------
 
+/** Touch and phone screens: a register square is too small to tap, so a tap picks the session and its people list below with big toggles. */
+function useTouch() {
+  const [touch, setTouch] = useState(false);
+  useEffect(() => {
+    const mq = window.matchMedia('(pointer: coarse), (max-width: 40rem)');
+    const update = () => setTouch(mq.matches);
+    update();
+    mq.addEventListener('change', update);
+    return () => mq.removeEventListener('change', update);
+  }, []);
+  return touch;
+}
+
+type Sel = { groupId: string; date: string; participantId?: string };
+
 export function RecordsView({ ws, range }: { ws: Workspace; range: { start: string; end: string } }) {
   const b = ws.b;
-  const [selected, setSelected] = useState<{ groupId: string; date: string } | null>(null);
+  const touch = useTouch();
+  const [selected, setSelected] = useState<Sel | null>(null);
   const edited = Object.keys(ws.snap.edits).length;
   return (
     <div className="space-y-3">
       <PanelHead title="Records" meta={`${b.ds.engagements.length.toLocaleString('en-US')} engagement records · ${sample.participants.length} participants · ${sample.groups.length} groups${edited ? ` · ${edited} edited` : ''}`}>
         <UndoBar ws={ws} />
       </PanelHead>
-      <p className="text-[12.5px] text-muted">Click a square to mark attended or absent.</p>
+      <p className="text-[12.5px] text-muted">{touch ? 'Tap a session to edit who attended.' : 'Click a square to mark attended or absent.'}</p>
       <Register
         model={b.register}
         range={range}
         sources={null}
         spot={null}
         selected={selected}
-        onSelect={(groupId, date) => setSelected({ groupId, date })}
-        onToggle={(key, label) => ws.commit({ ...ws.snap, edits: toggleSeat(sample, ws.snap.edits, key) }, label)}
+        onSelect={(groupId, date, participantId) => setSelected({ groupId, date, participantId })}
+        onToggle={touch ? null : (key, label) => ws.commit({ ...ws.snap, edits: toggleSeat(sample, ws.snap.edits, key) }, label)}
       />
-      {selected && <SessionTools ws={ws} sel={selected} />}
+      {selected && <SessionTools ws={ws} sel={selected} roster={touch} />}
       <RegisterLegend />
       <ReceiptLine ws={ws} />
     </div>
   );
 }
 
-/** Tick or clear a whole session at once. Clearing one makes it a gap the check asks about. */
-function SessionTools({ ws, sel }: { ws: Workspace; sel: { groupId: string; date: string } }) {
+/** One gap's answers, the same buttons the gap check shows. */
+function Answers({ ws, f }: { ws: Workspace; f: Finding }) {
+  const chosen = ws.snap.answers[f.id];
+  return (
+    <div className="flex flex-wrap gap-1.5" role="group" aria-label={f.kind === 'session_not_logged' ? 'Did this session run?' : 'Still enrolled?'}>
+      {f.answers.map((a) => (
+        <button key={a.id} type="button" className="answer" aria-pressed={chosen === a.id} onClick={() => answerFinding(ws, f, a.id, a.label)}>
+          {a.label}
+        </button>
+      ))}
+    </div>
+  );
+}
+
+function answerFinding(ws: Workspace, f: Finding, a: AnswerId, label: string) {
+  const answers = ws.snap.answers;
+  const clearing = answers[f.id] === a;
+  const next = { ...answers };
+  if (clearing) delete next[f.id];
+  else next[f.id] = a;
+  ws.commit({ ...ws.snap, answers: next }, clearing ? `${headline(f)}: answer cleared` : `${headline(f)}: ${label}`);
+}
+
+/**
+ * What can be done with the session picked on the register: answer its gap,
+ * tick or clear it whole, and on touch screens tick each person. A person
+ * with no activity for 30+ days gets their own question.
+ */
+function SessionTools({ ws, sel, roster }: { ws: Workspace; sel: Sel; roster: boolean }) {
   const g = ws.b.register.groups.find((x) => x.id === sel.groupId);
   const s = g?.sessions.find((x) => x.date === sel.date);
-  if (!g || !s || s.status !== 'logged') return null;
-  const keys = g.rows.filter((r) => r.cells.some((c) => c.date === sel.date)).map((r) => seatKey(r.participantId, g.id, sel.date));
+  if (!g || !s) return null;
   const name = `${g.name} ${fmtDay(sel.date)}`;
+  const gap = s.findingId ? ws.b.findings.find((f) => f.id === s.findingId) : undefined;
+  const person = sel.participantId ? g.rows.find((r) => r.participantId === sel.participantId) : undefined;
+  const idle = person?.inactiveFindingId ? ws.b.findings.find((f) => f.id === person.inactiveFindingId) : undefined;
+  const box = 'rounded-lg bg-sunken px-3 py-2 text-[12.5px]';
+
+  const idleBox = idle && person && (
+    <div className={box}>
+      <p className="mb-1.5">
+        <b className="font-semibold">{person.name}</b> · no activity in 30+ days. Still enrolled?
+      </p>
+      <Answers ws={ws} f={idle} />
+    </div>
+  );
+
+  if (gap && needsAnswer(gap)) {
+    return (
+      <div className="space-y-2">
+        <div className={box}>
+          <p className="mb-1.5">
+            <b className="font-semibold">{name}</b> · nothing logged. Did it run?
+          </p>
+          <Answers ws={ws} f={gap} />
+        </div>
+        {idleBox}
+      </div>
+    );
+  }
+  if (s.status !== 'logged') return idleBox || null;
+  const rows = g.rows.filter((r) => r.cells.some((c) => c.date === sel.date));
+  const keys = rows.map((r) => seatKey(r.participantId, g.id, sel.date));
   return (
-    <div className="flex flex-wrap items-center justify-between gap-2 rounded-lg bg-sunken px-3 py-1.5 text-[12.5px]">
-      <span className="num">
-        <b className="font-semibold">{name}</b> · {s.attended} of {s.enrolled} attended
-      </span>
-      <span className="flex gap-1">
-        <button type="button" className="btn btn-quiet !min-h-7 !px-2 text-[12px]" onClick={() => ws.commit({ ...ws.snap, edits: setSeats(sample, ws.snap.edits, keys, true) }, `${name}: everyone ticked`)}>
-          Tick all
-        </button>
-        <button type="button" className="btn btn-quiet !min-h-7 !px-2 text-[12px]" onClick={() => ws.commit({ ...ws.snap, edits: setSeats(sample, ws.snap.edits, keys, false) }, `${name}: cleared`)}>
-          Clear session
-        </button>
-      </span>
+    <div className="space-y-2">
+      <div className={`flex flex-wrap items-center justify-between gap-2 ${box} !py-1.5`}>
+        <span className="num">
+          <b className="font-semibold">{name}</b> · {s.attended} of {s.enrolled} attended
+        </span>
+        <span className="flex gap-1">
+          <button type="button" className="btn btn-quiet !min-h-7 !px-2 text-[12px]" onClick={() => ws.commit({ ...ws.snap, edits: setSeats(sample, ws.snap.edits, keys, true) }, `${name}: everyone ticked`)}>
+            Tick all
+          </button>
+          <button type="button" className="btn btn-quiet !min-h-7 !px-2 text-[12px]" onClick={() => ws.commit({ ...ws.snap, edits: setSeats(sample, ws.snap.edits, keys, false) }, `${name}: cleared`)}>
+            Clear session
+          </button>
+        </span>
+      </div>
+      {roster && (
+        <ul className="divide-y divide-line rounded-lg border border-line bg-surface" aria-label={`${name}: who attended`}>
+          {rows.map((r) => {
+            const on = r.cells.find((c) => c.date === sel.date)?.state === 'attended';
+            const key = seatKey(r.participantId, g.id, sel.date);
+            return (
+              <li key={r.participantId}>
+                <button
+                  type="button"
+                  aria-pressed={on}
+                  className="flex min-h-11 w-full items-center justify-between gap-3 px-3 text-left text-[13.5px]"
+                  onClick={() => ws.commit({ ...ws.snap, edits: toggleSeat(sample, ws.snap.edits, key) }, `${r.name}, ${name}: ${on ? 'unticked' : 'ticked'}`)}
+                >
+                  <span className="min-w-0 truncate">{r.name}</span>
+                  <span className={`shrink-0 rounded-md px-2 py-1 text-[12px] font-semibold ${on ? 'bg-mah text-surface' : 'bg-sunken text-muted'}`}>{on ? 'Attended' : 'Absent'}</span>
+                </button>
+              </li>
+            );
+          })}
+        </ul>
+      )}
+      {idleBox}
     </div>
   );
 }
@@ -168,12 +264,6 @@ export function CheckView({ ws, ms }: { ws: Workspace; ms: number }) {
   const { findings } = ws.b;
   const answers = ws.snap.answers;
   const open = findings.filter((f) => needsAnswer(f) && !answers[f.id]).length;
-  const answer = (f: Finding, a: AnswerId, label: string) => {
-    const next = { ...answers };
-    if (answers[f.id] === a) delete next[f.id];
-    else next[f.id] = a;
-    ws.commit({ ...ws.snap, answers: next }, answers[f.id] === a ? `${headline(f)}: answer cleared` : `${headline(f)}: ${label}`);
-  };
   return (
     <div className="space-y-3">
       <PanelHead title="Gap check" meta={`${findings.length} found in ${fmtMs(ms)} · ${open ? `${open} need an answer` : 'all answered'}`}>
@@ -211,12 +301,8 @@ export function CheckView({ ws, ms }: { ws: Workspace; ms: number }) {
                     </p>
                     <p className="num mt-0.5 pl-[22px] text-[12.5px] text-muted">{detail(f)}</p>
                     {needsAnswer(f) && (
-                      <div className="mt-2 flex flex-wrap gap-1.5 pl-[22px]" role="group" aria-label={f.kind === 'session_not_logged' ? 'Did this session run?' : 'Still enrolled?'}>
-                        {f.answers.map((a) => (
-                          <button key={a.id} type="button" className="answer" aria-pressed={chosen === a.id} onClick={() => answer(f, a.id, a.label)}>
-                            {a.label}
-                          </button>
-                        ))}
+                      <div className="mt-2 pl-[22px]">
+                        <Answers ws={ws} f={f} />
                       </div>
                     )}
                   </li>
@@ -294,7 +380,7 @@ export function GuardView({ ws, actions, ms }: { ws: Workspace; actions: GuardAc
   const below = ws.snap.smallBelow;
   return (
     <div className="space-y-3">
-      <PanelHead title="Privacy guard" meta={`Ran in ${fmtMs(ms)}`}>
+      <PanelHead title="Privacy guard" meta={`Filled and guarded in ${fmtMs(ms)}`}>
         <UndoBar ws={ws} />
       </PanelHead>
       <div className="rounded-lg border border-line bg-surface px-3 py-2.5">

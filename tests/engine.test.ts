@@ -222,8 +222,8 @@ describe('each gap answer moves the right number', () => {
     expect(changes.map((c) => [c.label, c.before, c.after, c.templates.join()])).toEqual([
       ['Attendance rate', '76%', '77%', 'city-youth-grant,foundation-outcomes'],
       ['Attendance rate, Coding Club', '75%', '77%', 'city-youth-grant'],
-      ['Retention rate', '95%', '93%', 'foundation-outcomes'],
-      ['Retention rate, Coding Club', '100%', '94%', 'foundation-outcomes'],
+      // 15 of 16 still enrolled would say that 1 left, so the share is withheld.
+      ['Retention rate, Coding Club', '100%', 'Not shown', 'foundation-outcomes'],
       ['Attendance rate of 80%, progress', '76%', '77%', 'foundation-outcomes'],
     ]);
     expect(changedFigures(sample, findings, {}, { 'gap-coding-club-2026-07-23': 'ran_not_recorded' }, 'q3').map((c) => [c.label, c.before, c.after])).toEqual([
@@ -294,12 +294,14 @@ describe('the confidence outcome', () => {
     const twice = { ...ds, checkins: [...ds.checkins, { id: 'C0', date: '2026-07-16', participant_id: 'A', confidence: 2 }] };
     const m = tinyMeasure(twice, '2026-07-01', '2026-07-31');
     expect(m.checkins.find((c) => c.participant.id === 'A')!.checkin.id).toBe('C0');
-    expect(METRICS.confidence_improved.compute(m).display).toBe('0%');
+    expect(METRICS.confidence_improved.compute(m).staffDisplay).toBe('0%');
   });
   it('compares the latest check-in in the period with intake, and skips anyone without an intake score', () => {
     const m = tinyMeasure(ds, '2026-07-01', '2026-07-31');
     expect(m.checkins.map((c) => [c.participant.id, c.checkin.id, c.improved])).toEqual([['A', 'C2', true], ['B', 'C3', false]]);
-    expect(METRICS.confidence_improved.compute(m).display).toBe('50%');
+    expect(METRICS.confidence_improved.compute(m).staffDisplay).toBe('50%');
+    // 1 of 2 improved: funder copy would give a count of 1 away.
+    expect(METRICS.confidence_improved.compute(m).display).toBe('Not shown');
     expect(METRICS.participants_checked_in.compute(m).display).toBe('<5');
   });
   it('says so when nobody checked in', () => {

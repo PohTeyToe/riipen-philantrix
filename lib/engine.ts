@@ -54,8 +54,9 @@ export interface Measure {
   enrolledAny: Participant[];
   /** Enrolled on the period's first day. */
   enrolledAtStart: Participant[];
+  /** Enrolled during the period with no exit date inside it. */
   retained: Participant[];
-  /** Enrolled during the period but not on its last day: their exit date falls inside it. */
+  /** Enrolled during the period with an exit date inside it, its last day included. */
   exited: Participant[];
   /** Participants with an intake score and a check-in in the period. */
   checkins: CheckinRow[];
@@ -147,8 +148,10 @@ export function measure(ds: Dataset, st: State, start: string, end: string, grou
     newParticipants: people.filter((p) => inRange(p.join_date)),
     enrolledAny,
     enrolledAtStart: enrolledAny.filter((p) => enrolledOn(p, start)),
-    retained: enrolledAny.filter((p) => enrolledOn(p, end)),
-    exited: enrolledAny.filter((p) => !enrolledOn(p, end)),
+    // An exit date is the last enrolled day. One inside the period, its last
+    // day included, is an exit in this period, so the months add up to the quarter.
+    retained: enrolledAny.filter((p) => p.exit_date === null || p.exit_date > end),
+    exited: enrolledAny.filter((p) => p.exit_date !== null && p.exit_date <= end),
     checkins,
   };
 }

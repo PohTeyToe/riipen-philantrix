@@ -21,7 +21,8 @@ export interface RegisterProps {
   spot: Spot | null;
   selected: { groupId: string; date: string } | null;
   onSelect: (groupId: string, date: string, participantId?: string) => void;
-  onToggle: (key: string, label: string) => void;
+  /** Ticks a seat. Null on touch screens, where a tap only picks the session. */
+  onToggle: ((key: string, label: string) => void) | null;
 }
 
 const AXIS = 18;
@@ -98,7 +99,7 @@ export function Register({ model, range, sources, spot, selected, onSelect, onTo
   };
 
   const act = (h: Hit) => {
-    if (h.cell && h.row && (h.cell.state === 'attended' || h.cell.state === 'absent')) {
+    if (onToggle && h.cell && h.row && (h.cell.state === 'attended' || h.cell.state === 'absent')) {
       const was = h.cell.state === 'attended';
       onToggle(seatKey(h.row.participantId, h.group.id, h.session.date), `${h.row.name}, ${h.group.name} ${fmtDay(h.session.date)}: ${was ? 'unticked' : 'ticked'}`);
     }
@@ -167,7 +168,7 @@ export function Register({ model, range, sources, spot, selected, onSelect, onTo
           width="100%"
           viewBox={`0 0 ${width} ${height}`}
           className="block overflow-visible"
-          onPointerMove={(e) => setHover(point(e))}
+          onPointerMove={(e) => e.pointerType === 'mouse' && setHover(point(e))}
           onPointerLeave={() => setHover(null)}
           onClick={(e) => {
             const h = point(e as unknown as React.PointerEvent<SVGSVGElement>);

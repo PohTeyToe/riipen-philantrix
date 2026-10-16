@@ -210,8 +210,10 @@ describe('what a change moved', () => {
     const { build, diffNumbers } = await import('../components/workspace/model');
     const snap = (answers: Answers) => ({ edits: {}, answers, smallBelow: 5 });
     const before = build(snap({}), 'q3', 'foundation-outcomes', {});
-    const after = build(snap({ 'inactive-P08': 'left_program' }), 'q3', 'foundation-outcomes', {});
-    expect(diffNumbers(before.output, after.output).find((c) => c.key === 'metric:retention_rate')).toMatchObject({ before: '95%', after: '93%' });
+    const after = build(snap({ 'inactive-P02': 'left_program' }), 'q3', 'foundation-outcomes', {});
+    const moved = diffNumbers(before.output, after.output);
+    expect(moved.find((c) => c.key === 'metric:attendance_rate')).toMatchObject({ before: '76%', after: '77%' });
+    expect(moved.find((c) => c.key === 'metric:retention_rate:coding-club')).toMatchObject({ before: '100%', after: 'Not shown' });
   });
 
   it('a session answered "ran" moves sessions delivered on the City template, and nothing on the Foundation one', async () => {

@@ -6,16 +6,16 @@ Built by Abdallah Safi. Not made or endorsed by Philantrix or by any funder show
 
 ## What's on the page
 
-The app opens at `/` (`/demo/` serves the same app for older links). Across the top, the pipeline: the funder's form goes through the agent, the records go through the gap check and the counts, and both meet at the privacy guard before the report. Each step opens its inspector on the left (`#form`, `#agent`, `#records`, `#check`, `#count`, `#guard`); the report sits on the right.
+The app opens at `/` (`/demo/` serves the same app for older links). Across the top, the pipeline: the funder's form goes through the agent, the records go through the gap check and the counts, and both meet at the fill and privacy guard step before the report. Each step opens its inspector on the left (`#form`, `#agent`, `#records`, `#check`, `#count`, `#guard`); the report sits on the right.
 
-- **Funder tabs.** Three real forms, mapped by the agent: the OJJDP Juvenile Mentoring performance measures grid (US Department of Justice, 15 pages), the Municipality of Grey Highlands community grant final report (Ontario), and the Geist Foundation final report cover sheet (Hawaii Community Foundation). Two hand-built example templates sit after them.
+- **Funder tabs.** Three real forms, mapped by the agent: the OJJDP Juvenile Mentoring performance measures grid (US Department of Justice, 15 pages), the Municipality of Grey Highlands community grant final report (Ontario), and the Geist Foundation final report cover sheet (Hawaii Community Foundation). The OJJDP grid opens first. Two hand-built example templates sit after them.
 - **Agent run.** The recorded run for the chosen form: one lane per worker, every model call, tool call, code check and review on one clock. Click any mark for its inputs, tool calls with their real output, and the verdict. Replay plays it back in about 10 seconds (the form read faster than the workers, both speeds shown), and the report fills in as each worker finished; click the time axis to replay from there, or step through it mark by mark.
 - **Side by side.** Two funders' reports from the same records at once. An answer or an edit moves both.
-- **Report.** The funder's own questions in their order, each answered one of five ways: a number counted from the records, a percent worked out from two fields, a paragraph drafted by the agent with every number filled by code, a question for staff (answer it in place; numbers you type feed the percents that need them), or "not in records" with what the program would have to start tracking. "Why" on any field shows the agent's reason and the reviewer's verdict.
+- **Report.** The funder's own questions in their order, each answered one of five ways: a number counted from the records, a percent worked out from two fields, a paragraph drafted by the agent with every number filled by code, a question for staff (answer it in place, in one click where the form prints its options; numbers you type feed the percents that need them, and belong to the period you typed them for), or "not in records" with what the program would have to start tracking. "Why" on any field shows the agent's reason and the review call's verdict.
 - **Gap check.** 7 gaps the records hide: 3 scheduled sessions with no attendance logged, 2 participants idle 30+ days with no exit date, a goal with no due date, a duplicate. Five take a one-click answer, and the panel lists every number the answer moved on the report on screen.
-- **Records.** The quarter as an attendance register: one row per participant, one column per day. Click a seat to tick or untick it, or clear a whole session; every number rebuilds. Undo and Reset are always there.
+- **Records.** The quarter as an attendance register: one row per participant, one column per day. Click a seat to tick or untick it, or clear a whole session; click a gap to answer it there. On a touch screen, a tap picks the session and lists its people with large toggles. Every number rebuilds. Undo and Reset are always there.
 - **Count.** The 13 metrics for the period, each with its definition, opening to its rows.
-- **Privacy guard.** Move the cutoff from 2 to 10 and watch counts hide. It lists what it changed on the report.
+- **Privacy guard.** Move the cutoff from 2 to 10 and watch counts hide. It lists what it changed on the report. Its time is the fill and the guard together, since the guard runs over the whole filled page.
 - **Sources.** Click any number: its definition, the arithmetic, the rows (staff view, with names), and the register lit up where those rows sit.
 
 Every step shows its time, measured in your browser on each rebuild. The agent's times are the recorded ones.
@@ -27,7 +27,7 @@ Every step shows its time, measured in your browser on each rebuild. The agent's
 1. **Read the form.** One model call lists every question and field from the form's text (`agent/forms/`, extracted from the public PDF). Code checks that each quote is on the form, word for word, ignoring the punctuation PDF extraction loses. A failed check sends the list back once with the problems.
 2. **Map, in parallel.** The questions are split into batches of about 12 fields, and 5 workers map them. Each worker calls tools on an MCP server (`agent/tools-server.mjs`) backed by the same engine as the page: `list_metrics`, `describe_records`, `get_metric`, `count_by_age`. No tool returns a name.
 3. **Check in code.** `scripts/form-rules.mjs`: the metric exists and fits the unit the form wants, an age range is one the records hold, a formula uses two fields of the same question that have numbers, and a draft passes the word rules (`scripts/narrative-rules.mjs`: no digits, number words, trend words or names outside the slots). Failures go back to the worker once; what still fails goes to staff.
-4. **Review.** A second model call checks every mapping against the form's wording and the metric's definition. Rejected fields are remapped once and reviewed again; a second rejection goes to staff.
+4. **Review.** A separate review call (the same model, with its own prompt and no memory of the mapping) checks every mapping against the form's wording and the metric's definition. Rejected fields are remapped once and reviewed again; a second rejection goes to staff.
 5. **Assemble.** The mapping is saved with the whole log: every call's timing, tokens and tool calls, every check and verdict.
 
 `npm run agent:run` reruns all three forms (`node agent/run.mjs <form-id>` for one). Prompts are in `agent/prompts/`. `tests/forms.test.ts` re-runs every check on the saved runs, confirms each one read the form text in the repo, and checks no name or small count reaches any filled form.
@@ -58,7 +58,8 @@ npm run preview      # serves out/ on http://localhost:5102
 | `lib/metrics.ts` | The metrics registry: records read, how they're counted, the denominator, the definition. |
 | `lib/engine.ts` | Counting: seats from the roster, duplicates dropped, goals and forecasts. Keeps the rows it counted. |
 | `lib/findings.ts` | The gap check and how each answer changes what the engine counts. |
-| `lib/forms.ts` | Fills an agent-mapped form from the engine, then the privacy guard. Types for the recorded runs. |
+| `lib/forms.ts` | Fills an agent-mapped form from the engine, then the privacy guard over the whole page. Types for the recorded runs. |
+| `lib/choices.ts` | The options each choice question prints on its form, checked word for word against the form text. |
 | `lib/privacy.ts` | The cutoff rule and how age ranges are combined. |
 | `lib/report.ts`, `lib/templates.ts` | The two hand-built example templates. |
 | `lib/trace.ts`, `lib/sources.ts`, `lib/register.ts`, `lib/edits.ts` | The staff view behind a number, where its rows sit on the register, the register, and edits to it. |
@@ -78,4 +79,4 @@ Sources and the choices behind each definition are in `data/SOURCES.md`.
 
 ## Privacy
 
-No participant names reach funder copy, the PDF or Excel, and the agent's tools never return one. People counts of 1 to 4 (or below whatever cutoff is set) show as "<5". On the funder forms, a figure worked out from one, like a percent over a small count, isn't shown either. An age range small in any month is reported together with the next range in every period, so nothing can be worked out by comparing periods; `tests/privacy.test.ts` checks that by brute force. The staff view shows true counts and names, and says so.
+No participant names reach funder copy, the PDF or Excel, and the agent's tools never return one. People counts of 1 to 4 (or below whatever cutoff is set) show as "<5", including counts staff type (the guard reads the form's label to tell people from months or programs). A share of people isn't shown when the people it counts, or the people it leaves out, are 1 to 4: 12 of 13 still enrolled would say 1 left. On a filled form the guard runs over the whole page at once, so two numbers whose gap is a small count (40 enrolled beside 38 matched) hold the smaller one back, and anything worked out from a hidden number is hidden too. An age range small in any month is reported together with the next range in every period, so nothing can be worked out by comparing periods; `tests/privacy.test.ts` checks that by brute force. The staff view shows true counts and names, and says so.

@@ -3,10 +3,13 @@
 import { useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
 import { fieldName, fmtSeconds, lanes as laneList, peakParallel, type FormRun, type RunEvent } from '@/lib/forms';
 import { BackIcon, ForwardIcon } from '../icons';
+import { Readable } from './Readable';
 
 const LABEL_W = 70;
 const BAR = 14;
 const AXIS = 22;
+/** Drawing order: steps and calls underneath, checks and verdicts on top, so a check that lands on a step can still be clicked. */
+const LAYER: Record<RunEvent['kind'], number> = { step: 0, llm: 1, tool: 2, check: 3, gate: 4 };
 /** A replay lasts about this long, whatever the run's length. */
 const REPLAY_MS = 10_000;
 
@@ -22,6 +25,8 @@ interface Props {
   /** Phones: the lanes only, and a tap opens the full run. */
   compact?: boolean;
   onExpand?: () => void;
+  /** Plays the recorded run once when the card first shows. */
+  autoplay?: boolean;
 }
 
 const stamp = (ms: number) => {
@@ -32,7 +37,7 @@ const stamp = (ms: number) => {
 const items = (e: RunEvent): string[] => (Array.isArray(e.detail.items) ? (e.detail.items as string[]) : []);
 
 /** The recorded agent run: one lane per worker, every model call, tool call, check and review on a shared clock. */
-export function RunCard({ run, litItems, selected, onSelect, replayT, onReplay, onFocusItems, compact = false, onExpand }: Props) {
+export function RunCard({ run, litItems, selected, onSelect, replayT, onReplay, onFocusItems, compact = false, onExpand, autoplay = false }: Props) {
   const wrap = useRef<HTMLDivElement>(null);
   const [width, setWidth] = useState(520);
   useLayoutEffect(() => {
@@ -51,7 +56,9 @@ export function RunCard({ run, litItems, selected, onSelect, replayT, onReplay, 
   const x = (ms: number) => LABEL_W + (ms / dur) * track;
   const height = AXIS + lanes.length * ROW + 4;
   const t = run.totals;
-  const rejected = run.events.filter((e) => (e.kind === 'check' || e.kind === 'gate') && e.status === 'fail').length;
+  // Code checks and the review call are counted apart: a check fails, a review rejects answers.
+  const failed = run.events.filter((e) => e.kind === 'check' && e.status === 'fail').length;
+  const rejected = run.events.filter((e) => e.kind === 'gate' && e.status === 'fail').reduce((n, e) => n + ((e.detail.rejected as string[] | undefined)?.length ?? 0), 0);
 
   // Replay: a playhead runs over the recorded clock. Reading the form is one long call, so it plays
   // faster than the workers do; the panel says both speeds.
@@ -90,6 +97,12 @@ export function RunCard({ run, litItems, selected, onSelect, replayT, onReplay, 
   useEffect(() => () => {
     if (raf.current) cancelAnimationFrame(raf.current);
   }, []);
+  // First visit: the run plays once by itself, a moment after the page settles.
+  useEffect(() => {
+    if (!autoplay || compact) return;
+    const t = window.setTimeout(() => play(0), 600);
+    return () => window.clearTimeout(t);
+  }, [autoplay]); // eslint-disable-line react-hooks/exhaustive-deps
   // A new form stops the old replay.
   useEffect(() => stop, [run.form.id]); // eslint-disable-line react-hooks/exhaustive-deps
 
@@ -139,9 +152,14 @@ export function RunCard({ run, litItems, selected, onSelect, replayT, onReplay, 
           <p className="num mt-1.5 text-[13px] leading-snug text-on-mah-muted">
             <b className="font-semibold text-on-mah">{fmtSeconds(dur)}</b> · <b className="font-semibold text-on-mah">{peak}</b> workers at once · <b className="font-semibold text-on-mah">{t.model_calls}</b> model calls ·{' '}
             <b className="font-semibold text-on-mah">{t.tool_calls}</b> tool calls · <b className="font-semibold text-on-mah">{t.checks}</b> checks
+            {failed > 0 && (
+              <>
+                , <b className="font-semibold text-orange-on-mah">{failed} failed</b>
+              </>
+            )}
             {rejected > 0 && (
               <>
-                , <b className="font-semibold text-orange-on-mah">{rejected} rejected</b>
+                {' '}· review rejected <b className="font-semibold text-orange-on-mah">{rejected}</b>
               </>
             )}
           </p>
@@ -190,11 +208,12 @@ export function RunCard({ run, litItems, selected, onSelect, replayT, onReplay, 
                   {lane.id}
                 </text>
                 <line x1={LABEL_W} x2={width} y1={mid} y2={mid} className="stroke-mah-line" strokeWidth={1} strokeDasharray="2 4" />
-                {lane.events.filter(visible).map((e) => {
+                {lane.events.filter(visible).sort((a, b) => LAYER[a.kind] - LAYER[b.kind]).map((e) => {
                   const on = !anyLit || lit(e);
                   const cut = replayT !== null && e.end > replayT ? replayT : e.end;
                   const common = {
                     opacity: on ? 1 : 0.35,
+                    'data-event': e.id,
                     onMouseEnter: () => setHover(e),
                     onClick: () => (compact ? onExpand?.() : pick(selected?.id === e.id ? null : e)),
                     style: { cursor: 'pointer' },
@@ -325,7 +344,12 @@ function Detail({ e, run, onClose, onStep }: { e: RunEvent; run: FormRun; onClos
   const parent = e.detail.parent ? run.events.find((p) => p.id === e.detail.parent) : null;
   const its = items(parent ?? e);
   const fields = run.items.filter((i) => its.includes(i.id)).flatMap((i) => i.fields);
-  const reviewNotes = e.kind === 'gate' ? fields.flatMap((f) => f.history.filter((h) => h.step === 'review' && h.verdict === 'fail').map((h) => ({ id: f.id, label: f.label, reason: h.reason ?? '' }))) : [];
+  // A review call lists every verdict it gave; the gate after it, the rejections.
+  const review = e.kind === 'llm' && e.label.startsWith('Review');
+  const reviewNotes =
+    e.kind === 'gate' || review
+      ? fields.flatMap((f) => f.history.filter((h) => h.step === 'review' && (review || h.verdict === 'fail')).map((h, i) => ({ id: `${f.id}-${i}`, label: f.label, pass: h.verdict === 'pass', reason: h.reason ?? '' })))
+      : [];
   return (
     <div className="fade-in text-[13px]">
       <div className="flex items-start justify-between gap-3">
@@ -367,7 +391,7 @@ function Detail({ e, run, onClose, onStep }: { e: RunEvent; run: FormRun; onClos
                     <span aria-hidden className="mt-1.5 size-1.5 shrink-0 rounded-full bg-orange-on-mah" />
                     <span className="text-on-mah">
                       {where && <b className="font-semibold">{where}: </b>}
-                      {what}
+                      <Readable text={what} chip="bg-mah text-on-mah-muted" />
                     </span>
                   </li>
                 );
@@ -375,18 +399,27 @@ function Detail({ e, run, onClose, onStep }: { e: RunEvent; run: FormRun; onClos
               {e.detail.problems.length > 6 && <li className="text-on-mah-muted">and {e.detail.problems.length - 6} more</li>}
             </ul>
           ) : (
-            <p className="text-green-on-mah">Passed. Code checked metric ids, units, age ranges, formulas and the wording rules.</p>
+            <p className="text-green-on-mah">{e.lane === 'Read form' ? 'Passed. Every quote is on the form, word for word.' : 'Passed. Code checked metric ids, units, age ranges, formulas and the wording rules.'}</p>
           )}
         </div>
       )}
 
       {reviewNotes.length > 0 && (
         <ul className="mt-2 space-y-1.5">
-          {reviewNotes.slice(0, 5).map((n) => (
-            <li key={n.id} className="leading-snug">
-              <span className="font-semibold text-orange-on-mah">{n.label}:</span> <span className="text-on-mah">{slots(n.reason)}</span>
+          {reviewNotes.slice(0, 6).map((n) => (
+            <li key={n.id} className="flex gap-2 leading-snug">
+              <span aria-hidden className={`mt-1.5 size-1.5 shrink-0 rounded-full ${n.pass ? 'bg-green-on-mah' : 'bg-orange-on-mah'}`} />
+              <span>
+                <span className={`font-semibold ${n.pass ? 'text-green-on-mah' : 'text-orange-on-mah'}`}>
+                  {n.label}: {n.pass ? 'passed' : 'rejected'}.
+                </span>{' '}
+                <span className="text-on-mah">
+                  <Readable text={n.reason} chip="bg-mah text-on-mah-muted" />
+                </span>
+              </span>
             </li>
           ))}
+          {reviewNotes.length > 6 && <li className="text-on-mah-muted">and {reviewNotes.length - 6} more</li>}
         </ul>
       )}
 
@@ -404,19 +437,6 @@ function Detail({ e, run, onClose, onStep }: { e: RunEvent; run: FormRun; onClos
         </div>
       )}
     </div>
-  );
-}
-
-/** Recorded text with "{confidence_improved}" slots shown as the figures they stand for. */
-function slots(text: string): React.ReactNode[] {
-  return text.split(/(\{[a-z0-9_]+\})/g).map((part, i) =>
-    /^\{[a-z0-9_]+\}$/.test(part) ? (
-      <span key={i} className="rounded bg-mah px-1 font-mono text-[11px] text-on-mah-muted">
-        {part.slice(1, -1).replace(/_/g, ' ')}
-      </span>
-    ) : (
-      part
-    ),
   );
 }
 

@@ -258,7 +258,7 @@
         },
         "retention_rate": {
           "kind": "percent",
-          "meaning": "Participants still enrolled on the last day of the period, as a share of everyone enrolled at any point in it."
+          "meaning": "Participants enrolled during the period who did not leave in it (an exit on the last day counts as leaving), as a share of everyone enrolled at any point in it."
         },
         "attendance_rate": {
           "kind": "percent",
@@ -339,7 +339,7 @@
             "numerator": 38,
             "denominator": 40,
             "value": 0.95,
-            "display": "95%"
+            "display": "Not shown"
           },
           "assignment_submissions": {
             "value": 163,
@@ -422,7 +422,7 @@
             "numerator": 12,
             "denominator": 13,
             "value": 0.9230769230769231,
-            "display": "92%"
+            "display": "Not shown"
           },
           {
             "group_id": "weekend-leaders",
@@ -431,7 +431,7 @@
             "numerator": 10,
             "denominator": 11,
             "value": 0.9090909090909091,
-            "display": "91%"
+            "display": "Not shown"
           }
         ],
         "participants_by_age_range": {
@@ -591,7 +591,7 @@
             "numerator": 36,
             "denominator": 40,
             "value": 0.9,
-            "display": "90%"
+            "display": "Not shown"
           },
           "assignment_submissions": {
             "value": 163,
@@ -665,7 +665,7 @@
             "numerator": 14,
             "denominator": 16,
             "value": 0.875,
-            "display": "88%"
+            "display": "Not shown"
           },
           {
             "group_id": "mentor-circle",
@@ -674,7 +674,7 @@
             "numerator": 12,
             "denominator": 13,
             "value": 0.9230769230769231,
-            "display": "92%"
+            "display": "Not shown"
           },
           {
             "group_id": "weekend-leaders",
@@ -683,7 +683,7 @@
             "numerator": 10,
             "denominator": 11,
             "value": 0.9090909090909091,
-            "display": "91%"
+            "display": "Not shown"
           }
         ],
         "participants_by_age_range": {
@@ -897,12 +897,12 @@
             "display": "77%"
           },
           "retention_rate": {
-            "retained": 34,
+            "retained": 33,
             "enrolled": 34,
-            "numerator": 34,
+            "numerator": 33,
             "denominator": 34,
-            "value": 1,
-            "display": "100%"
+            "value": 0.9705882352941176,
+            "display": "Not shown"
           },
           "assignment_submissions": {
             "value": 59,
@@ -935,8 +935,8 @@
             "display": "34"
           },
           "participants_exited": {
-            "value": 0,
-            "display": "0"
+            "value": 1,
+            "display": "<5"
           }
         },
         "attendance_rate_by_group": [
@@ -980,12 +980,12 @@
           },
           {
             "group_id": "mentor-circle",
-            "retained": 11,
+            "retained": 10,
             "enrolled": 11,
-            "numerator": 11,
+            "numerator": 10,
             "denominator": 11,
-            "value": 1,
-            "display": "100%"
+            "value": 0.9090909090909091,
+            "display": "Not shown"
           },
           {
             "group_id": "weekend-leaders",
@@ -1149,12 +1149,12 @@
             "display": "77%"
           },
           "retention_rate": {
-            "retained": 34,
+            "retained": 33,
             "enrolled": 34,
-            "numerator": 34,
+            "numerator": 33,
             "denominator": 34,
-            "value": 1,
-            "display": "100%"
+            "value": 0.9705882352941176,
+            "display": "Not shown"
           },
           "assignment_submissions": {
             "value": 59,
@@ -1187,8 +1187,8 @@
             "display": "34"
           },
           "participants_exited": {
-            "value": 0,
-            "display": "0"
+            "value": 1,
+            "display": "<5"
           }
         },
         "attendance_rate_by_group": [
@@ -1232,12 +1232,12 @@
           },
           {
             "group_id": "mentor-circle",
-            "retained": 11,
+            "retained": 10,
             "enrolled": 11,
-            "numerator": 11,
+            "numerator": 10,
             "denominator": 11,
-            "value": 1,
-            "display": "100%"
+            "value": 0.9090909090909091,
+            "display": "Not shown"
           },
           {
             "group_id": "weekend-leaders",
@@ -1676,7 +1676,7 @@
             "numerator": 37,
             "denominator": 39,
             "value": 0.9487179487179487,
-            "display": "95%"
+            "display": "Not shown"
           },
           "assignment_submissions": {
             "value": 51,
@@ -1750,7 +1750,7 @@
             "numerator": 14,
             "denominator": 16,
             "value": 0.875,
-            "display": "88%"
+            "display": "Not shown"
           },
           {
             "group_id": "mentor-circle",
@@ -1939,7 +1939,7 @@
             "numerator": 38,
             "denominator": 39,
             "value": 0.9743589743589743,
-            "display": "97%"
+            "display": "Not shown"
           },
           "assignment_submissions": {
             "value": 53,
@@ -2031,7 +2031,7 @@
             "numerator": 10,
             "denominator": 11,
             "value": 0.9090909090909091,
-            "display": "91%"
+            "display": "Not shown"
           }
         ],
         "participants_by_age_range": {
@@ -2191,7 +2191,7 @@
             "numerator": 36,
             "denominator": 37,
             "value": 0.972972972972973,
-            "display": "97%"
+            "display": "Not shown"
           },
           "assignment_submissions": {
             "value": 53,
@@ -2283,7 +2283,7 @@
             "numerator": 10,
             "denominator": 11,
             "value": 0.9090909090909091,
-            "display": "91%"
+            "display": "Not shown"
           }
         ],
         "participants_by_age_range": {
@@ -2581,7 +2581,7 @@
           "period": "July to September 2026",
           "confidence_improved": "73%",
           "participants_checked_in": "37",
-          "retention_rate": "95%",
+          "retention_rate": "a withheld share",
           "attendance_rate": "76%",
           "assignment_submissions": "163",
           "submissions_per_participant": "4.1",
@@ -2597,7 +2597,7 @@
           "period": "July to September 2026",
           "confidence_improved": "73%",
           "participants_checked_in": "37",
-          "retention_rate": "90%",
+          "retention_rate": "a withheld share",
           "attendance_rate": "79%",
           "assignment_submissions": "163",
           "submissions_per_participant": "4.1",
@@ -2615,7 +2615,7 @@
           "period": "July 2026",
           "confidence_improved": "48%",
           "participants_checked_in": "31",
-          "retention_rate": "100%",
+          "retention_rate": "a withheld share",
           "attendance_rate": "77%",
           "assignment_submissions": "59",
           "submissions_per_participant": "1.7",
@@ -2631,7 +2631,7 @@
           "period": "July 2026",
           "confidence_improved": "48%",
           "participants_checked_in": "31",
-          "retention_rate": "100%",
+          "retention_rate": "a withheld share",
           "attendance_rate": "77%",
           "assignment_submissions": "59",
           "submissions_per_participant": "1.7",
@@ -2665,7 +2665,7 @@
           "period": "August 2026",
           "confidence_improved": "52%",
           "participants_checked_in": "25",
-          "retention_rate": "95%",
+          "retention_rate": "a withheld share",
           "attendance_rate": "78%",
           "assignment_submissions": "51",
           "submissions_per_participant": "1.8",
@@ -2683,7 +2683,7 @@
           "period": "September 2026",
           "confidence_improved": "74%",
           "participants_checked_in": "34",
-          "retention_rate": "97%",
+          "retention_rate": "a withheld share",
           "attendance_rate": "75%",
           "assignment_submissions": "53",
           "submissions_per_participant": "1.4",
@@ -2699,7 +2699,7 @@
           "period": "September 2026",
           "confidence_improved": "74%",
           "participants_checked_in": "34",
-          "retention_rate": "97%",
+          "retention_rate": "a withheld share",
           "attendance_rate": "82%",
           "assignment_submissions": "53",
           "submissions_per_participant": "1.4",

@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { downloadExcel, fileStem } from '@/lib/excel';
 import { fmtDate } from '@/lib/format';
 import type { BarView, FigureView, GoalView, Report, SectionView } from '@/lib/report';
+import { WITHHELD } from '@/lib/privacy';
 import type { Template } from '@/lib/templates';
 import { CheckIcon, DownloadIcon } from '../icons';
 import { printReport } from './print';
@@ -46,6 +47,7 @@ export function ReportPage({ report, template }: { report: Report; template: Tem
                 {s.title}
               </h3>
               {s.type === 'figures' && (form ? <FormFigures s={s} /> : <BriefFigures s={s} lead={i === 0} />)}
+              {s.type === 'figures' && <WithheldNote s={s} below={report.smallBelow} />}
               {s.type === 'goals' && <Goals goals={s.goals} />}
               {s.type === 'summary' && (
                 <>
@@ -68,6 +70,13 @@ export function ReportPage({ report, template }: { report: Report; template: Tem
       </div>
     </article>
   );
+}
+
+/** Says why a rate reads "Not shown", once per section. */
+function WithheldNote({ s, below }: { s: Figures; below: number }) {
+  const any = [...s.figures, ...(s.chart?.bars ?? [])].some((f) => f.display === WITHHELD);
+  if (!any) return null;
+  return <p className="mt-2 text-[11.5px] leading-snug text-muted">Not shown: a rate is held back when fewer than {below} people are on either side of it, since it would say how many.</p>;
 }
 
 function splitTitle(name: string): [string, string | null] {

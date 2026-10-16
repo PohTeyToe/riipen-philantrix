@@ -6,7 +6,7 @@
 import { ATTENDANCES, SUBMISSIONS } from './data';
 import type { Measure } from './engine';
 import { commas, fmtCount, fmtDecimal1, fmtDecimalPrecise, fmtHours, fmtHoursExact, fmtPercent, fmtPercentPrecise } from './format';
-import { peopleForFunder } from './privacy';
+import { peopleForFunder, shareIsSmall, WITHHELD } from './privacy';
 
 export type MetricId =
   | 'participants_served'
@@ -53,6 +53,8 @@ export interface MetricDef {
   definition: string;
   /** The formula in plain words, for the trace panel. */
   formula: string;
+  /** A count of people who are all inside another metric's count. Shown together, the gap between them is a count too, so the guard checks it. */
+  within?: MetricId;
   compute: (m: Measure) => MetricValue;
 }
 
@@ -62,6 +64,12 @@ const rate = (num: number, den: number, numLabel: string, denLabel: string, empt
   if (den === 0) return { value: null, display: empty, staffDisplay: empty, arithmetic: `${commas(num)} ${numLabel} ÷ 0 ${denLabel}. Nothing to divide by, so it reads "${empty}".` };
   const shown = fmtPercent(num, den);
   return { value: num / den, display: shown, staffDisplay: shown, arithmetic: `${commas(num)} ${numLabel} ÷ ${commas(den)} ${denLabel} = ${fmtPercentPrecise(num, den)}, shown as ${shown}` };
+};
+
+/** A rate of people over people: withheld from funder copy when either side of it is a small count. */
+const share = (num: number, den: number, numLabel: string, denLabel: string, empty: string, below: number): MetricValue => {
+  const v = rate(num, den, numLabel, denLabel, empty);
+  return shareIsSmall(num, den, below) ? { ...v, display: WITHHELD } : v;
 };
 
 const people = (n: number, what: string, below: number): MetricValue => ({
@@ -94,6 +102,7 @@ export const METRICS: Record<MetricId, MetricDef> = {
     period: REPORT_PERIOD,
     definition: 'Joined the program during the period.',
     formula: 'Count participants whose join date falls inside the period.',
+    within: 'enrolled_in_period',
     compute: (m) => people(m.newParticipants.length, m.newParticipants.length === 1 ? 'participant joined in the period' : 'participants joined in the period', m.smallBelow),
   },
   sessions_delivered: {
@@ -159,13 +168,13 @@ export const METRICS: Record<MetricId, MetricDef> = {
     label: 'Retention rate',
     kind: 'percent',
     activityType: 'Participant join and exit dates',
-    aggregation: 'Enrolled on the last day',
+    aggregation: 'Enrolled during the period and did not leave in it',
     denominator: 'Enrolled on any day of the period',
     period: REPORT_PERIOD,
-    definition: 'Still enrolled on the last day, out of everyone enrolled at any point in the period.',
+    definition: 'Did not leave during the period, out of everyone enrolled at any point in it.',
     formula:
-      'Participants enrolled on the last day of the period ÷ participants enrolled on any day of it. An exit date is the last enrolled day. Answering "Left the program" sets the exit date to the last activity.',
-    compute: (m) => rate(m.retained.length, m.enrolledAny.length, 'still enrolled', 'enrolled during the period', 'No participants in this period'),
+      'Participants enrolled during the period with no exit date inside it ÷ participants enrolled on any day of it. An exit date is the last enrolled day, so an exit on the last day counts as leaving. Answering "Left the program" sets the exit date to the last activity.',
+    compute: (m) => share(m.retained.length, m.enrolledAny.length, 'did not leave', 'enrolled during the period', 'No participants in this period', m.smallBelow),
   },
   assignment_submissions: {
     id: 'assignment_submissions',
@@ -226,12 +235,13 @@ export const METRICS: Record<MetricId, MetricDef> = {
     formula:
       "Take each participant's latest check-in in the period and compare it with their intake score, both on a scale of 1 to 5. Improved ÷ everyone with both. A score that stayed the same or went down is not improved. If someone has two check-ins on the same day, the lower score counts.",
     compute: (m) =>
-      rate(
+      share(
         m.checkins.filter((c) => c.improved).length,
         m.checkins.length,
         'improved',
         m.checkins.length === 1 ? 'participant with a check-in' : 'participants with a check-in',
         'No check-ins in this period',
+        m.smallBelow,
       ),
   },
   enrolled_at_start: {
@@ -244,6 +254,7 @@ export const METRICS: Record<MetricId, MetricDef> = {
     period: "The period's first day",
     definition: 'Enrolled on the first day of the period.',
     formula: "Count participants who had joined by the period's first day and whose exit date, if any, is on or after it.",
+    within: 'enrolled_in_period',
     compute: (m) => people(m.enrolledAtStart.length, m.enrolledAtStart.length === 1 ? 'participant enrolled on the first day' : 'participants enrolled on the first day', m.smallBelow),
   },
   enrolled_in_period: {
@@ -266,8 +277,9 @@ export const METRICS: Record<MetricId, MetricDef> = {
     aggregation: 'Count of participants',
     denominator: null,
     period: REPORT_PERIOD,
-    definition: 'Enrolled during the period and left before its last day.',
-    formula: 'Count participants enrolled on any day of the period whose exit date falls before its last day. An exit date is the last enrolled day. Answering "Left the program" sets it to the last activity.',
+    definition: 'Enrolled during the period and left in it.',
+    formula: 'Count participants whose exit date falls inside the period, its last day included. An exit date is the last enrolled day. Answering "Left the program" sets it to the last activity.',
+    within: 'enrolled_in_period',
     compute: (m) => people(m.exited.length, m.exited.length === 1 ? 'participant left during the period' : 'participants left during the period', m.smallBelow),
   },
 };

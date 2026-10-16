@@ -2,6 +2,7 @@
 
 import { createContext, useContext, type ReactNode } from 'react';
 import { refKey, type TraceRef } from '@/lib/report';
+import { WAITING } from './model';
 
 interface TraceCtx {
   /** The number whose sources are open. */
@@ -50,7 +51,7 @@ export function Changed({ children, changeKey, className = '' }: { children: Rea
   return (
     <span className={`relative ${was !== undefined ? 'changed rounded-[5px]' : ''} ${className}`} key={was !== undefined ? `c${version}` : 'n'}>
       {children}
-      {was !== undefined && (
+      {was !== undefined && was !== WAITING && (
         <span className="was" aria-hidden>
           was <s>{was}</s>
         </span>

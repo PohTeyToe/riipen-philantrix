@@ -8,10 +8,10 @@ const BYLINE = "Built by Abdallah Safi for Philantrix's Level UP project.";
 
 // 120 words at most, in total.
 const HOW: [string, string][] = [
-  ['Agent', "Claude read each funder's public form and listed its questions. Parallel workers mapped every field to the records with the engine's tools. Code checked each answer, a second model reviewed it, and rejects went back once, then to a person. Recorded Oct 16; this page replays it."],
-  ['Numbers', 'Code in your browser counts every figure and rebuilds on every edit or answer. No model writes a number.'],
+  ['Agent', "Claude read each funder's public form. Parallel workers mapped each field to the records with the engine's tools. Code checks and a separate review call tested every answer; rejects went back once, then to a person. Recorded Oct 16, replayed here."],
+  ['Numbers', 'Code in your browser counts every figure the records hold and rebuilds on every change. No model writes a number.'],
   ['Gaps', 'The check compares records with the schedule. Unanswered, a report counts only what was logged.'],
-  ['Privacy', 'No names in funder copy. Small counts show as "<5", and so does anything that would reveal one.'],
+  ['Privacy', 'No names in funder copy. Counts of 1 to 4 people show as "<5", typed ones too. Shares and gaps that would reveal one are hidden.'],
   ['Data', 'A made-up mentorship org. Not made or endorsed by Philantrix or the funders.'],
 ];
 

@@ -8,7 +8,7 @@ import { goalFigure, measure, type GoalFigure, type ShownStatus } from './engine
 import { applyAnswers, type Answers, type Finding, type State } from './findings';
 import { commas, fmtDate, fmtDay, fmtHours, fmtLongDate, fmtPercent, toHundredths } from './format';
 import { METRICS, type MetricId, type MetricKind, type MetricValue } from './metrics';
-import { DEFAULT_SMALL_BELOW, bandLabel, combineBands, combinedFootnote, peopleForFunder } from './privacy';
+import { DEFAULT_SMALL_BELOW, WITHHELD, bandLabel, combineBands, combinedFootnote, peopleForFunder, shareIsSmall } from './privacy';
 import { SUMMARY_LABEL, TEMPLATES, templateById, templateGoals, templateMetrics, type Slot, type Template, type TemplateId } from './templates';
 
 // ---------- figures for one period ----------
@@ -80,13 +80,15 @@ export function computePeriod(ds: Dataset, st: State, findings: Finding[], perio
   const metrics = Object.fromEntries(Object.values(METRICS).map((def) => [def.id, def.compute(m)])) as Record<MetricId, MetricValue>;
 
   const byGroup = ds.groups.map((g) => ({ g, gm: measure(ds, st, period.start, period.end, g.id) }));
-  const groupRate = (num: number, den: number, empty: string) =>
-    den === 0 ? { num, den, value: null, display: empty } : { num, den, value: num / den, display: fmtPercent(num, den) };
-  const attendanceByGroup = byGroup.map(({ g, gm }) => ({ groupId: g.id, groupName: g.name, ...groupRate(gm.attended, gm.offered, `No sessions in ${period.short}`) }));
-  const retentionByGroup = byGroup.map(({ g, gm }) => ({ groupId: g.id, groupName: g.name, ...groupRate(gm.retained.length, gm.enrolledAny.length, `No participants in ${period.short}`) }));
+  const below = st.smallBelow;
+  // Seats aren't people, so attendance shows as it is. Retention is a share of
+  // people: hidden when the people it counts or leaves out are a small count.
+  const groupRate = (num: number, den: number, empty: string, people: boolean) =>
+    den === 0 ? { num, den, value: null, display: empty } : { num, den, value: num / den, display: people && shareIsSmall(num, den, below) ? WITHHELD : fmtPercent(num, den) };
+  const attendanceByGroup = byGroup.map(({ g, gm }) => ({ groupId: g.id, groupName: g.name, ...groupRate(gm.attended, gm.offered, `No sessions in ${period.short}`, false) }));
+  const retentionByGroup = byGroup.map(({ g, gm }) => ({ groupId: g.id, groupName: g.name, ...groupRate(gm.retained.length, gm.enrolledAny.length, `No participants in ${period.short}`, true) }));
 
   const byId = new Map(st.people.map((p) => [p.id, p]));
-  const below = st.smallBelow;
   const bands = ageBands(ds, below);
   const cells = bands.map((ranges) => {
     const value = m.served.filter((pid) => ranges.includes(byId.get(pid)?.age_range ?? '')).length;
@@ -233,6 +235,9 @@ const GOAL_KIND: Record<GoalFigure['metric'], MetricKind> = {
   attendance_rate: 'percent',
 };
 
+/** A withheld share inside a sentence: "and a withheld share of them saw their score go up". */
+export const WITHHELD_SHARE = 'a withheld share';
+
 /** A goal status as words that finish "the goal is ...". */
 export const STATUS_PHRASE: Record<ShownStatus, string> = {
   Met: 'met',
@@ -263,6 +268,7 @@ export function renderSlot(slot: Slot, f: PeriodFigures): SummaryPart {
     ref = { kind: 'goal', goalId: src.goalId, part: 'target' };
   }
   if (value === null) return { text: display, ref };
+  if (display === WITHHELD) return { text: WITHHELD_SHARE, ref };
   switch (slot.kind) {
     // A 0 reads "no": "no new participants joined", not "0 new participants joined".
     case 'people': return { text: value === 0 ? 'no' : value < f.smallBelow ? `fewer than ${f.smallBelow}` : commas(value), ref };
@@ -302,7 +308,8 @@ export function reportFromFigures(ds: Dataset, f: PeriodFigures, templateId: Tem
           label: METRICS[id].label,
           definition: METRICS[id].definition,
           kind: METRICS[id].kind,
-          value: f.metrics[id].value,
+          // A withheld number draws no meter or bar either.
+          value: f.metrics[id].display === WITHHELD ? null : f.metrics[id].value,
           display: f.metrics[id].display,
         })),
       };
@@ -319,7 +326,7 @@ export function reportFromFigures(ds: Dataset, f: PeriodFigures, templateId: Tem
         view.chart = {
           title: `${METRICS[s.chart].label} by group`,
           metric: s.chart,
-          bars: rows.map((r) => ({ ref: { kind: 'metric', metric: s.chart!, groupId: r.groupId }, label: r.groupName, value: r.value, display: r.display })),
+          bars: rows.map((r) => ({ ref: { kind: 'metric', metric: s.chart!, groupId: r.groupId }, label: r.groupName, value: r.display === WITHHELD ? null : r.value, display: r.display })),
         };
       }
       return view;

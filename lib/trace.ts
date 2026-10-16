@@ -7,7 +7,7 @@ import { goalFigure, measure, type Measure } from './engine';
 import { applyAnswers, type Answers, type Finding, type State } from './findings';
 import { commas, fmtDate, fmtDateIn, fmtDay, fmtHoursExact, fmtShortDate, fmtWholePrecise } from './format';
 import { METRICS, type MetricId } from './metrics';
-import { DEFAULT_SMALL_BELOW, bandLabel, isSmall, peopleForFunder, smallRange } from './privacy';
+import { DEFAULT_SMALL_BELOW, WITHHELD, bandLabel, isSmall, peopleForFunder, smallRange } from './privacy';
 import { ageBands, type TraceRef } from './report';
 import { seatKey } from './edits';
 
@@ -41,6 +41,7 @@ export interface TraceView {
 
 const plural = (n: number, one: string, many: string) => `${commas(n)} ${n === 1 ? one : many}`;
 const smallNote = (below: number) => `Counts of ${smallRange(below)} could identify someone.`;
+const shareNote = (below: number) => `Hidden because the people it counts, or the people it leaves out, are ${smallRange(below)}.`;
 
 function metricRows(metric: MetricId, m: Measure, ds: Dataset, st: State): Pick<TraceView, 'columns' | 'numeric' | 'rows' | 'rowsCaption'> {
   const person = new Map(st.people.map((p) => [p.id, p]));
@@ -127,7 +128,7 @@ function metricRows(metric: MetricId, m: Measure, ds: Dataset, st: State): Pick<
             at: { participantId: p.id },
           };
         }),
-        rowsCaption: `${plural(m.enrolledAny.length, 'participant', 'participants')} enrolled during the period, ${commas(m.retained.length)} still enrolled on the last day`,
+        rowsCaption: `${plural(m.enrolledAny.length, 'participant', 'participants')} enrolled during the period, ${commas(m.retained.length)} did not leave in it`,
       };
     case 'enrolled_at_start':
     case 'enrolled_in_period':
@@ -199,7 +200,7 @@ export function explain(ds: Dataset, findings: Finding[], answers: Answers, peri
       scope: groupName ? `${scope}, ${groupName} only` : scope,
       value: v.value === null ? empty : v.staffDisplay,
       funderShows: v.display !== v.staffDisplay ? v.display : null,
-      staffNote: v.display !== v.staffDisplay ? SMALL_NOTE : null,
+      staffNote: v.display === WITHHELD ? shareNote(smallBelow) : v.display !== v.staffDisplay ? SMALL_NOTE : null,
       facts: metricFacts(ref.metric),
       formula: def.formula,
       arithmetic: [v.arithmetic],

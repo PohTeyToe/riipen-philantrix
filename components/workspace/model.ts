@@ -9,9 +9,15 @@ import { applyAnswers, detectFindings, type Answers } from '@/lib/findings';
 import { fillForm, RUNS, type FilledForm, type GuardAction } from '@/lib/forms';
 import { buildRegister } from '@/lib/register';
 import { computePeriod, refKey, reportFromFigures, type Report } from '@/lib/report';
+import { WITHHELD } from '@/lib/privacy';
 import { TEMPLATES, type TemplateId } from '@/lib/templates';
 
+const SHARE_WHY = 'The people it counts, or the people it leaves out, are a small count.';
+
 export type FunderId = string;
+
+/** How a formula still waiting on staff reads in the list of what a change moved. */
+export const WAITING = 'waiting';
 
 export interface Funder {
   id: FunderId;
@@ -44,10 +50,12 @@ export type Output = { kind: 'form'; form: FilledForm } | { kind: 'example'; rep
 
 const q3 = PERIODS[0];
 
-/** Staff answers are kept as formId|fieldId, since field ids repeat across forms. */
-export const staffKey = (formId: string, fieldId: string) => `${formId}|${fieldId}`;
-const staffFor = (staff: Record<string, string>, formId: string) =>
-  Object.fromEntries(Object.entries(staff).flatMap(([k, v]) => (k.startsWith(`${formId}|`) ? [[k.slice(formId.length + 1), v]] : [])));
+/** Staff answers are kept per form, period and field: a July report is a different report, and field ids repeat across forms. */
+export const staffKey = (formId: string, periodId: Period['id'], fieldId: string) => `${formId}|${periodId}|${fieldId}`;
+export const staffFor = (staff: Record<string, string>, formId: string, periodId: Period['id']) => {
+  const head = `${formId}|${periodId}|`;
+  return Object.fromEntries(Object.entries(staff).flatMap(([k, v]) => (k.startsWith(head) ? [[k.slice(head.length), v]] : [])));
+};
 
 export function build(snap: Snapshot, periodId: Period['id'], funderId: FunderId, staff: Record<string, string>) {
   let t = performance.now();
@@ -65,7 +73,7 @@ export function build(snap: Snapshot, periodId: Period['id'], funderId: FunderId
   const figures = computePeriod(ds, st, findings, periodById(periodId));
   const count = lap();
   const run = RUNS.find((r) => r.form.id === funderId);
-  const output: Output = run ? { kind: 'form', form: fillForm(run, figures, staffFor(staff, run.form.id)) } : { kind: 'example', report: reportFromFigures(ds, figures, funderId as TemplateId) };
+  const output: Output = run ? { kind: 'form', form: fillForm(run, figures, staffFor(staff, run.form.id, periodId)) } : { kind: 'example', report: reportFromFigures(ds, figures, funderId as TemplateId) };
   const report = lap();
   const register = buildRegister(ds, st, findings, snap.edits, q3.start, sample.asOf);
   return { ds, findings, st, figures, output, register, timings: { records, check, count, report } satisfies Timings };
@@ -76,7 +84,7 @@ export type Build = ReturnType<typeof build>;
 /** Another funder's report from the same build: same records, answers and cutoff, a different form. */
 export function outputFor(b: Build, funderId: FunderId, staff: Record<string, string>): Output {
   const run = RUNS.find((r) => r.form.id === funderId);
-  return run ? { kind: 'form', form: fillForm(run, b.figures, staffFor(staff, run.form.id)) } : { kind: 'example', report: reportFromFigures(b.ds, b.figures, funderId as TemplateId) };
+  return run ? { kind: 'form', form: fillForm(run, b.figures, staffFor(staff, run.form.id, b.figures.period.id)) } : { kind: 'example', report: reportFromFigures(b.ds, b.figures, funderId as TemplateId) };
 }
 
 /** What the privacy guard changed on this report. */
@@ -85,7 +93,11 @@ export function guardActions(o: Output): GuardAction[] {
   const out: GuardAction[] = [];
   for (const s of o.report.sections) {
     if (s.type === 'figures') {
-      for (const f of s.figures) if (f.display.startsWith('<')) out.push({ fieldId: refKey(f.ref), label: f.label, kind: 'small', shows: f.display, why: 'A small count could identify someone.' });
+      for (const f of s.figures) {
+        if (f.display.startsWith('<')) out.push({ fieldId: refKey(f.ref), label: f.label, kind: 'small', shows: f.display, why: 'A small count could identify someone.' });
+        if (f.display === WITHHELD) out.push({ fieldId: refKey(f.ref), label: f.label, kind: 'derived', shows: f.display, why: SHARE_WHY });
+      }
+      if (s.chart) for (const b of s.chart.bars) if (b.display === WITHHELD) out.push({ fieldId: refKey(b.ref), label: `${s.chart.title}, ${b.label}`, kind: 'derived', shows: b.display, why: SHARE_WHY });
       if (s.breakdown) for (const c of s.breakdown.cells) if (c.ranges.length > 1) out.push({ fieldId: refKey(c.ref), label: `Age ${c.ranges.join(' and ')}`, kind: 'combined', shows: `${c.key}: ${c.display}`, why: 'Reported together, because one range is small in some month.' });
     }
     if (s.type === 'goals') for (const g of s.goals) if (g.status === 'Not shown') out.push({ fieldId: `goal:${g.id}`, label: g.name, kind: 'derived', shows: g.display, why: 'No status or forecast: either would give a small count away.' });
@@ -111,6 +123,8 @@ export function numbersOf(o: Output): Map<string, { label: string; display: stri
     for (const { field, view } of fields) {
       const label = `${item.number ? `${item.number}${field.id.includes('.') ? field.id.slice(field.id.indexOf('.')) : ''} ` : ''}${field.label}`;
       if (view.state === 'value' || view.state === 'withheld') out.set(`field:${field.id}`, { label, display: view.display });
+      // A formula waiting on staff: answering it is a change worth listing.
+      if (view.state === 'waiting') out.set(`field:${field.id}`, { label, display: WAITING });
       if (view.state === 'draft') view.parts.forEach((p, i) => p.ref && out.set(`field:${field.id}:${i}`, { label, display: p.text }));
     }
   }

@@ -9,7 +9,7 @@ import geist from '../data/agent-runs/geist-foster-youth.json';
 import greyHighlands from '../data/agent-runs/grey-highlands.json';
 import { commas, fmtPercent, halfUp } from './format';
 import { METRICS, type MetricId, type MetricKind } from './metrics';
-import { isSmall, peopleForFunder } from './privacy';
+import { WITHHELD, isSmall, peopleForFunder, shareIsSmall, smallRange } from './privacy';
 import { renderSlot, type PeriodFigures, type SummaryPart, type TraceRef } from './report';
 import type { SlotKind } from './templates';
 
@@ -120,7 +120,8 @@ export interface FormRun {
   items: FormItem[];
 }
 
-export const RUNS: FormRun[] = [greyHighlands, ojjdp, geist] as unknown as FormRun[];
+/** The OJJDP grid first: the biggest form, and the run with the most workers at once. */
+export const RUNS: FormRun[] = [ojjdp, greyHighlands, geist] as unknown as FormRun[];
 export type FormId = string;
 export const runById = (id: FormId): FormRun => {
   const r = RUNS.find((x) => x.form.id === id);
@@ -148,7 +149,8 @@ export type FieldView =
   /** A formula waiting on numbers staff haven't typed yet. */
   | { state: 'waiting'; needs: string[] }
   | { state: 'draft'; parts: SummaryPart[]; ask: string | null; staff: string | null }
-  | { state: 'ask'; question: string; staff: string | null; numeric: boolean; handedOver: 'rules' | 'review' | 'unanswered' | null }
+  /** shows: what funder copy prints for a typed number the guard changed ("<5", "Not shown"). */
+  | { state: 'ask'; question: string; staff: string | null; shows: string | null; numeric: boolean; handedOver: 'rules' | 'review' | 'unanswered' | null }
   | { state: 'missing'; what: string };
 
 export interface FilledField {
@@ -169,11 +171,22 @@ export interface FilledForm {
 }
 
 const STAFF_NUMBER = ['count', 'hours', 'money'];
-/** "1,200", "$1,200" or "30" as a number; anything else is not one. */
-const parseNumber = (s: string | undefined): number | null => {
+
+/** What a person typed, as a number: whole for a count, "1,200.50" or "$1,200" for hours and money. Anything else is not an answer yet. */
+export function parseStaffNumber(wants: string, s: string | undefined): number | null {
   const t = s?.replace(/[$,\s]/g, '') ?? '';
+  if (wants === 'count') return /^\d+$/.test(t) ? Number(t) : null;
   return /^\d+(\.\d+)?$/.test(t) ? Number(t) : null;
-};
+}
+
+/**
+ * A count staff type is a count of people when the form's own label names
+ * people ("Youth matched with a mentor", "# Volunteers"). The guard can't see
+ * what a typed number counts, so it reads the label. Months, programs and
+ * training events are not people.
+ */
+const PEOPLE_WORDS = /\b(youth|mentors?|mentees?|volunteers?|people|persons?|participants?|staff|members?|students?|children|clients?)\b/i;
+export const countsPeople = (fd: FormField): boolean => fd.wants === 'count' && PEOPLE_WORDS.test(fd.label);
 
 const SLOT_KIND: Record<MetricKind, SlotKind> = { people: 'people', count: 'count', hours: 'hours', percent: 'percent', decimal: 'decimal' };
 const opWord = { percent: '÷', difference: '−', sum: '+' } as const;
@@ -194,92 +207,147 @@ export function renderDraft(text: string, f: PeriodFigures): SummaryPart[] {
   return parts;
 }
 
+/** A number on the form, from the records or typed by staff, before it's placed. */
 interface Numeric {
   value: number | null;
-  /** True when this is a people count under the cutoff: any figure worked out from it would give it away. */
-  small: boolean;
   kind: MetricKind;
+  /** What funder copy shows. */
   display: string;
   ref: TraceRef | null;
+  /** A count of people under the cutoff: it shows as "<cutoff", and nothing may be worked out from it. */
+  small: boolean;
+  /** Set when the guard holds the number back. */
+  withheld?: { display: string; why: string; kind: GuardKind };
 }
 
 /**
+ * The agent wrote its questions for the quarter it was run on ("between July
+ * and September 2026"). A month's report asks about its month.
+ */
+const RUN_QUARTER = 'between July and September 2026';
+const forPeriod = (question: string, period: PeriodFigures['period']): string => (period.id === 'q3' ? question : question.replaceAll(RUN_QUARTER, `in ${period.long}`));
+
+const smallWhy = (below: number) => `A count of ${below <= 2 ? '1' : `1 to ${below - 1}`} could identify someone.`;
+
+/**
  * Fills one form for one period. staff holds what a person typed into the
- * fields only a person can answer.
+ * fields only a person can answer. Every number on the form goes through the
+ * privacy guard together, since two numbers can give away what neither does
+ * alone: 40 enrolled beside 38 matched says 2 weren't.
  */
 export function fillForm(run: FormRun, f: PeriodFigures, staff: Record<string, string> = {}): FilledForm {
   const guard: GuardAction[] = [];
   const below = f.smallBelow;
+  const range = smallRange(below);
+  const all = run.items.flatMap((item) => item.fields.map((fd) => ({ item, fd })));
+  const byId = new Map(all.map((x) => [x.fd.id, x]));
+  const name = (id: string) => {
+    const x = byId.get(id)!;
+    return fieldName(x.item, x.fd);
+  };
 
-  const metricNumeric = (fd: FormField): Numeric | { withheld: string; display: string; ref: TraceRef } => {
-    const id = fd.metric!;
-    if (fd.age_range) {
-      const band = f.ageBreakdown.cells.find((c) => c.ranges.includes(fd.age_range!));
-      if (!band) return { value: null, small: false, kind: 'people', display: 'Not in records', ref: null };
-      const ref: TraceRef = { kind: 'age', band: band.key };
-      if (band.ranges.length > 1) {
-        const others = band.ranges.filter((r) => r !== fd.age_range);
-        return { withheld: `${fd.age_range} is reported together with ${others.join(' and ')} as ${band.key}, because one of those ranges has ${below <= 2 ? '1 person' : `1 to ${below - 1} people`} in some month.`, display: `${band.key}: ${band.display}`, ref };
+  // Every number on the form: the records' counts, and what staff typed.
+  const nums = new Map<string, Numeric>();
+  for (const { fd } of all) {
+    if (fd.answer === 'metric' && fd.metric) {
+      const id = fd.metric;
+      if (fd.age_range) {
+        const band = f.ageBreakdown.cells.find((c) => c.ranges.includes(fd.age_range!));
+        if (!band) {
+          nums.set(fd.id, { value: null, kind: 'people', display: 'Not in records', ref: null, small: false });
+          continue;
+        }
+        const n: Numeric = { value: band.value, kind: 'people', display: band.display, ref: { kind: 'age', band: band.key }, small: isSmall(band.value, below) };
+        if (band.ranges.length > 1) {
+          const others = band.ranges.filter((r) => r !== fd.age_range);
+          n.withheld = { display: `${band.key}: ${band.display}`, kind: 'combined', why: `${fd.age_range} is reported together with ${others.join(' and ')} as ${band.key}, because one of those ranges has ${range} in some month.` };
+        }
+        nums.set(fd.id, n);
+        continue;
       }
-      return { value: band.value, small: isSmall(band.value, below), kind: 'people', display: band.display, ref };
+      const mv = f.metrics[id];
+      const kind = METRICS[id].kind;
+      const n: Numeric = { value: mv.value, kind, display: mv.display, ref: { kind: 'metric', metric: id }, small: kind === 'people' && mv.value !== null && isSmall(mv.value, below) };
+      if (mv.display === WITHHELD) n.withheld = { display: WITHHELD, kind: 'derived', why: `The people it counts, or the people it leaves out, are ${range}.` };
+      nums.set(fd.id, n);
     }
-    const mv = f.metrics[id];
-    return { value: mv.value, small: METRICS[id].kind === 'people' && mv.value !== null && isSmall(mv.value, below), kind: METRICS[id].kind, display: mv.display, ref: { kind: 'metric', metric: id } };
+    if (fd.answer === 'ask' && STAFF_NUMBER.includes(fd.wants)) {
+      const typed = parseStaffNumber(fd.wants, staff[fd.id]);
+      if (typed === null) continue;
+      const people = countsPeople(fd);
+      nums.set(fd.id, { value: typed, kind: people ? 'people' : fd.wants === 'hours' ? 'hours' : 'count', display: people ? peopleForFunder(typed, below) : commas(typed), ref: null, small: people && isSmall(typed, below) });
+    }
+  }
+
+  // Pairs where one number counts some of the other's people: enrolled at the
+  // start inside enrolled during the period, the top of a share inside its
+  // bottom. When the gap between them is small, the smaller one is held back.
+  const pairs: [string, string][] = [];
+  for (const { fd } of all) {
+    const within = fd.answer === 'metric' && fd.metric && !fd.age_range ? METRICS[fd.metric].within : undefined;
+    if (within) for (const { fd: o } of all) if (o.answer === 'metric' && o.metric === within && !o.age_range) pairs.push([fd.id, o.id]);
+    if (fd.answer === 'formula' && fd.formula?.op === 'percent') {
+      const [a, b] = fd.formula.of;
+      if (nums.get(a)?.kind === 'people' && nums.get(b)?.kind === 'people') pairs.push([a, b]);
+    }
+  }
+  for (const [sub, sup] of pairs) {
+    const s = nums.get(sub);
+    const p = nums.get(sup);
+    if (!s || !p || s.withheld || p.withheld || s.small || p.small || s.value === null || p.value === null) continue;
+    if (isSmall(p.value - s.value, below)) s.withheld = { display: WITHHELD, kind: 'derived', why: `Taken from ${name(sup)}, it would leave ${range}.` };
+  }
+
+  const log = (item: FormItem, fd: FormField, n: Numeric) => {
+    if (n.withheld) guard.push({ fieldId: fd.id, label: fieldName(item, fd), kind: n.withheld.kind, shows: n.withheld.display, why: n.withheld.why });
+    else if (n.small) guard.push({ fieldId: fd.id, label: fieldName(item, fd), kind: 'small', shows: n.display, why: smallWhy(below) });
   };
 
   const items = run.items.map((item): FilledItem => {
-    const numbers = new Map<string, Numeric | { withheld: string; display: string; ref: TraceRef }>();
-    for (const fd of item.fields) {
-      if (fd.answer === 'metric' && fd.metric) numbers.set(fd.id, metricNumeric(fd));
-      // A number staff typed feeds any formula that uses it.
-      const typed = fd.answer === 'ask' && STAFF_NUMBER.includes(fd.wants) ? parseNumber(staff[fd.id]) : null;
-      if (typed !== null) numbers.set(fd.id, { value: typed, small: false, kind: fd.wants === 'hours' ? 'hours' : 'count', display: commas(typed), ref: null });
-    }
-
     const fields = item.fields.map((fd): FilledField => {
       switch (fd.answer) {
         case 'metric': {
-          const n = numbers.get(fd.id)!;
-          if ('withheld' in n) {
-            guard.push({ fieldId: fd.id, label: fieldName(item, fd), kind: 'combined', shows: n.display, why: n.withheld });
-            return { field: fd, view: { state: 'withheld', display: n.display, ref: n.ref, why: n.withheld } };
-          }
-          if (n.small) guard.push({ fieldId: fd.id, label: fieldName(item, fd), kind: 'small', shows: n.display, why: `A count of ${below <= 2 ? '1' : `1 to ${below - 1}`} could identify someone.` });
+          const n = nums.get(fd.id)!;
+          log(item, fd, n);
+          if (n.withheld) return { field: fd, view: { state: 'withheld', display: n.withheld.display, ref: n.ref, why: n.withheld.why } };
           return { field: fd, view: { state: 'value', display: n.display, value: n.value, ref: n.ref, kind: n.kind, guarded: n.small ? 'small' : null } };
         }
         case 'formula': {
-          const ops = (fd.formula?.of ?? []).map((id) => ({ id, n: numbers.get(id) }));
-          const working = ops.map(({ id, n }) => ({ label: item.fields.find((x) => x.id === id)?.label ?? id, display: n ? n.display : '?', ref: n ? n.ref : null }));
-          const nums = ops.map((o) => o.n);
-          const untyped = ops.filter((o) => !o.n && item.fields.find((x) => x.id === o.id)?.answer === 'ask');
-          if (untyped.length) return { field: fd, view: { state: 'waiting', needs: untyped.map((o) => item.fields.find((x) => x.id === o.id)!.label) } };
-          if (nums.some((n) => !n || 'withheld' in n || n.value === null)) {
-            const why = 'One of the figures it is worked out from is not shown.';
-            guard.push({ fieldId: fd.id, label: fieldName(item, fd), kind: 'derived', shows: 'Not shown', why });
-            return { field: fd, view: { state: 'withheld', display: 'Not shown', ref: null, why } };
-          }
-          const [a, b] = nums as Numeric[];
-          if (a.small || b.small) {
-            const why = `Worked out from a count under ${below}, so it would give that count away.`;
-            guard.push({ fieldId: fd.id, label: fieldName(item, fd), kind: 'derived', shows: 'Not shown', why });
-            return { field: fd, view: { state: 'withheld', display: 'Not shown', ref: null, why } };
-          }
+          const ops = (fd.formula?.of ?? []).map((id) => ({ id, n: nums.get(id) }));
+          const working = ops.map(({ id, n }) => ({ label: byId.get(id)?.fd.label ?? id, display: n ? (n.withheld?.display ?? n.display) : '?', ref: n ? n.ref : null }));
+          const untyped = ops.filter((o) => !o.n && byId.get(o.id)?.fd.answer === 'ask');
+          if (untyped.length) return { field: fd, view: { state: 'waiting', needs: untyped.map((o) => byId.get(o.id)!.fd.label) } };
+          const withhold = (why: string): FilledField => {
+            guard.push({ fieldId: fd.id, label: fieldName(item, fd), kind: 'derived', shows: WITHHELD, why });
+            return { field: fd, view: { state: 'withheld', display: WITHHELD, ref: null, why } };
+          };
+          if (ops.some(({ n }) => !n || n.withheld || n.value === null)) return withhold('One of the figures it is worked out from is not shown.');
+          const [a, b] = ops.map(({ n }) => n!);
+          if (a.small || b.small) return withhold(`Worked out from a count under ${below}, so it would give that count away.`);
           const op = fd.formula!.op;
           if (op === 'percent') {
+            if (a.kind === 'people' && b.kind === 'people' && shareIsSmall(a.value!, b.value!, below)) return withhold(`The people it counts, or the people it leaves out, are ${range}.`);
             const display = b.value === 0 ? 'Nothing to divide by' : fmtPercent(a.value!, b.value!);
             return { field: fd, view: { state: 'value', display, value: b.value ? a.value! / b.value : null, ref: null, kind: 'percent', guarded: null, working } };
           }
           const v = op === 'sum' ? a.value! + b.value! : a.value! - b.value!;
           const people = a.kind === 'people' && b.kind === 'people';
           const small = people && isSmall(v, below);
-          if (small) guard.push({ fieldId: fd.id, label: fieldName(item, fd), kind: 'small', shows: peopleForFunder(v, below), why: `A count of ${below <= 2 ? '1' : `1 to ${below - 1}`} could identify someone.` });
+          if (small) guard.push({ fieldId: fd.id, label: fieldName(item, fd), kind: 'small', shows: peopleForFunder(v, below), why: smallWhy(below) });
           const display = people ? peopleForFunder(v, below) : a.kind === 'hours' ? commas(halfUp(Math.round(v * 100), 100)) : commas(v);
           return { field: fd, view: { state: 'value', display, value: v, ref: null, kind: people ? 'people' : a.kind, guarded: small ? 'small' : null, working } };
         }
         case 'draft':
           return { field: fd, view: { state: 'draft', parts: renderDraft(fd.text ?? '', f), ask: fd.ask, staff: staff[fd.id]?.trim() || null } };
-        case 'ask':
-          return { field: fd, view: { state: 'ask', question: fd.ask ?? fd.quote, staff: staff[fd.id]?.trim() || null, numeric: STAFF_NUMBER.includes(fd.wants), handedOver: fd.to_staff } };
+        case 'ask': {
+          const numeric = STAFF_NUMBER.includes(fd.wants);
+          const n = numeric ? nums.get(fd.id) : undefined;
+          if (n) log(item, fd, n);
+          // A number is answered only once it reads as one.
+          const typed = numeric ? (n ? staff[fd.id].trim() : null) : staff[fd.id]?.trim() || null;
+          const shows = n && (n.withheld || n.small) ? (n.withheld?.display ?? n.display) : null;
+          return { field: fd, view: { state: 'ask', question: forPeriod(fd.ask ?? fd.quote, f.period), staff: typed, shows, numeric, handedOver: fd.to_staff } };
+        }
         default:
           return { field: fd, view: { state: 'missing', what: fd.missing ?? '' } };
       }
@@ -287,18 +355,18 @@ export function fillForm(run: FormRun, f: PeriodFigures, staff: Record<string, s
     return { item, fields };
   });
 
-  const all = items.flatMap((i) => i.fields);
-  const item = (fd: FormField) => run.items.find((i) => i.fields.includes(fd))!;
-  const needsStaff = all.filter((x) => x.view.state === 'ask' || (x.view.state === 'draft' && x.view.ask));
+  const filled = items.flatMap((i) => i.fields);
+  const itemOf = (fd: FormField) => byId.get(fd.id)!.item;
+  const needsStaff = filled.filter((x) => x.view.state === 'ask' || (x.view.state === 'draft' && x.view.ask));
   return {
     run,
     items,
     guard,
     counts: {
-      fromRecords: all.filter((x) => fromRecords(x.field, item(x.field))).length,
+      fromRecords: filled.filter((x) => fromRecords(x.field, itemOf(x.field))).length,
       forStaff: needsStaff.length,
       staffDone: needsStaff.filter((x) => (x.view.state === 'ask' || x.view.state === 'draft') && x.view.staff).length,
-      notTracked: all.filter((x) => x.view.state === 'missing').length,
+      notTracked: filled.filter((x) => x.view.state === 'missing').length,
     },
   };
 }

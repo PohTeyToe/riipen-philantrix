@@ -66,8 +66,15 @@ export function useWorkspace() {
     setSnap(INITIAL);
   }, [snap]);
 
-  const answerStaff = useCallback((fieldId: string, text: string) => {
-    setStaff((s) => ({ ...s, [fieldId]: text }));
+  /** A staff answer: key from staffKey, an empty text clears it. */
+  const answerStaff = useCallback((key: string, text: string, label: string) => {
+    pending.current = text ? `${label}: answered` : `${label}: cleared`;
+    setStaff((s) => {
+      const next = { ...s };
+      if (text) next[key] = text;
+      else delete next[key];
+      return next;
+    });
   }, []);
 
   const changed = Object.keys(snap.edits).length > 0 || Object.keys(snap.answers).length > 0 || snap.smallBelow !== DEFAULT_SMALL_BELOW;

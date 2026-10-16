@@ -240,7 +240,7 @@ counts as (
       where s.workstream_id = rp.workstream_id and s.session_date between rp.starts_on and rp.ends_on) as offered,
     (select count(*) from roster r
       where r.workstream_id = rp.workstream_id and r.join_date <= rp.ends_on
-        and (r.exit_date is null or r.exit_date >= rp.ends_on)) as retained,
+        and (r.exit_date is null or r.exit_date > rp.ends_on)) as retained,
     (select count(*) from roster r
       where r.workstream_id = rp.workstream_id and r.join_date <= rp.ends_on
         and (r.exit_date is null or r.exit_date >= rp.starts_on)) as enrolled,

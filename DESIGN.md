@@ -16,7 +16,7 @@ OKLCH, neutrals tinted toward the mahogany hue (29). Source: philantrix.com styl
 | surface | oklch(99.7% 0.001 29) | Panels, report paper |
 | sunken | oklch(96.2% 0.003 29) | Segmented controls, table heads |
 | line / line-strong | oklch(92.6% 0.003 29) / oklch(86.5% 0.004 29) | Hairlines (their #ebebeb), control borders |
-| ink / muted / faint | oklch(21% 0.008 29) / oklch(46% 0.01 29) / oklch(64% 0.01 29) | Text levels (ink is their #171717) |
+| ink / muted / faint | oklch(21% 0.008 29) / oklch(46% 0.01 29) / oklch(54% 0.01 29) | Text levels (ink is their #171717) |
 | mah | oklch(26.2% 0.107 29.2) | Their mahogany #4c0000: run card, primary, selection |
 | mah-deep | oklch(19% 0.08 29.2) | Lanes and wells inside the run card |
 | mah-tint / mah-soft | oklch(96.4% 0.018 17) / oklch(87% 0.05 18) | Highlighted sources, change marks |

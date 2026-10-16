@@ -1,6 +1,7 @@
-// Privacy rules for funder output (report page, PDF, Excel). Rates and hours
-// are not suppressed. The staff view shows true counts and says why the
-// funder copy differs.
+// Privacy rules for funder output (report page, PDF, Excel). Hours and
+// seat-based rates are not suppressed. A share of people is, when the people
+// it counts or the people it leaves out are a small count. The staff view
+// shows true counts and says why the funder copy differs.
 //
 // The cutoff is a setting: counts from 1 up to one below it could identify
 // someone, so funder copy shows "<cutoff". 5 is the default. 0 shows as 0,
@@ -15,6 +16,16 @@ export const MAX_SMALL_BELOW = 10;
 export const isSmall = (n: number, below = DEFAULT_SMALL_BELOW): boolean => n >= 1 && n < below;
 
 export const peopleForFunder = (n: number, below = DEFAULT_SMALL_BELOW): string => (isSmall(n, below) ? `<${below}` : commas(n));
+
+/** What funder copy shows for a number the guard withholds outright. */
+export const WITHHELD = 'Not shown';
+
+/**
+ * A share of people (12 of 13 still enrolled) gives a small count away when
+ * the people it counts, or the people it leaves out (the 1 who left), are
+ * 1 to cutoff-1.
+ */
+export const shareIsSmall = (num: number, den: number, below = DEFAULT_SMALL_BELOW): boolean => den > 0 && (isSmall(num, below) || isSmall(den - num, below));
 
 /** "1 to 4 people" for a cutoff of 5. */
 export const smallRange = (below = DEFAULT_SMALL_BELOW): string => (below <= 2 ? '1 person' : `1 to ${below - 1} people`);
