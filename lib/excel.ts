@@ -3,6 +3,7 @@
 // report model, which has no names in it.
 
 import { fmtDate } from './format';
+import { smallRange } from './privacy';
 import type { MetricKind } from './metrics';
 import type { Report } from './report';
 
@@ -17,7 +18,7 @@ const FORMAT: Record<MetricKind, string> = { people: '#,##0', count: '#,##0', ho
 
 /** A number keeps its format; a "<5" or an empty value stays as the text shown on the page. */
 function cell(kind: MetricKind, value: number | null, display: string): Cell {
-  if (value === null || display === '<5') return display;
+  if (value === null || display.startsWith('<')) return display;
   return { v: value, z: FORMAT[kind] };
 }
 
@@ -46,7 +47,7 @@ export function workbookSheets(r: Report): Sheet[] {
     for (const c of b.cells) rows.push([c.key, cell('people', c.value, c.display)]);
     rows.push(['Total', cell('people', b.total.value, b.total.display)]);
     rows.push([]);
-    if (b.cells.some((c) => c.display === '<5')) rows.push(['<5 means 1 to 4 people.']);
+    if (b.cells.some((c) => c.display.startsWith('<'))) rows.push([`<${r.smallBelow} means ${smallRange(r.smallBelow)}.`]);
     if (b.footnote) rows.push([b.footnote]);
     sheets.push({ name: 'Age range', rows, widths: [22, 22] });
   }

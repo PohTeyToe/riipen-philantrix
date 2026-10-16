@@ -1,55 +1,21 @@
 // Rejects an AI-drafted summary that has a digit, a number word, a comparison
 // or a judgment outside the slots the engine fills, or a slot the template
-// doesn't have. Run by CI and before every build. It checks words, not
-// meaning: a person still reads each draft to confirm every slot is described
-// with the right unit.
+// doesn't have. Run by CI and before every build. The word rules live in
+// scripts/narrative-rules.mjs, which the page's live guard also runs; this
+// file adds the check that every slot renders for every period and answer
+// state in data/figures.json.
 // Usage: node scripts/check-narrative.mjs            (checks data/narratives.json)
 //        node scripts/check-narrative.mjs <template-id> <text-file>   (checks one draft)
-// The rules are also in the drafting prompt, data/prompts/narrative.md.
 
 import { readFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { dirname, join, resolve } from 'node:path';
+import { checkText, render } from './narrative-rules.mjs';
+
+export { render };
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..');
 const readJson = (f) => JSON.parse(readFileSync(join(ROOT, f), 'utf8'));
-
-const NUMBER_WORDS = [
-  'zero', 'one', 'two', 'three', 'four', 'five', 'six', 'seven', 'eight', 'nine', 'ten',
-  'eleven', 'twelve', 'thirteen', 'fourteen', 'fifteen', 'sixteen', 'seventeen', 'eighteen', 'nineteen',
-  'twenty', 'thirty', 'forty', 'fifty', 'sixty', 'seventy', 'eighty', 'ninety',
-  'hundred', 'hundreds', 'thousand', 'thousands', 'million', 'millions', 'billion', 'billions', 'trillion',
-  'dozen', 'dozens', 'couple', 'pair', 'handful',
-  'half', 'twice', 'thrice', 'double', 'triple', 'single',
-  'first', 'second', 'third', 'fourth', 'fifth', 'percent', 'per cent',
-  // Quantities without a figure are still a claim the engine didn't make.
-  'several', 'many', 'few', 'numerous', 'multiple', 'countless', 'all', 'none', 'nobody', 'no one', 'every', 'everyone', 'entire', 'whole',
-];
-
-// Comparisons and trends. The brief's list, plus close forms.
-const COMPARISON_WORDS = [
-  'increase', 'increased', 'increases', 'increasing', 'rose', 'rise', 'rises', 'rising', 'risen',
-  'grew', 'grow', 'grows', 'growing', 'growth', 'fell', 'fall', 'falls', 'falling', 'fallen',
-  'drop', 'dropped', 'drops', 'dropping', 'decline', 'declined', 'declines', 'declining',
-  'decrease', 'decreased', 'decreases', 'decreasing', 'improve', 'improved', 'improves', 'improving', 'improvement',
-  'worsen', 'worsened', 'than', 'higher', 'highest', 'lower', 'lowest', 'record', 'best', 'worst',
-  'compared', 'comparison', 'versus', 'vs', 'exceed', 'exceeded', 'exceeds', 'surpass', 'surpassed',
-  'trend', 'trends', 'trending', 'up from', 'down from', 'ahead', 'behind', 'above', 'below',
-  'short of', 'on track', 'off track', 'gain', 'gained', 'jump', 'jumped', 'climb', 'climbed', 'boost', 'boosted',
-];
-
-// The same words render for every period and both answer states, so a
-// judgment, hedge or fixed time word can be true for one and false for another.
-const STALE_WORDS = [
-  'strong', 'solid', 'impressive', 'excellent', 'remarkable', 'significant', 'significantly', 'healthy',
-  'robust', 'successful', 'successfully', 'substantial', 'notable', 'notably', 'encouraging', 'promising',
-  'concerning', 'disappointing', 'only', 'just', 'nearly', 'almost', 'approximately', 'roughly',
-  'most', 'majority', 'minority',
-  'january', 'february', 'march', 'april', 'may', 'june', 'july', 'august', 'september', 'october',
-  'november', 'december', 'quarter', 'quarterly', 'summer', 'autumn',
-];
-
-const wordRe = (w) => new RegExp(`\\b${w.replace(/ /g, '\\s+')}\\b`, 'i');
 
 export function loadContext() {
   return {
@@ -60,36 +26,10 @@ export function loadContext() {
 
 // Returns a list of problems. Empty means the draft passes.
 export function checkNarrative(templateId, text, ctx = loadContext()) {
-  const errs = [];
   const template = ctx.figures.templates.find((t) => t.id === templateId);
   if (!template) return [`unknown template ${templateId}`];
-  const known = Object.keys(template.slots);
-
-  const slots = [...text.matchAll(/\{([a-z0-9_]+)\}/g)].map((m) => m[1]);
-  for (const s of slots) if (!known.includes(s)) errs.push(`unknown slot {${s}}`);
-  if (slots.length === 0) errs.push('no slots used');
-  // A goal the summary mentions has its status and due date said too, so it can't skip a goal that's behind.
-  for (const k of known.filter((x) => x.endsWith('_status') || x.endsWith('_due'))) {
-    const goal = k.slice(0, k.lastIndexOf('_'));
-    if (slots.some((x) => x.startsWith(`${goal}_`)) && !slots.includes(k)) errs.push(`mentions ${goal} without its slot {${k}}`);
-  }
-  // Each figure once: a slot used twice says the same number twice.
-  for (const s of new Set(slots)) if (slots.filter((x) => x === s).length > 1) errs.push(`slot {${s}} used more than once`);
-
-  const prose = text.replace(/\{[a-z0-9_]+\}/g, ' ');
-  if (/[{}]/.test(prose)) errs.push('stray brace outside a slot');
-  const digits = prose.match(/\d+/g);
-  if (digits) errs.push(`digits outside slots: ${digits.join(', ')}`);
-  for (const w of NUMBER_WORDS) if (wordRe(w).test(prose)) errs.push(`number word: "${w}"`);
-  for (const w of COMPARISON_WORDS) if (wordRe(w).test(prose)) errs.push(`comparison word: "${w}"`);
-  for (const w of STALE_WORDS) if (wordRe(w).test(prose)) errs.push(`word that can go stale: "${w}"`);
-  if (/[\u2013\u2014]/.test(text)) errs.push('dash used as punctuation');
-
   const firstNames = [...new Set(ctx.participants.map((p) => p.display_name.split(' ')[0]))];
-  for (const n of firstNames) if (new RegExp(`\\b${n}\\b`).test(text)) errs.push(`participant name: ${n}`);
-
-  const sentences = text.trim().split(/(?<=[.!?])\s+/).filter(Boolean);
-  if (sentences.length < 3 || sentences.length > 4) errs.push(`${sentences.length} sentences, want 3 to 4`);
+  const errs = checkText(text, { slots: Object.keys(template.slots), firstNames });
 
   const bySlot = ctx.figures.narrative_slots[templateId];
   for (const [period, states] of Object.entries(bySlot)) {
@@ -99,10 +39,6 @@ export function checkNarrative(templateId, text, ctx = loadContext()) {
     }
   }
   return errs;
-}
-
-export function render(text, values) {
-  return text.replace(/\{([a-z0-9_]+)\}/g, (m, s) => (s in values ? values[s] : m));
 }
 
 function main() {

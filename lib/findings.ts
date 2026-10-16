@@ -4,6 +4,7 @@
 
 import { ATTENDANCES, type Dataset, type Participant } from './data';
 import { daysBetween } from './format';
+import { DEFAULT_SMALL_BELOW } from './privacy';
 
 export const INACTIVE_AFTER_DAYS = 30;
 
@@ -99,9 +100,11 @@ export interface State {
   people: Participant[];
   /** Participants whose exit date came from a "Left the program" answer. */
   exitedByAnswer: Set<string>;
+  /** Funder copy hides people counts from 1 up to one below this (lib/privacy.ts). */
+  smallBelow: number;
 }
 
-export function applyAnswers(ds: Dataset, findings: Finding[], answers: Answers): State {
+export function applyAnswers(ds: Dataset, findings: Finding[], answers: Answers, smallBelow = DEFAULT_SMALL_BELOW): State {
   const ranNotRecorded = new Set<string>();
   const exitOverride = new Map<string, string>();
   for (const f of findings) {
@@ -111,5 +114,5 @@ export function applyAnswers(ds: Dataset, findings: Finding[], answers: Answers)
     if (f.kind === 'inactive_participant' && a === 'left_program') exitOverride.set(f.participantId, f.lastActivity);
   }
   const people = ds.participants.map((p) => (exitOverride.has(p.id) ? { ...p, exit_date: exitOverride.get(p.id)! } : p));
-  return { answers, ranNotRecorded, people, exitedByAnswer: new Set(exitOverride.keys()) };
+  return { answers, ranNotRecorded, people, exitedByAnswer: new Set(exitOverride.keys()), smallBelow };
 }

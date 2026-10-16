@@ -1,0 +1,41 @@
+{
+  "note": "Public reporting forms the agent reads. Text extracted with pdftotext 4.00 (-enc UTF-8, reading order), bullet glyphs mapped to a plain bullet, blank lines collapsed. Nothing else was edited, so PDF artifacts stay (the Geist form's \"16-18\" extracts as \"1618\").",
+  "forms": [
+    {
+      "id": "ojjdp-mentoring",
+      "funder": "OJJDP, U.S. Department of Justice",
+      "short": "OJJDP mentoring grid",
+      "title": "Juvenile Mentoring Grant Program: Performance Measures Grid",
+      "kind": "Federal grant performance measures",
+      "url": "https://ojjdp.ojp.gov/funding/grant-performance-measurement/legacy-performance-measures/juvenile-mentoring/pmg/pdf",
+      "retrieved": "2026-10-16",
+      "pdf_sha256": "4d000fd96475e3d62e359331afa021568a696584892d8ee7997ac2935a5a15e3",
+      "pages": 15,
+      "text": "ojjdp-mentoring.txt"
+    },
+    {
+      "id": "geist-foster-youth",
+      "funder": "Geist Foundation, Hawaii Community Foundation",
+      "short": "Geist Foundation",
+      "title": "Supporting Transitioning Foster Youth: Final Report Cover Sheet",
+      "kind": "Private foundation final report",
+      "url": "https://www.hawaiicommunityfoundation.org/file/2024/Geist-Final-Report-Guidelines_2025_Transitioning-Foster-Youth.pdf",
+      "retrieved": "2026-10-16",
+      "pdf_sha256": "523aea3c4e34b3e11b27b1e31d6fa270a6eb6e25b23a7430620ad1fe24b11318",
+      "pages": 1,
+      "text": "geist-foster-youth.txt"
+    },
+    {
+      "id": "grey-highlands",
+      "funder": "Municipality of Grey Highlands, Ontario",
+      "short": "Grey Highlands",
+      "title": "Community Grant Program Final Report",
+      "kind": "Municipal grant final report",
+      "url": "https://www.greyhighlands.ca/media/a0kn2vt2/cgp-final-report-template.pdf",
+      "retrieved": "2026-10-16",
+      "pdf_sha256": "91c3b29500ac402fe45d8278d74b97d91257cace6ce00d4db571bb27feae0f54",
+      "pages": 8,
+      "text": "grey-highlands.txt"
+    }
+  ]
+}

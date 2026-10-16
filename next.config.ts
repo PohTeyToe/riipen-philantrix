@@ -8,6 +8,8 @@ const nextConfig: NextConfig = {
   trailingSlash: true,
   // Don't write an AGENTS.md into the repo on `next dev`.
   agentRules: false,
+  // No dev badge in screenshots or on a shared dev link.
+  devIndicators: false,
 };
 
 export default nextConfig;

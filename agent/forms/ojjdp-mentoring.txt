@@ -1,0 +1,1166 @@
+OJJDP Juvenile Mentoring Grant Program Performance Measures Grid
+The following pages outline the performance measures for the Office of Juvenile Justice and Delinquency Prevention (OJJDP) Juvenile Mentoring Grant program. These pages show the performance measures and the data that the grantee must provide to calculate the performance measures. The calculations on the grid are performed automatically by the Performance Measurement Tool (PMT) with the values that are entered. Examples of calculated values include percentages, total amounts, and averages.
+The performance measures are presented as outputs or outcomes. Output measures are the products of a program’s implementation or activities and are usually counts of things, such as amount of service delivered; staff hired; systems developed; sessions conducted; materials developed; or policies, procedures, and/or legislation created. Outcome measures are the benefits or changes observed or realized through the outputs and may include program completion, behavior, attitudes, skills, knowledge, values, conditions, or other attributes.
+The performance measures for activities funded under Juvenile Mentoring Grant programs are reported as quantitative data (numbers). The data are entered into PMT semi-annually. Please check your award’s special conditions for additional reporting requirements, such as the Categorical Assistance Progress Report (CAPR). Your OJJDP Program Manager can answer any questions you might have about reporting requirements.
+In addition to entering data in the PMT, the grantee is responsible for creating a Performance Data Report from the PMT in January and July of each calendar year. Each grantee then submits this report to OJJDP through the Grants Management System (GMS).
+If you have any questions about the PMT or performance measures, please call the OJJDP PMT Helpdesk at 866–487–0512, or send an e-mail to: ojjdppmt@ojp.usdoj.gov.
+For questions about Juvenile Mentoring Grant programs, please contact your OJJDP Program Manager, who can be found at: www.ojjdp.gov/statecontacts/resourcelist.asp.
+Modified with revised human trafficking performance measures.
+Modified 5/30/2018 with revised performance measures.
+
+OFFICE OF JUVENILE JUSTICE AND DELINQUENCY PREVENTION JUVENILE MENTORING GRANT PROGRAM
+
+The following target behavior measures focus on short term and long term behavioral outcomes for youth who received services specified below. Choose all target behaviors that apply to your program services. You must select at least one target behavior.
+
+#
+
+Measure
+
+Definition
+
+Data Grantee Provides
+
+Record Data Here
+
+1 Number and percent of
+
+The number and percent of youth with whom an A. The number of youth served using an
+
+youth with whom an
+
+evidence-based practice was used. Evidence-
+
+evidence-based model or program
+
+evidence-based program or practice was used
+
+based practice models include program models that have been shown, through rigorous evaluation and replication, to be effective at preventing or reducing juvenile delinquency or related risk
+
+B. The number of youth served during the reporting period
+C. Percent (A/B)
+
+factors, such as substance abuse. Model
+
+programs can come from many valid sources (e.g.,
+
+Blueprints, OJJDP’s Model Programs Guide,
+
+SAMHSA’s Model Programs, state model program
+
+resources, etc.)
+
+2 Increase in number of
+
+The number of new mentors recruited during the A. The increase in number of program
+
+program mentors recruited reporting period. “Recruited” mentors are those
+
+mentors recruited (ready for training) during
+
+who have completed requirements to be ready for
+
+the reporting period
+
+training.
+
+Program records are the preferred data source.
+
+3 Number and percent of program mentors successfully completing training
+
+The number and percent of program mentors successfully completing training during the reporting period.
+Program records are the preferred data source.
+
+A. Number of program mentors successfully completing training during the reporting period
+B. Total number of program mentors who began training during the reporting period
+C. Percent (A/B)
+
+4 Number and percent of trained program mentors with increased knowledge of the program area
+
+The number of trained program mentors
+
+A. Number of trained program mentors
+
+demonstrating increased knowledge of the program
+
+demonstrating increased knowledge of the
+
+during the reporting period.
+
+program during the reporting period
+
+Program records are the preferred data source.
+
+B. Number of trained program mentors (Auto fill from 3A)
+
+C. Percent (A/B)
+
+5 Mentor retention
+
+The number of program mentors retained by the program within the reporting period.
+Program records are the preferred data source.
+
+A. Number of mentors who have left the program during the reporting period
+B. The total number of mentors in the program during the reporting period
+C. (B – A)/B = Mentor Retention Rate
+
+6 Increase in youth enrolled since the beginning of the grant program
+
+Increase in the number of youth enrolled (being mentored) since the beginning of the grant program.
+
+A. Number of youth enrolled at the beginning of the reporting period
+B. Number of NEW youth added during the reporting period
+
+7 Number and percent of program youth matched with a mentor during the reporting period
+
+The number and percent of program youth who were matched with a mentor during the reporting period. The number of youth enrolled includes the number of youth carried over from the previous reporting period, plus new admissions who were matched with a mentor during the reporting period.
+Program records are the preferred data source.
+
+A. Number of program youth matched with a mentor during the reporting period
+B. Total number of youth enrolled in the program during the reporting period
+C. Percent of program youth matched with a mentor during the reporting period (A/B)
+
+2
+
+OFFICE OF JUVENILE JUSTICE AND DELINQUENCY PREVENTION JUVENILE MENTORING GRANT PROGRAM
+
+The following target behavior measures focus on short term and long term behavioral outcomes for youth who received services specified below. Choose all target behaviors that apply to your program services. You must select at least one target behavior.
+
+#
+
+Measure
+
+Definition
+
+Data Grantee Provides
+
+Record Data Here
+
+8 Percent of program youth in The number of youth in matches with mentors who A. Intended minimum length of the match in
+
+matches meeting mentoring meet the mentoring program requirements during
+
+months
+
+program requirements
+
+the reporting period. Enter the intended minimum length of the match (the A value) and the intended minimum hours per month for mentee/mentor meetings (the E value) according to program requirements.
+
+B. Number of youth whose match met the intended minimum match length during the reporting period
+C. Number of youth whose match exceeded the intended minimum match length during
+
+Program records are the preferred data source.
+
+the reporting period
+
+D. Number of youth who had matches that
+
+closed early during the reporting period
+
+E. Intended minimum hours per month that mentors and mentees were expected to meet (match meetings)
+
+F. Number of youth whose mentor/mentee match meetings met for the minimum number of hours during the reporting period
+
+G. Number of youth whose mentor/mentee match meetings exceeded the minimum number of hours during the reporting period
+
+H. Number of youth whose mentor/mentee match meetings did not meet the minimum number of hours during the reporting period
+
+9 Percent of mentoring programs with active partners
+
+The percent of mentoring programs with active
+
+A. Number of mentoring programs with active
+
+partners representing the following types of groups:
+
+partners
+
+nonprofit service organizations and/or faith based organizations; private industry; secondary education provider; and post-secondary education
+
+B. Number of mentoring programs C. Percent (A/B)
+
+provider or vocational training provider; other active
+
+partners.
+
+10 Number and percent of program youth completing program requirements
+
+The number and percent of program youth who A. Number of program youth who exited the
+
+have successfully fulfilled all program obligations
+
+program having completed program
+
+and requirements. This does not include youth who
+
+requirements
+
+are still in ongoing programs. Program obligations B. Total number of youth who exited the
+
+will vary by program, but should be a predefined list
+
+program during the reporting period (both
+
+of requirements or obligations that clients must
+
+successfully and unsuccessfully)
+
+meet before program completion.
+
+C. Percent (A/B)
+
+The total number of youth (the B value) includes those youth who have exited successfully and unsuccessfully.
+
+Program records are the preferred data source.
+
+3
+
+OFFICE OF JUVENILE JUSTICE AND DELINQUENCY PREVENTION JUVENILE MENTORING GRANT PROGRAM
+
+The following target behavior measures focus on short term and long term behavioral outcomes for youth who received services specified below. Choose all target behaviors that apply to your program services. You must select at least one target behavior.
+
+#
+
+Measure
+
+11 Number and percent of program youth who OFFEND (Short Term)
+
+12 Number and percent of program youth who OFFEND (Long Term)
+
+Definition
+
+Data Grantee Provides
+
+Record Data Here
+
+The number and percent of participating program A. Total number of program youth served
+
+youth who were arrested or seen at a juvenile court B. Number of program youth tracked during
+
+for a delinquent offense during the reporting period.
+
+the reporting period
+
+Appropriate for any youth-serving program. Official records (police, juvenile court) are the preferred data source.
+
+C. Of B, the number of program youth who had an arrest or delinquent offense during the reporting period
+
+The number of youth tracked should reflect the number of program youth that are followed or monitored for arrests or offenses. Ideally this number should be all youth served by the program during this reporting period.
+
+D. Number of program youth who were committed to a juvenile facility during the reporting period
+E. Number of program youth who were sentenced to adult prison during the
+
+A youth may be “committed” to a juvenile facility anytime that he/she is held overnight.
+
+reporting period F. Number of youth who received another
+sentence during the reporting period
+
+Certain jurisdictions refer to adjudications as
+
+G. Percent OFFENDING (C/B)
+
+“sentences.”
+
+Example: If I am tracking 50 program youth then, A would be 50. Of these 50 program youth that I am tracking, if 25 of them were arrested or had a delinquent offense during the reporting period, then B would be 25. This logic should follow for C values. The percent of youth offending measured short term will be auto calculated in D.
+
+The number and percent of participating program A. Total number of program youth who exited
+
+youth who were arrested or seen at a juvenile court
+
+the program 6–12 months ago that you are
+
+for a delinquent offense during the reporting period.
+
+tracking
+
+Appropriate for any youth-serving program. Official B. Of A, the number of program youth who
+
+records (police, juvenile court) are the preferred data source.
+
+had an arrest or delinquent offense during the reporting period
+
+C. Number of program youth who were
+
+The number of youth tracked should reflect the
+
+committed to a juvenile facility during the
+
+number of program youth that are followed or
+
+reporting period
+
+monitored for arrests or offenses 6–12 months after D. Number of program youth who were
+
+exiting the program.
+
+sentenced to adult prison during the
+
+A youth may be “committed” to a juvenile facility anytime that he/she is held overnight.
+
+reporting period E. Number of youth who received another
+sentence during the reporting period
+
+Certain jurisdictions refer to adjudications as
+
+F. Percent OFFENDING (B/A)
+
+“sentences.”
+
+Example: A grantee may have several youth who exited the program 6–12 months ago, however, they are tracking only 100 of them, therefore, the A value will be 100. Of these 100 program youth that exited the program 6–12 months ago, 65 had an arrest or delinquent offense during the reporting period, therefore the B value should be recorded as 65. This logic should follow for C values. The percent of youth offending measured long term will be auto calculated in D.
+
+4
+
+OFFICE OF JUVENILE JUSTICE AND DELINQUENCY PREVENTION JUVENILE MENTORING GRANT PROGRAM
+
+The following target behavior measures focus on short term and long term behavioral outcomes for youth who received services specified below. Choose all target behaviors that apply to your program services. You must select at least one target behavior.
+
+#
+
+Measure
+
+13A Antisocial behavior (Short Term)
+
+13A Antisocial behavior (Long Term)
+
+13B Family relationships (Short Term)
+13B Family relationships (Long Term)
+13C Social competence (Short Term)
+
+Definition
+
+Data Grantee Provides
+
+Record Data Here
+
+The number and percent of youth who have exhibited a decrease in antisocial behavior during the reporting period.
+Antisocial behavior is a pervasive pattern of behavior that displays disregard for and violation of the rights of others, societal mores, or the law (such as deceitfulness, irritability, consistent irresponsibility, lack of remorse, failure to conform to social norms).
+
+A. Number of program youth served during the reporting period with the noted behavioral change
+B. Total number of youth receiving services for target behavior during the reporting period
+C. Percent (A/B)
+
+Self-report or staff ratings are the most likely data sources.
+
+The number and percent of program youth who exhibited a desired change in antisocial behavior 6–12 months after exiting the program.
+Antisocial behavior is a pervasive pattern of behavior that displays disregard for and violation of the rights of others, societal mores, or the law (such as deceitfulness, irritability, fighting, disruptive behavior, consistent irresponsibility, lack of remorse, or failure to conform to social norms).
+
+A. Total number of youth who exited the program 6–12 months ago who had the noted behavioral change
+B. Total number of youth who received services for the target behavior and who exited the program 6–12 months ago
+C. Percent (A/B)
+
+Self-report or staff ratings are the most likely data sources.
+
+The number and percent of program youth who have exhibited a desired change in family relationships during the reporting period. Such changes are positive ones that could be related to increased positive interaction with family members. Examples are improved communication and increased emotional and practical support.
+
+A. Number of program youth served during the reporting period with the noted behavioral change
+B. Total number of youth receiving services for target behavior during the reporting period
+C. Percent (A/B)
+
+Self-report or staff ratings are the most likely data sources.
+
+The number and percent of program youth who have exhibited a desired change in family relationships 6–12 months after exiting the program. Such changes are positive ones that could be related to increased positive interaction with family members. Examples are improved communication and increased emotional and practical support.
+Self-report or staff ratings are the most likely data sources.
+
+A. Total number of youth who exited the program 6–12 months ago who had the noted behavioral change
+B. Total number of youth who received services for the target behavior and who exited the program 6–12 months ago
+C. Percent (A/B)
+
+The number and percent of program youth who have exhibited a desired change in social competencies during the reporting period. Social competence is the ability to achieve personal goals in social interaction while simultaneously maintaining positive relationships with others over time and across situations.
+
+A. Number of program youth served during the reporting period with the noted behavioral change
+B. Total number of youth receiving services for target behavior during the reporting period
+C. Percent (A/B)
+
+Self-report or staff ratings are the most likely data sources.
+
+5
+
+OFFICE OF JUVENILE JUSTICE AND DELINQUENCY PREVENTION JUVENILE MENTORING GRANT PROGRAM
+
+The following target behavior measures focus on short term and long term behavioral outcomes for youth who received services specified below. Choose all target behaviors that apply to your program services. You must select at least one target behavior.
+
+#
+
+Measure
+
+Definition
+
+Data Grantee Provides
+
+Record Data Here
+
+13C Social competence (Long Term)
+13D Gang resistance/involvement (Short Term)
+
+The number and percent of program youth who exhibited a desired change in social competencies 6–12 months after exiting the program. Social competence is the ability to achieve personal goals in social interaction while simultaneously maintaining positive relationships with others over time and across situations.
+Self-report or staff ratings are the most likely data sources.
+
+A. Total number of youth who exited the program 6–12 months ago who had the noted behavioral change
+B. Total number of youth who received services for the target behavior and who exited the program 6–12 months ago
+C. Percent (A/B)
+
+The number and percent of program youth who A. Number of program youth served during the
+
+have exhibited a desired change in gang resistance
+
+reporting period with the noted behavioral
+
+behavior during the reporting period.
+
+change
+
+Self-reported or staff ratings are the most likely data sources.
+
+B. Total number of youth receiving services for target behavior during the reporting period
+C. Percent (A/B)
+
+13D Gang resistance/involvement (Long Term)
+
+The number and percent of program youth who exhibited a desired change in gang resistance behavior 6–12 months after exiting the program.
+Self-report or staff ratings are the most likely data sources.
+
+A. Total number of youth who exited the program 6–12 months ago who had the noted behavioral change
+B. Total number of youth who received services for the target behavior and who exited the program 6–12 months ago
+C. Percent (A/B)
+
+13E Substance use (Short Term)
+
+The number and percent of program youth who have exhibited a decrease in substance use during the reporting period.
+Self-report or staff ratings are most likely data sources.
+
+A. Number of program youth served during the reporting period with the noted behavioral change
+B. Total number of youth receiving services for target behavior during the reporting period
+C. Percent (A/B)
+
+13E Substance use (Long Term)
+
+The number and percent of program youth who exhibited a decrease in substance use 6–12 months after exiting the program.
+Self-report, staff rating, or urinalysis are most likely data sources.
+
+A. Total number of youth who exited the program 6–12 months ago who had the noted behavioral change
+B. Total number of youth who received services for the target behavior and who exited the program 6–12 months ago
+C. Percent (A/B)
+
+13F School attendance (Short Term)
+
+The number of program youth who have exhibited an increase in school attendance during the reporting period.
+Self-report or staff ratings are most likely data sources.
+
+A. Number of program youth served during the reporting period with the noted behavioral change
+B. Total number of youth receiving services for target behavior during the reporting period
+C. Percent (A/B)
+
+13F School attendance (Long Term)
+
+The number and percent of program youth who A. Total number of youth who exited the
+
+exhibited a desired change in school attendance 6–
+
+program 6–12 months ago who had the
+
+12 months after exiting the program.
+
+noted behavioral change
+
+Self-report or official records are the most likely data sources.
+
+B. Total number of youth who received services for the target behavior and who exited the program 6–12 months ago
+
+C. Percent (A/B)
+
+6
+
+OFFICE OF JUVENILE JUSTICE AND DELINQUENCY PREVENTION JUVENILE MENTORING GRANT PROGRAM
+
+The following target behavior measures focus on short term and long term behavioral outcomes for youth who received services specified below. Choose all target behaviors that apply to your program services. You must select at least one target behavior.
+
+#
+
+Measure
+
+13G GED (Short Term)
+
+13G GED (Long Term)
+
+13H GPA (Short Term) 13H GPA (Long Term)
+
+13I Perception of social support (Short Term)
+
+13I Perception of social support (Long Term)
+
+Definition
+
+Data Grantee Provides
+
+Record Data Here
+
+The number and percent of program youth who earned a GED (through the program) during the reporting period.
+Self-report or staff ratings are most likely data sources.
+
+A. Number of program youth served during the reporting period with the noted behavioral change
+B. Total number of youth receiving services for target behavior during the reporting period
+C. Percent (A/B)
+
+The number and percent of program youth who earned their GED 6–12 months after exiting the program.
+Self-report or staff ratings are the most likely data sources.
+
+A. Total number of youth who exited the program 6–12 months ago who had the noted behavioral change
+B. Total number of youth who received services for the target behavior and who exited the program 6–12 months ago
+C. Percent (A/B)
+
+The number and percent of program youth who exhibited an increase in GPA during the reporting period.
+Self-report or staff ratings are most likely data sources.
+
+A. Number of program youth served during the reporting period with the noted behavioral change
+B. Total number of youth receiving services for target behavior during the reporting period
+C. Percent (A/B)
+
+The number and percent of program youth who exhibited a desired change in GPA 6–12 months after exiting the program.
+Self-report or official records are the most likely data sources.
+
+A. Total number of youth who exited the program 6–12 months ago who had the noted behavioral change
+B. Total number of youth who received services for the target behavior and who exited the program 6–12 months ago
+C. Percent (A/B)
+
+The number and percent of program youth who A. Number of program youth served during the
+
+have exhibited a desired change in perception of
+
+program period with the noted behavioral
+
+social support during the reporting period. Social
+
+change
+
+support is a person’s perceived or actual network of B. Total number of youth receiving services for
+
+friends, family, acquaintances, and other positive
+
+target behavior during the reporting period
+
+resources, which he or she looks to in times of stress.
+
+C. Percent (A/B)
+
+Self-report or staff ratings are the most likely data sources.
+
+The number and percent of program youth who A. Total number of youth who exited the
+
+exhibited a desired change in perception of social
+
+program 6–12 months ago who had the
+
+support 6–12 months after exiting the program.
+
+noted behavioral change
+
+Social support is a person’s perceived or actual
+
+B. Total number of youth who received
+
+network of friends, family, acquaintances, and other
+
+services for the target behavior and who
+
+positive resources, which he or she looks to in
+
+exited the program 6–12 months ago
+
+times of stress.
+
+C. Percent (A/B)
+
+Self-report or staff ratings are the most likely data sources.
+
+7
+
+OFFICE OF JUVENILE JUSTICE AND DELINQUENCY PREVENTION JUVENILE MENTORING GRANT PROGRAM
+
+The following target behavior measures focus on short term and long term behavioral outcomes for youth who received services specified below. Choose all target behaviors that apply to your program services. You must select at least one target behavior.
+
+#
+
+Measure
+
+13J Prosocial behavior (Short Term)
+
+13J Prosocial behavior (Long Term)
+
+13K Community involvement (Short Term)
+13K Community involvement (Long Term)
+13L Occupational skill training (Short Term)
+
+Definition
+
+Data Grantee Provides
+
+Record Data Here
+
+The number and percent of program youth who A. Number of program youth served during the
+
+exhibited an increase in prosocial behaviors.
+
+program period with the noted behavioral
+
+Prosocial behaviors are those intended to help
+
+change
+
+others and are characterized by concern about the B. Total number of youth receiving services for
+
+rights, feelings, and welfare of other people. They
+
+target behavior during the reporting period
+
+constitute actions intended to benefit people other than oneself (e.g., helping, comforting, sharing, and
+
+C.
+
+Percent (A/B)
+
+cooperating).
+
+Self-report or staff ratings are the most likely data sources.
+
+The number and percent of program youth who A. Total number of youth who exited the
+
+exhibited an increase in prosocial behaviors 6–12
+
+program 6–12 months ago who had the
+
+months after exiting the program. Prosocial
+
+noted behavioral change
+
+behaviors are those intended to help others and B. Total number of youth who received
+
+are characterized by concern about the rights,
+
+services for the target behavior and who
+
+feelings, and welfare of other people. They
+
+exited the program 6–12 months ago
+
+constitute actions intended to benefit people other than oneself (e.g., helping, comforting, sharing, and
+
+C.
+
+Percent (A/B)
+
+cooperating).
+
+Self-report or staff ratings are the most likely data sources.
+
+The number and percent of program youth involved A. Number of program youth served during the
+
+in some type of community activity (e.g., coalitions,
+
+program period with the noted behavioral
+
+peer groups, clubs, volunteer work, team sports,
+
+change
+
+religious/cultural activities, community training, social activism, or related causes).
+
+B. Total number of youth receiving services for target behavior during the reporting period
+
+Self-report or staff ratings are the most likely data C. Percent (A/B) sources.
+
+A. Total number of youth who exited the program 6–12 months ago who had the noted behavioral change
+B. Total number of youth who received services for the target behavior and who exited the program 6–12 months ago
+C. Percent (A/B)
+
+The number of youth who have finished occupational skill training during the reporting period.
+Occupational skills include knowledge or skills that employees need for specific jobs or occupations (e.g., communication skills, computer or technical literacy, interpersonal and teamwork skills).
+Program records are the preferred data source.
+
+A. Number of program youth served during the program period with the noted behavioral change
+B. Total number of youth receiving services for target behavior during the reporting period
+C. Percent (A/B)
+
+8
+
+OFFICE OF JUVENILE JUSTICE AND DELINQUENCY PREVENTION JUVENILE MENTORING GRANT PROGRAM
+
+The following target behavior measures focus on short term and long term behavioral outcomes for youth who received services specified below. Choose all target behaviors that apply to your program services. You must select at least one target behavior.
+
+#
+
+Measure
+
+13L Occupational skill training (Long Term)
+
+Definition
+
+Data Grantee Provides
+
+The number and percent of program youth who finished occupational skill training 6–12 months after exiting the program.
+Occupational skills include knowledge or skills that employees need for specific jobs or occupations (e.g., communication skills, computer or technical literacy, interpersonal and teamwork skills).
+Self-report or staff ratings are the most likely data sources.
+
+A. Total number of youth who exited the program 6–12 months ago who had the noted behavioral change
+B. Total number of youth who received services for the target behavior and who exited the program 6–12 months ago
+C. Percent (A/B)
+
+Record Data Here
+
+9
+
+OFFICE OF JUVENILE JUSTICE AND DELINQUENCY PREVENTION JUVENILE MENTORING GRANT PROGRAM
+
+Select additional measures depending on the primary focus of the program. Select all that apply.
+
+#
+
+Measure
+
+14 Number and percent of program youth who REOFFEND (Short Term)
+
+15 Number and percent of program youth who REOFFEND (Long Term)
+
+Definition
+
+Data Grantee Provides
+
+Record Data Here
+
+The number and percent of participating program A. Total number of program youth served
+
+youth who were arrested or seen at a juvenile
+
+B. Number of program youth tracked during the
+
+court for a new delinquent offense during the
+
+reporting period
+
+reporting period. Appropriate for any youth-serving program. Official records (police, juvenile court) are the preferred data source.
+
+C.
+
+Of B, number of program youth who had a new arrest or new delinquent offense during the reporting period
+
+The number of youth tracked should reflect the
+
+D. Number of program youth who were
+
+number of program youth that are followed or
+
+recommitted to a juvenile facility during the
+
+monitored for new arrests or offenses. Ideally this
+
+reporting period
+
+number should be all youth served by the program E. Number of program youth who were
+
+during this reporting period.
+
+sentenced to adult prison during the
+
+Certain jurisdictions refer to adjudications as “sentences.”
+Example: If I am tracking 50 program youth, then the A value would be 50. Of these 50 program
+
+reporting period F. Number of youth who received another
+sentence during the reporting period
+G. Percent RECIDIVISM (C/B)
+
+youth that I am tracking, if 25 of them had a new
+
+arrest or had a new delinquent offense during the
+
+reporting period, then B would be 25. This logic
+
+should follow for C, D, and E values. The percent of
+
+youth reoffending measured short term will be auto
+
+calculated in F.
+
+The number and percent of participating program A. Number of program youth who exited the
+
+youth who were arrested or seen at a juvenile court
+
+program 6–12 months ago that you are
+
+for a new delinquent offense during the reporting
+
+tracking
+
+period. Appropriate for any youth-serving program. B. Of A, the number of program youth who
+
+Official records (police, juvenile court) are the
+
+had a new arrest or new delinquent offense
+
+preferred data source.
+
+during the reporting period
+
+The number of youth tracked should reflect the number of program youth that are followed or
+
+C. Number of program youth who were recommitted to a juvenile facility during the
+
+monitored for new arrests or offenses 6–12 months
+
+reporting period
+
+after exiting the program.
+
+D. Number of program youth who were
+
+sentenced to adult prison during the
+
+Example: I have a lot of youth who exited my
+
+reporting period
+
+program 6–12 months ago, but we are only tracking 100 of them, so A is 100. Of these 100 program youth that exited the program 6–12 months ago, 65 had a new arrest or delinquent offense during the
+
+E. F.
+
+Number of youth who received another sentence during this reporting period Percent RECIDIVISM (B/A)
+
+reporting period, so B is 65.
+
+10
+
+OFFICE OF JUVENILE JUSTICE AND DELINQUENCY PREVENTION JUVENILE MENTORING GRANT PROGRAM
+
+Select additional measures depending on the primary focus of the program. Select all that apply.
+
+#
+
+Measure
+
+16 Number and percent of program youth who are VICTIMIZED (Short Term)
+
+Definition
+
+Data Grantee Provides
+
+Record Data Here
+
+The number of youth identified by staff or self, as a A. Total number of program youth served
+
+victim, by type of victimization, during the reporting
+
+during the reporting period
+
+period. Count youth as served by the program if they received a minimum of one service delivery, as defined by the grant program.
+
+B. Number of program youth tracked during the reporting period for victimization
+C. Of B, the number of program youth who
+
+Definitions Victimization Victimization can be physical or psychological; it also includes harm or adverse effects to youth’s property.
+
+were victimized during the reporting period
+D. Percent victimized (C/B)
+E. Of tracked youth, the number of program youth who experienced violent victimization during the reporting period
+
+F. Of tracked youth, the number of program
+
+Short Term Data
+
+youth who experienced nonviolent
+
+Totals reflect all youth served by the program
+
+victimization during the reporting period
+
+followed or monitored for victimization during the reporting period.
+
+G. Of tracked youth, the number of all program youth identified as a sex trafficking victim
+
+Sex Trafficking Sex trafficking in which a commercial sex act is induced by force, fraud, or coercion, or in which the person induced to perform such act has not attained 18 years of age. Include all youth tracked during the reporting period and youth victimized prior to program participation.
+
+during the reporting period
+H. Of tracked youth, the number of new program youth identified as a sex trafficking victim during the reporting period
+I. Of tracked youth, the number of all program youth identified as a labor trafficking victim during the reporting period
+J. Of tracked youth, the number of new
+
+Labor Trafficking The recruitment, harboring, transportation,
+
+program youth identified as a labor trafficking victim during the reporting period
+
+provision, or obtaining of a person for labor or
+
+K. Of tracked youth, the number of all program
+
+services through the use of force, fraud, or coercion
+
+youth identified as both a sex and labor
+
+for the purpose of subjection to involuntary
+
+trafficking victim during the reporting period
+
+servitude, peonage, debt bondage, or slavery.
+
+L. Of tracked youth, the number of new
+
+Include all youth tracked during the reporting period
+
+program youth identified as both a sex and
+
+and youth victimized prior to program participation.
+
+labor trafficking victim during the reporting
+
+period
+
+11
+
+OFFICE OF JUVENILE JUSTICE AND DELINQUENCY PREVENTION JUVENILE MENTORING GRANT PROGRAM
+
+Select additional measures depending on the primary focus of the program. Select all that apply.
+
+#
+
+Measure
+
+17 Number and percent of program youth who are VICTIMIZED (Long Term)
+
+Definition
+
+Data Grantee Provides
+
+Record Data Here
+
+The number of youth who exited the program 6–12 months ago tracked or monitored by the program during the reporting period and identified by staff or self as a new victim, by type of victimization. If a youth experienced multiple types of victimization, count the youth in each relevant category.
+
+A. Number of program youth who exited the program 6–12 months ago that the program is tracking or monitoring during the reporting period
+B. Of A, the number of program youth who exited the program 6–12 months ago that were victimized during this reporting period
+
+Definitions Victimization Victimization can be physical or psychological; it also includes harm or adverse effects to youth’s property.
+
+C. Percent victimized (B/A)
+D. Of tracked youth, the number of program youth who exited the program 6–12 months ago who experienced violent victimization during the reporting period
+
+Long Term Data Totals reflect all youth served by the program followed or monitored for victimization 6–12 months after the reporting period.
+
+E. F.
+
+Of tracked youth, the number of program youth who exited the program 6–12 months ago who experienced nonviolent victimization during the reporting period
+Of tracked youth, the number of youth who
+
+Sex Trafficking Sex trafficking in which a commercial sex act is induced by force, fraud, or coercion, or in which the person induced to perform such act has not attained 18 years of age.
+
+exited the program 6–12 months ago identified as a sex trafficking victim during the reporting period
+G. Of tracked youth, the number of program youth who exited the program 6–12 months ago identified as a labor trafficking victim
+
+Labor Trafficking
+
+during the reporting period
+
+The recruitment, harboring, transportation,
+
+H. Of tracked youth, the number of program
+
+provision, or obtaining of a person for labor or
+
+youth who exited the program 6–12 months
+
+services through the use of force, fraud, or coercion ago identified as both a sex and labor
+
+for the purpose of subjection to involuntary
+
+trafficking victim during the reporting period
+
+servitude, peonage, debt bondage, or slavery.
+
+12
+
+OFFICE OF JUVENILE JUSTICE AND DELINQUENCY PREVENTION JUVENILE MENTORING GRANT PROGRAM
+
+Select additional measures depending on the primary focus of the program. Select all that apply.
+
+#
+
+Measure
+
+Definition
+
+Data Grantee Provides
+
+18 Number or percentage of youth who are REVICTIMIZED (Short Term)
+
+The number of youth identified by staff or self as a youth experiencing revictimization, by type of victimization, during the reporting period. Count youth as served by the program if they received a minimum of one service delivery, as defined by the grant program.
+Definitions Victimization Victimization can be physical or psychological; it also includes harm or adverse effects to youth’s property.
+Short Term Data Totals reflect all youth served by the program followed or monitored for revictimization during the reporting period.
+Sex Trafficking Sex trafficking in which a commercial sex act is induced by force, fraud, or coercion, or in which the person induced to perform such act has not attained 18 years of age.
+
+A. Number of program youth tracked during the reporting period for revictimization
+B. Of A, the number of program youth who were revictimized
+C. Percent revictimized (B/A)
+D. Of youth tracked, the number of program youth who experienced revictimization of violence during the reporting period
+E. Of youth tracked, the number of program youth who experienced revictimization of nonviolence during the reporting period.
+F. Of youth tracked, the number of program youth who experienced revictimization of sex trafficking during the reporting period
+G. Of youth tracked, the number of program youth who experienced revictimization of labor trafficking during the reporting period
+H. Of youth tracked, the number of program youth who experienced revictimization of both sex and labor trafficking during the reporting period
+
+Record Data Here
+
+Labor Trafficking The recruitment, harboring, transportation, provision, or obtaining of a person for labor or services through the use of force, fraud, or coercion for the purpose of subjection to involuntary servitude, peonage, debt bondage, or slavery.
+
+13
+
+OFFICE OF JUVENILE JUSTICE AND DELINQUENCY PREVENTION JUVENILE MENTORING GRANT PROGRAM
+
+Select additional measures depending on the primary focus of the program. Select all that apply.
+
+#
+
+Measure
+
+19 Number or percentage of youth who are REVICTIMIZED (Long Term)
+
+Definition
+
+Data Grantee Provides
+
+Record Data Here
+
+The number of youth who exited the program 6–12 A. Number of program youth who exited the
+
+months ago traced or monitored by the program
+
+program 6–12 months ago traced for
+
+during the reporting period and identified by staff or
+
+revictimization
+
+self as a youth experiencing revictimization, by type B. Of A, the number of program youth who
+
+of victimization, during the reporting period. If a
+
+were revictimized during the reporting
+
+youth experienced multiple types of revictimization,
+
+period
+
+count the youth in each relevant category.
+
+C. Percent revictimized (B/A)
+
+Definitions Victimization Victimization can be physical or psychological; it also includes harm or adverse effects to youth’s property.
+
+D. Of tracked youth, the number of program youth who exited the program 6–12 months ago who experienced revictimization of violence during the reporting period
+E. Of tracked youth, the number of program youth who exited the program 6–12 months
+
+Long Term Data Totals reflect all youth served by the program followed or monitored for victimization 6–12 months after the reporting period.
+
+F.
+
+ago who experienced revictimization of nonviolence during the reporting period
+Of tracked youth, the number of program youth who exited the program 6–12 months ago who experienced revictimization of sex
+
+Sex Trafficking Sex trafficking in which a commercial sex act is induced by force, fraud, or coercion, or in which the person induced to perform such act has not attained 18 years of age.
+
+trafficking during the reporting period
+G. Of tracked youth, the number of program youth who exited the program 6–12 months ago who experienced revictimization of labor trafficking during the reporting period
+
+H. Number of all program youth who exited the
+
+Labor Trafficking
+
+program who experienced revictimization of
+
+The recruitment, harboring, transportation,
+
+both sex and labor trafficking during the
+
+provision, or obtaining of a person for labor or
+
+reporting period
+
+services through the use of force, fraud, or coercion
+
+for the purpose of subjection to involuntary
+
+servitude, peonage, debt bondage, or slavery.
+
+14
+
+OFFICE OF JUVENILE JUSTICE AND DELINQUENCY PREVENTION JUVENILE MENTORING GRANT PROGRAM
+
+Select additional measures depending on the primary focus of the program. Select all that apply.
+
+#
+
+Measure
+
+Definition
+
+Data Grantee Provides
+
+Record Data Here
+
+20 Number of services provided The number of youth trafficking victims who receive A. Number of youth trafficking victims who
+
+to trafficking victims during the each type of service at least once during the
+
+received mentoring services during the
+
+performance period by type of reporting period.
+
+reporting period
+
+service
+
+B. Number of youth trafficking victims who received behavioral health services during the reporting period
+
+C. Number of youth trafficking victims who received mental health care during the reporting period
+
+D. Number of youth trafficking victims who received case management services during the reporting period
+
+E. Number of youth trafficking victims who received basic needs during the reporting period
+
+F. Number of youth trafficking victims who received coaching during the reporting period
+
+G. Number of youth trafficking victims who received life skills training during the reporting period
+
+H. Number of youth trafficking victims who received primary health care during the reporting period
+
+I. Number of youth trafficking victims who received housing services during the reporting period
+
+J. Number of youth trafficking victims who received other services during the reporting period
+
+21 Number of training events
+
+The number of events conducted by the grantee or A. Number of training events held during the
+
+conducted during the reporting a training and technical assistance provider to
+
+reporting period on human trafficking
+
+period on human trafficking educate staff or the community on human
+
+trafficking during the reporting period.
+
+22 Number of people who attend Number of people who attend a training conducted A. Total number of people who attended
+
+training on human trafficking by a grantee or training and technical assistance
+
+training on human trafficking during the
+
+during the reporting period
+
+provider on human trafficking during the reporting
+
+reporting period
+
+period.
+
+B. Number of program staff who attended
+
+training on human trafficking during the
+
+reporting period
+
+C. Number of community members who attended training on human trafficking during the reporting period
+
+15

@@ -1,0 +1,1030 @@
+{
+ "form": {
+  "id": "grey-highlands",
+  "funder": "Municipality of Grey Highlands, Ontario",
+  "short": "Grey Highlands",
+  "title": "Community Grant Program Final Report",
+  "kind": "Municipal grant final report",
+  "url": "https://www.greyhighlands.ca/media/a0kn2vt2/cgp-final-report-template.pdf",
+  "retrieved": "2026-10-16",
+  "pdf_sha256": "91c3b29500ac402fe45d8278d74b97d91257cace6ce00d4db571bb27feae0f54",
+  "pages": 8,
+  "text": "grey-highlands.txt"
+ },
+ "recorded_on": "2026-10-16",
+ "cli": "2.1.299 (Claude Code)",
+ "model": "claude-opus-5-5",
+ "effort": "medium",
+ "workers": 5,
+ "prompts": {
+  "system": "agent/prompts/system.md@38630ac9fd71",
+  "extract": "agent/prompts/extract.md@05a7a27c04c1",
+  "map": "agent/prompts/map.md@5637b11aea30",
+  "review": "agent/prompts/review.md@f463ffa3f772"
+ },
+ "form_sha": "0e56475ef367",
+ "form_text": "MUNICIPALITY OF GREY HIGHLANDS\nCommunity Grant Program Final Report 20__ Funding Year\nDepartment of Economic and Community Development\n\nMandatory Reporting Requirements\nGrant recipients must provide a detailed summary of their activities, including the extent to which they achieved their intended outcomes (as outlined in their Community Grant Program application).\nThe final report must demonstrate how the project addressed at least one of the following goals outlined in the Community Grant Program policy:\n• Economic Prosperity and Innovation • Cultural Enhancement, Environment and Diversity • General Social Enrichment\nThe organization must provide a detailed budget summary, including invoices and receipts, with the final report; significant financial variances must be explained in full, along with supporting documentation if applicable.\nFor More Information, Please Contact: Economic and Community Development Municipality of Grey Highlands Markdale, ON N0C 1H0 ecdev@greyhighlands.ca 519-986-1216 ext. 109\n\nCOMMUNITY GRANT PROGRAM FINAL REPORT\nOrganization Information\nOrganization Name Mailing Address Postal Code Key Contact Person Role of Key Contact Person Telephone Email Address President or Chair Telephone Email Address Organization’s Website\n1. Indicate what type of funding or support you received from the Municipality of Grey Highlands: Cash only In-kind (including venue rental waivers) only Both\n2. Amount of financial assistance received: $\n\n3. Provide a description of your project/initiative as it took place; please include successes and challenges, lessons learned, and the potential for growth and/or changes in the future:\n\n4. Please indicate which strategic goal your project/event addressed and a brief explanation of how it met this objective:\nEconomic Prosperity and Innovation\nCultural Enhancement, Environment and Diversity\nGeneral Social Enrichment\n\n5. How did the Grey Highlands community benefit from this project?\n6. How did this project benefit from receiving a grant, including the estimated number of people reached or impacted? How was this measured?\n7. Provide details of any additional fundraising activities that took place to compliment or supplement the goals of your organization, and/or partners who supported this project.\n8. Please describe how the Municipality of Grey Highlands was acknowledged for its contribution to your event or undertaking.\n\nACTUAL BUDGET SUMMARY\n\nDescription\n\nActual Costs ($)\n\nFunding Sources\n\nFunding ($)\n\nTotal\n\n$\n\nTotal\n\n$\n\nIN-KIND CONTRIBUTIONS\n\nDescription (Event/Meeting Space; Supplies; Venue Set-Up; etc.)\n\nValue ($) of NonMunicipal\nContributions\n\nPlease Indicate if the In-Kind was Municipal Resources or a\nProject Partner\n\nTotal $\nPlease attach additional pages if necessary and provide receipts if applicable.\n\nVolunteer Role\n\nVOLUNTEER SUPPORT\n# Volunteers\n\nTotal Hours of Volunteer Time\n\nTotal\n• Please attach additional pages if necessary.\n• Please include photographs, samples of promotional materials, and media coverage as applicable.\nPersonal information on this form will be used for the purposes of sending correspondence relating to matters before Council. Your name, address, comments and other personal information is collected and maintained for the purpose of creating a record that is available to the general public in a hard copy format and on the internet in an electronic format pursuant to Section 27 of the Municipal Freedom of Information & Protection of Privacy Act, R.S.O. 1990, c.M. 56, as amended. Questions about this collection should be directed to the Clerk (519-986- 1216 or clerk@greyhighlands.ca).\n",
+ "duration_ms": 104809,
+ "totals": {
+  "model_calls": 6,
+  "tool_calls": 9,
+  "checks": 5,
+  "checks_failed": 2,
+  "tokens_in": 60330,
+  "tokens_out": 11587,
+  "questions": 11,
+  "fields": 21,
+  "metric": 1,
+  "formula": 0,
+  "draft": 3,
+  "ask": 17,
+  "missing": 0
+ },
+ "events": [
+  {
+   "id": "e1",
+   "lane": "Read form",
+   "kind": "step",
+   "label": "Read the form",
+   "start": 0,
+   "end": 0,
+   "status": "ok",
+   "detail": {
+    "chars": 3625,
+    "sha": "0e56475ef367",
+    "url": "https://www.greyhighlands.ca/media/a0kn2vt2/cgp-final-report-template.pdf"
+   }
+  },
+  {
+   "id": "e2",
+   "lane": "Read form",
+   "kind": "llm",
+   "label": "List the questions",
+   "start": 0,
+   "end": 25406,
+   "status": "ok",
+   "detail": {
+    "model": "claude-opus-5-5",
+    "effort": "medium",
+    "parent": null,
+    "prompt_chars": 5206,
+    "tokens_in": 3084,
+    "tokens_out": 3102,
+    "turns": 2,
+    "api_ms": 23748
+   }
+  },
+  {
+   "id": "e3",
+   "lane": "Read form",
+   "kind": "check",
+   "label": "Quotes are on the form",
+   "start": 25406,
+   "end": 25407,
+   "status": "fail",
+   "detail": {
+    "problems": [
+     "q9.2: quote \"Actual Costs ($)\" is too short to find on the form; quote at least 3 words",
+     "q11: quote \"VOLUNTEER SUPPORT\" is too short to find on the form; quote at least 3 words"
+    ],
+    "micros": 1063
+   }
+  },
+  {
+   "id": "e4",
+   "lane": "Read form",
+   "kind": "llm",
+   "label": "List the questions again",
+   "start": 25407,
+   "end": 52502,
+   "status": "ok",
+   "detail": {
+    "model": "claude-opus-5-5",
+    "effort": "medium",
+    "parent": null,
+    "prompt_chars": 5518,
+    "tokens_in": 3199,
+    "tokens_out": 3405,
+    "turns": 2,
+    "api_ms": 25499
+   }
+  },
+  {
+   "id": "e5",
+   "lane": "Read form",
+   "kind": "check",
+   "label": "Quotes are on the form",
+   "start": 52502,
+   "end": 52504,
+   "status": "pass",
+   "detail": {
+    "problems": [],
+    "micros": 1716
+   }
+  },
+  {
+   "id": "e6",
+   "lane": "Read form",
+   "kind": "step",
+   "label": "Split into 2 batches",
+   "start": 52504,
+   "end": 52504,
+   "status": "ok",
+   "detail": {
+    "batches": [
+     [
+      "q1",
+      "q2",
+      "q3",
+      "q4",
+      "q5",
+      "q6",
+      "q7",
+      "q8"
+     ],
+     [
+      "q9",
+      "q10",
+      "q11"
+     ]
+    ]
+   }
+  },
+  {
+   "id": "e7",
+   "lane": "Worker 1",
+   "kind": "llm",
+   "label": "Map 1, 2, 3, 4, 5, 6, 7, 8",
+   "start": 52504,
+   "end": 71840,
+   "status": "ok",
+   "detail": {
+    "model": "claude-opus-5-5",
+    "effort": "medium",
+    "parent": null,
+    "prompt_chars": 8025,
+    "items": [
+     "q1",
+     "q2",
+     "q3",
+     "q4",
+     "q5",
+     "q6",
+     "q7",
+     "q8"
+    ],
+    "tokens_in": 20895,
+    "tokens_out": 1516,
+    "turns": 5,
+    "api_ms": 16900
+   }
+  },
+  {
+   "id": "e8",
+   "lane": "Worker 2",
+   "kind": "llm",
+   "label": "Map q9, q10, q11",
+   "start": 52510,
+   "end": 64395,
+   "status": "ok",
+   "detail": {
+    "model": "claude-opus-5-5",
+    "effort": "medium",
+    "parent": null,
+    "prompt_chars": 5904,
+    "items": [
+     "q9",
+     "q10",
+     "q11"
+    ],
+    "tokens_in": 11556,
+    "tokens_out": 912,
+    "turns": 4,
+    "api_ms": 9266
+   }
+  },
+  {
+   "id": "e9",
+   "lane": "Worker 2",
+   "kind": "tool",
+   "label": "describe_records",
+   "start": 56260,
+   "end": 56282,
+   "status": "ok",
+   "detail": {
+    "parent": "e8",
+    "input": {},
+    "output": "{\n \"organization\": \"A youth mentorship program (sample data)\",\n \"records_cover\": \"2026-07-01 to 2026-09-30\",\n \"periods\": [\n  {\n   \"id\": \"q3\",\n   \"label\": \"Jul to Sep 2026\",\n   \"start\": \"2026-07-01\",\n   \"end\": \"2026-09-30\"\n  },\n  {\n   \"id\": \"jul\",\n   \"label\": \"Jul 2026\",\n   \"start\": \"2026-07-01\",\n   \"end\": \"2026-07-31\"\n  },\n  {\n   \"id\": \"aug\",\n   \"label\": \"Aug 2026\",\n   \"start\": \"2026-08-01\",\n   \"end\": \"2026-08-31\"\n  },\n  {\n   \"id\": \"sep\",\n   \"label\": \"Sep 2026\",\n   \"start\": \"2026-09-01\",\n   \"end\": \"2026-09-30\"\n  }\n ],\n \"tables\": [\n  {\n   \"name\": \"Participants\",\n   \"rows\": 40,\n   \"fields\": [\n    \"group (one of the groups below)\",\n    \"age range, a custom field with these values only: 10-12, 13-15, 16-18, 19-24\",\n    \"join date\",\n    \"exit date (the last enrolled day; empty while enrolled)\",\n    \"confidence at intake, a custom field scored 1 to 5\"\n   ]\n  },\n  {\n   \"name\": \"Engagements\",\n  …"
+   }
+  },
+  {
+   "id": "e10",
+   "lane": "Worker 2",
+   "kind": "tool",
+   "label": "list_metrics",
+   "start": 56270,
+   "end": 56298,
+   "status": "ok",
+   "detail": {
+    "parent": "e8",
+    "input": {},
+    "output": "[\n {\n  \"id\": \"participants_served\",\n  \"label\": \"Participants served\",\n  \"kind\": \"people\",\n  \"definition\": \"Attended at least one session in the period.\",\n  \"formula\": \"Count each participant once if they have at least one Attendances record in the period.\",\n  \"records\": \"Attendances\",\n  \"divided_by\": null\n },\n {\n  \"id\": \"new_participants\",\n  \"label\": \"New participants\",\n  \"kind\": \"people\",\n  \"definition\": \"Joined the program during the period.\",\n  \"formula\": \"Count participants whose join date falls inside the period.\",\n  \"records\": \"Participant join dates\",\n  \"divided_by\": null\n },\n {\n  \"id\": \"sessions_delivered\",\n  \"label\": \"Sessions delivered\",\n  \"kind\": \"count\",\n  \"definition\": \"Group sessions with attendance logged, plus sessions confirmed as run.\",\n  \"formula\": \"Count each group and date with at least one Attendances record. Add scheduled sessions answered \\\"Ran, attendance not rec…"
+   }
+  },
+  {
+   "id": "e11",
+   "lane": "Worker 1",
+   "kind": "tool",
+   "label": "list_metrics",
+   "start": 56747,
+   "end": 56762,
+   "status": "ok",
+   "detail": {
+    "parent": "e7",
+    "input": {},
+    "output": "[\n {\n  \"id\": \"participants_served\",\n  \"label\": \"Participants served\",\n  \"kind\": \"people\",\n  \"definition\": \"Attended at least one session in the period.\",\n  \"formula\": \"Count each participant once if they have at least one Attendances record in the period.\",\n  \"records\": \"Attendances\",\n  \"divided_by\": null\n },\n {\n  \"id\": \"new_participants\",\n  \"label\": \"New participants\",\n  \"kind\": \"people\",\n  \"definition\": \"Joined the program during the period.\",\n  \"formula\": \"Count participants whose join date falls inside the period.\",\n  \"records\": \"Participant join dates\",\n  \"divided_by\": null\n },\n {\n  \"id\": \"sessions_delivered\",\n  \"label\": \"Sessions delivered\",\n  \"kind\": \"count\",\n  \"definition\": \"Group sessions with attendance logged, plus sessions confirmed as run.\",\n  \"formula\": \"Count each group and date with at least one Attendances record. Add scheduled sessions answered \\\"Ran, attendance not rec…"
+   }
+  },
+  {
+   "id": "e12",
+   "lane": "Worker 1",
+   "kind": "tool",
+   "label": "describe_records",
+   "start": 56826,
+   "end": 56834,
+   "status": "ok",
+   "detail": {
+    "parent": "e7",
+    "input": {},
+    "output": "{\n \"organization\": \"A youth mentorship program (sample data)\",\n \"records_cover\": \"2026-07-01 to 2026-09-30\",\n \"periods\": [\n  {\n   \"id\": \"q3\",\n   \"label\": \"Jul to Sep 2026\",\n   \"start\": \"2026-07-01\",\n   \"end\": \"2026-09-30\"\n  },\n  {\n   \"id\": \"jul\",\n   \"label\": \"Jul 2026\",\n   \"start\": \"2026-07-01\",\n   \"end\": \"2026-07-31\"\n  },\n  {\n   \"id\": \"aug\",\n   \"label\": \"Aug 2026\",\n   \"start\": \"2026-08-01\",\n   \"end\": \"2026-08-31\"\n  },\n  {\n   \"id\": \"sep\",\n   \"label\": \"Sep 2026\",\n   \"start\": \"2026-09-01\",\n   \"end\": \"2026-09-30\"\n  }\n ],\n \"tables\": [\n  {\n   \"name\": \"Participants\",\n   \"rows\": 40,\n   \"fields\": [\n    \"group (one of the groups below)\",\n    \"age range, a custom field with these values only: 10-12, 13-15, 16-18, 19-24\",\n    \"join date\",\n    \"exit date (the last enrolled day; empty while enrolled)\",\n    \"confidence at intake, a custom field scored 1 to 5\"\n   ]\n  },\n  {\n   \"name\": \"Engagements\",\n  …"
+   }
+  },
+  {
+   "id": "e13",
+   "lane": "Worker 1",
+   "kind": "tool",
+   "label": "get_metric",
+   "start": 60719,
+   "end": 60744,
+   "status": "ok",
+   "detail": {
+    "parent": "e7",
+    "input": {
+     "metric": "participants_served",
+     "period": "q3"
+    },
+    "output": "{\n \"metric\": \"participants_served\",\n \"label\": \"Participants served\",\n \"period\": \"Jul to Sep 2026\",\n \"funder_copy_shows\": \"40\",\n \"working\": \"40 participants with an Attendances record\"\n}"
+   }
+  },
+  {
+   "id": "e14",
+   "lane": "Worker 2",
+   "kind": "check",
+   "label": "Checks: metrics, units, wording",
+   "start": 64395,
+   "end": 64395,
+   "status": "pass",
+   "detail": {
+    "items": [
+     "q9",
+     "q10",
+     "q11"
+    ],
+    "problems": [],
+    "micros": 55
+   }
+  },
+  {
+   "id": "e15",
+   "lane": "Worker 1",
+   "kind": "check",
+   "label": "Checks: metrics, units, wording",
+   "start": 71840,
+   "end": 71841,
+   "status": "fail",
+   "detail": {
+    "items": [
+     "q1",
+     "q2",
+     "q3",
+     "q4",
+     "q5",
+     "q6",
+     "q7",
+     "q8"
+    ],
+    "problems": [
+     "q5.1: comparison word: \"than\"",
+     "q5.1: comparison word: \"higher\"",
+     "q6.3: number word: \"one\""
+    ],
+    "micros": 1175
+   }
+  },
+  {
+   "id": "e16",
+   "lane": "Worker 1",
+   "kind": "llm",
+   "label": "Fix what the checks found",
+   "start": 71841,
+   "end": 92434,
+   "status": "ok",
+   "detail": {
+    "model": "claude-opus-5-5",
+    "effort": "medium",
+    "parent": null,
+    "prompt_chars": 8196,
+    "items": [
+     "q1",
+     "q2",
+     "q3",
+     "q4",
+     "q5",
+     "q6",
+     "q7",
+     "q8"
+    ],
+    "tokens_in": 12841,
+    "tokens_out": 1804,
+    "turns": 4,
+    "api_ms": 18355
+   }
+  },
+  {
+   "id": "e17",
+   "lane": "Worker 1",
+   "kind": "tool",
+   "label": "list_metrics",
+   "start": 75871,
+   "end": 75892,
+   "status": "ok",
+   "detail": {
+    "parent": "e16",
+    "input": {},
+    "output": "[\n {\n  \"id\": \"participants_served\",\n  \"label\": \"Participants served\",\n  \"kind\": \"people\",\n  \"definition\": \"Attended at least one session in the period.\",\n  \"formula\": \"Count each participant once if they have at least one Attendances record in the period.\",\n  \"records\": \"Attendances\",\n  \"divided_by\": null\n },\n {\n  \"id\": \"new_participants\",\n  \"label\": \"New participants\",\n  \"kind\": \"people\",\n  \"definition\": \"Joined the program during the period.\",\n  \"formula\": \"Count participants whose join date falls inside the period.\",\n  \"records\": \"Participant join dates\",\n  \"divided_by\": null\n },\n {\n  \"id\": \"sessions_delivered\",\n  \"label\": \"Sessions delivered\",\n  \"kind\": \"count\",\n  \"definition\": \"Group sessions with attendance logged, plus sessions confirmed as run.\",\n  \"formula\": \"Count each group and date with at least one Attendances record. Add scheduled sessions answered \\\"Ran, attendance not rec…"
+   }
+  },
+  {
+   "id": "e18",
+   "lane": "Worker 1",
+   "kind": "tool",
+   "label": "describe_records",
+   "start": 75881,
+   "end": 75910,
+   "status": "ok",
+   "detail": {
+    "parent": "e16",
+    "input": {},
+    "output": "{\n \"organization\": \"A youth mentorship program (sample data)\",\n \"records_cover\": \"2026-07-01 to 2026-09-30\",\n \"periods\": [\n  {\n   \"id\": \"q3\",\n   \"label\": \"Jul to Sep 2026\",\n   \"start\": \"2026-07-01\",\n   \"end\": \"2026-09-30\"\n  },\n  {\n   \"id\": \"jul\",\n   \"label\": \"Jul 2026\",\n   \"start\": \"2026-07-01\",\n   \"end\": \"2026-07-31\"\n  },\n  {\n   \"id\": \"aug\",\n   \"label\": \"Aug 2026\",\n   \"start\": \"2026-08-01\",\n   \"end\": \"2026-08-31\"\n  },\n  {\n   \"id\": \"sep\",\n   \"label\": \"Sep 2026\",\n   \"start\": \"2026-09-01\",\n   \"end\": \"2026-09-30\"\n  }\n ],\n \"tables\": [\n  {\n   \"name\": \"Participants\",\n   \"rows\": 40,\n   \"fields\": [\n    \"group (one of the groups below)\",\n    \"age range, a custom field with these values only: 10-12, 13-15, 16-18, 19-24\",\n    \"join date\",\n    \"exit date (the last enrolled day; empty while enrolled)\",\n    \"confidence at intake, a custom field scored 1 to 5\"\n   ]\n  },\n  {\n   \"name\": \"Engagements\",\n  …"
+   }
+  },
+  {
+   "id": "e19",
+   "lane": "Worker 1",
+   "kind": "check",
+   "label": "Checks again",
+   "start": 92434,
+   "end": 92435,
+   "status": "pass",
+   "detail": {
+    "items": [
+     "q1",
+     "q2",
+     "q3",
+     "q4",
+     "q5",
+     "q6",
+     "q7",
+     "q8"
+    ],
+    "problems": [],
+    "micros": 1447
+   }
+  },
+  {
+   "id": "e20",
+   "lane": "Worker 1",
+   "kind": "llm",
+   "label": "Review 4 answers",
+   "start": 92435,
+   "end": 104776,
+   "status": "ok",
+   "detail": {
+    "model": "claude-opus-5-5",
+    "effort": "medium",
+    "parent": null,
+    "prompt_chars": 3367,
+    "items": [
+     "q1",
+     "q2",
+     "q3",
+     "q4",
+     "q5",
+     "q6",
+     "q7",
+     "q8"
+    ],
+    "tokens_in": 8755,
+    "tokens_out": 848,
+    "turns": 4,
+    "api_ms": 10616
+   }
+  },
+  {
+   "id": "e21",
+   "lane": "Worker 1",
+   "kind": "tool",
+   "label": "list_metrics",
+   "start": 96047,
+   "end": 96064,
+   "status": "ok",
+   "detail": {
+    "parent": "e20",
+    "input": {},
+    "output": "[\n {\n  \"id\": \"participants_served\",\n  \"label\": \"Participants served\",\n  \"kind\": \"people\",\n  \"definition\": \"Attended at least one session in the period.\",\n  \"formula\": \"Count each participant once if they have at least one Attendances record in the period.\",\n  \"records\": \"Attendances\",\n  \"divided_by\": null\n },\n {\n  \"id\": \"new_participants\",\n  \"label\": \"New participants\",\n  \"kind\": \"people\",\n  \"definition\": \"Joined the program during the period.\",\n  \"formula\": \"Count participants whose join date falls inside the period.\",\n  \"records\": \"Participant join dates\",\n  \"divided_by\": null\n },\n {\n  \"id\": \"sessions_delivered\",\n  \"label\": \"Sessions delivered\",\n  \"kind\": \"count\",\n  \"definition\": \"Group sessions with attendance logged, plus sessions confirmed as run.\",\n  \"formula\": \"Count each group and date with at least one Attendances record. Add scheduled sessions answered \\\"Ran, attendance not rec…"
+   }
+  },
+  {
+   "id": "e22",
+   "lane": "Worker 1",
+   "kind": "tool",
+   "label": "describe_records",
+   "start": 96094,
+   "end": 96102,
+   "status": "ok",
+   "detail": {
+    "parent": "e20",
+    "input": {},
+    "output": "{\n \"organization\": \"A youth mentorship program (sample data)\",\n \"records_cover\": \"2026-07-01 to 2026-09-30\",\n \"periods\": [\n  {\n   \"id\": \"q3\",\n   \"label\": \"Jul to Sep 2026\",\n   \"start\": \"2026-07-01\",\n   \"end\": \"2026-09-30\"\n  },\n  {\n   \"id\": \"jul\",\n   \"label\": \"Jul 2026\",\n   \"start\": \"2026-07-01\",\n   \"end\": \"2026-07-31\"\n  },\n  {\n   \"id\": \"aug\",\n   \"label\": \"Aug 2026\",\n   \"start\": \"2026-08-01\",\n   \"end\": \"2026-08-31\"\n  },\n  {\n   \"id\": \"sep\",\n   \"label\": \"Sep 2026\",\n   \"start\": \"2026-09-01\",\n   \"end\": \"2026-09-30\"\n  }\n ],\n \"tables\": [\n  {\n   \"name\": \"Participants\",\n   \"rows\": 40,\n   \"fields\": [\n    \"group (one of the groups below)\",\n    \"age range, a custom field with these values only: 10-12, 13-15, 16-18, 19-24\",\n    \"join date\",\n    \"exit date (the last enrolled day; empty while enrolled)\",\n    \"confidence at intake, a custom field scored 1 to 5\"\n   ]\n  },\n  {\n   \"name\": \"Engagements\",\n  …"
+   }
+  },
+  {
+   "id": "e23",
+   "lane": "Worker 1",
+   "kind": "gate",
+   "label": "Reviewer passed all",
+   "start": 104777,
+   "end": 104777,
+   "status": "pass",
+   "detail": {
+    "rejected": [],
+    "items": [
+     "q1",
+     "q2",
+     "q3",
+     "q4",
+     "q5",
+     "q6",
+     "q7",
+     "q8"
+    ]
+   }
+  },
+  {
+   "id": "e24",
+   "lane": "Assemble",
+   "kind": "step",
+   "label": "Assemble the form",
+   "start": 104777,
+   "end": 104779,
+   "status": "ok",
+   "detail": {
+    "metric": 1,
+    "formula": 0,
+    "draft": 3,
+    "ask": 17,
+    "missing": 0
+   }
+  },
+  {
+   "id": "e25",
+   "lane": "Assemble",
+   "kind": "gate",
+   "label": "17 for a person",
+   "start": 104779,
+   "end": 104779,
+   "status": "ok",
+   "detail": {
+    "fields": [
+     "q1.1",
+     "q2.1",
+     "q4.1",
+     "q4.2",
+     "q6.1",
+     "q7.1",
+     "q8.1",
+     "q9.1",
+     "q9.2",
+     "q9.3",
+     "q9.4",
+     "q10.1",
+     "q10.2",
+     "q10.3",
+     "q11.1",
+     "q11.2",
+     "q11.3"
+    ]
+   }
+  }
+ ],
+ "items": [
+  {
+   "id": "q1",
+   "number": "1",
+   "title": "Type of funding or support received",
+   "quote": "Indicate what type of funding or support you received from the Municipality of Grey Highlands: Cash only In-kind (including venue rental waivers) only Both",
+   "quote_match": "exact",
+   "fields": [
+    {
+     "id": "q1.1",
+     "label": "Type of funding or support",
+     "quote": "Indicate what type of funding or support you received from the Municipality of Grey Highlands",
+     "quote_match": "exact",
+     "wants": "choice",
+     "answer": "ask",
+     "metric": null,
+     "age_range": null,
+     "formula": null,
+     "text": null,
+     "ask": "Did you receive cash, in-kind support (such as venue rental waivers), or both from Grey Highlands?",
+     "to_staff": null,
+     "missing": null,
+     "reason": "The records don't hold funding details, so staff need to answer this.",
+     "history": []
+    }
+   ]
+  },
+  {
+   "id": "q2",
+   "number": "2",
+   "title": "Amount of financial assistance received",
+   "quote": "Amount of financial assistance received: $",
+   "quote_match": "exact",
+   "fields": [
+    {
+     "id": "q2.1",
+     "label": "Amount of financial assistance received",
+     "quote": "Amount of financial assistance received",
+     "quote_match": "exact",
+     "wants": "money",
+     "answer": "ask",
+     "metric": null,
+     "age_range": null,
+     "formula": null,
+     "text": null,
+     "ask": "How much financial assistance did the Municipality of Grey Highlands give this project?",
+     "to_staff": null,
+     "missing": null,
+     "reason": "Grant amounts are money figures that aren't in the program records.",
+     "history": []
+    }
+   ]
+  },
+  {
+   "id": "q3",
+   "number": "3",
+   "title": "Description of your project/initiative",
+   "quote": "Provide a description of your project/initiative as it took place; please include successes and challenges, lessons learned, and the potential for growth and/or changes in the future:",
+   "quote_match": "exact",
+   "fields": [
+    {
+     "id": "q3.1",
+     "label": "Description of project/initiative",
+     "quote": "Provide a description of your project/initiative as it took place",
+     "quote_match": "exact",
+     "wants": "text",
+     "answer": "draft",
+     "metric": null,
+     "age_range": null,
+     "formula": null,
+     "text": "During {period}, the program ran {sessions_delivered} mentorship sessions for {participants_served} young people, adding up to {participant_hours} participant hours. Among participants with a check-in, {confidence_improved} reported more confidence at their latest check-in relative to intake.",
+     "ask": "What successes, challenges and lessons did you have, and how might the project change in future?",
+     "to_staff": null,
+     "missing": null,
+     "reason": "The records support a description of what was delivered, but successes, challenges, lessons and future plans need staff.",
+     "history": [
+      {
+       "step": "review",
+       "verdict": "pass",
+       "reason": "The draft only describes what was delivered, using sessions_delivered, participants_served, participant_hours and the confidence_improved percent, all worded to match their definitions, and leaves successes, challenges, lessons and future plans for staff."
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "id": "q4",
+   "number": "4",
+   "title": "Strategic goal your project/event addressed",
+   "quote": "Please indicate which strategic goal your project/event addressed and a brief explanation of how it met this objective:",
+   "quote_match": "exact",
+   "fields": [
+    {
+     "id": "q4.1",
+     "label": "Strategic goal",
+     "quote": "Please indicate which strategic goal your project/event addressed",
+     "quote_match": "exact",
+     "wants": "choice",
+     "answer": "ask",
+     "metric": null,
+     "age_range": null,
+     "formula": null,
+     "text": null,
+     "ask": "Which of the Municipality's strategic goals did this project address?",
+     "to_staff": null,
+     "missing": null,
+     "reason": "The records don't hold the funder's strategic goals, so staff have to choose one.",
+     "history": []
+    },
+    {
+     "id": "q4.2",
+     "label": "Explanation of how it met this objective",
+     "quote": "a brief explanation of how it met this objective",
+     "quote_match": "exact",
+     "wants": "text",
+     "answer": "ask",
+     "metric": null,
+     "age_range": null,
+     "formula": null,
+     "text": null,
+     "ask": "Briefly, how did the project meet the strategic goal you selected?",
+     "to_staff": null,
+     "missing": null,
+     "reason": "The explanation depends on which goal staff choose and needs their judgment.",
+     "history": []
+    }
+   ]
+  },
+  {
+   "id": "q5",
+   "number": "5",
+   "title": "How Grey Highlands community benefited",
+   "quote": "How did the Grey Highlands community benefit from this project?",
+   "quote_match": "exact",
+   "fields": [
+    {
+     "id": "q5.1",
+     "label": "Community benefit",
+     "quote": "How did the Grey Highlands community benefit from this project?",
+     "quote_match": "exact",
+     "wants": "text",
+     "answer": "draft",
+     "metric": null,
+     "age_range": null,
+     "formula": null,
+     "text": "Young people attended {sessions_delivered} mentorship sessions during {period}, adding up to {participant_hours} participant hours. Among participants who rated their confidence at a check-in, {confidence_improved} reported more confidence at their latest check-in relative to intake.",
+     "ask": "Beyond participants, how did the wider Grey Highlands community benefit from this project?",
+     "to_staff": null,
+     "missing": null,
+     "reason": "The records show benefits to participants, but not where they live or any wider community effect, so staff need to add that.",
+     "history": [
+      {
+       "step": "check",
+       "problems": [
+        "q5.1: comparison word: \"than\""
+       ]
+      },
+      {
+       "step": "check",
+       "problems": [
+        "q5.1: comparison word: \"higher\""
+       ]
+      },
+      {
+       "step": "review",
+       "verdict": "pass",
+       "reason": "The draft sticks to participant outcomes the records support and does not claim residency in Grey Highlands or any wider community effect, which the mapper correctly leaves for staff to add."
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "id": "q6",
+   "number": "6",
+   "title": "How project benefited from receiving grant",
+   "quote": "How did this project benefit from receiving a grant, including the estimated number of people reached or impacted? How was this measured?",
+   "quote_match": "exact",
+   "fields": [
+    {
+     "id": "q6.1",
+     "label": "How project benefited from grant",
+     "quote": "How did this project benefit from receiving a grant",
+     "quote_match": "exact",
+     "wants": "text",
+     "answer": "ask",
+     "metric": null,
+     "age_range": null,
+     "formula": null,
+     "text": null,
+     "ask": "What did the grant make possible for this project that would not have happened otherwise?",
+     "to_staff": null,
+     "missing": null,
+     "reason": "How the grant helped is something staff have to judge; the records don't show it.",
+     "history": []
+    },
+    {
+     "id": "q6.2",
+     "label": "Estimated number of people reached or impacted",
+     "quote": "the estimated number of people reached or impacted",
+     "quote_match": "exact",
+     "wants": "count",
+     "answer": "metric",
+     "metric": "participants_served",
+     "age_range": null,
+     "formula": null,
+     "text": null,
+     "ask": null,
+     "to_staff": null,
+     "missing": null,
+     "reason": "Counting each distinct young person who attended a session in the period is the program's measure of people reached.",
+     "history": [
+      {
+       "step": "review",
+       "verdict": "pass",
+       "reason": "participants_served counts each distinct young person who attended at least one session in the period, which fits the form's 'number of people reached or impacted'."
+      }
+     ]
+    },
+    {
+     "id": "q6.3",
+     "label": "How this was measured",
+     "quote": "How was this measured?",
+     "quote_match": "exact",
+     "wants": "text",
+     "answer": "draft",
+     "metric": null,
+     "age_range": null,
+     "formula": null,
+     "text": "We counted each young person once if they attended a mentorship session during {period}, using attendance logged at each session.",
+     "ask": null,
+     "to_staff": null,
+     "missing": null,
+     "reason": "The participants_served definition describes how the reach figure was measured.",
+     "history": [
+      {
+       "step": "check",
+       "problems": [
+        "q6.3: number word: \"one\""
+       ]
+      },
+      {
+       "step": "review",
+       "verdict": "pass",
+       "reason": "The draft correctly describes how participants_served is measured: each young person counted once if they have at least one logged attendance in the period."
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "id": "q7",
+   "number": "7",
+   "title": "Additional fundraising activities and partners",
+   "quote": "Provide details of any additional fundraising activities that took place to compliment or supplement the goals of your organization, and/or partners who supported this project.",
+   "quote_match": "exact",
+   "fields": [
+    {
+     "id": "q7.1",
+     "label": "Additional fundraising activities and partners",
+     "quote": "Provide details of any additional fundraising activities that took place to compliment or supplement the goals of your organization, and/or partners who supported this project.",
+     "quote_match": "exact",
+     "wants": "text",
+     "answer": "ask",
+     "metric": null,
+     "age_range": null,
+     "formula": null,
+     "text": null,
+     "ask": "What other fundraising activities or partners supported this project?",
+     "to_staff": null,
+     "missing": null,
+     "reason": "Fundraising and partners aren't tracked in the program records.",
+     "history": []
+    }
+   ]
+  },
+  {
+   "id": "q8",
+   "number": "8",
+   "title": "How the Municipality was acknowledged",
+   "quote": "Please describe how the Municipality of Grey Highlands was acknowledged for its contribution to your event or undertaking.",
+   "quote_match": "exact",
+   "fields": [
+    {
+     "id": "q8.1",
+     "label": "Acknowledgement of the Municipality",
+     "quote": "Please describe how the Municipality of Grey Highlands was acknowledged for its contribution to your event or undertaking.",
+     "quote_match": "exact",
+     "wants": "text",
+     "answer": "ask",
+     "metric": null,
+     "age_range": null,
+     "formula": null,
+     "text": null,
+     "ask": "How did you acknowledge the Municipality of Grey Highlands for its contribution?",
+     "to_staff": null,
+     "missing": null,
+     "reason": "The records don't hold any information about acknowledgements.",
+     "history": []
+    }
+   ]
+  },
+  {
+   "id": "q9",
+   "number": null,
+   "title": "Actual Budget Summary",
+   "quote": "ACTUAL BUDGET SUMMARY",
+   "quote_match": "exact",
+   "fields": [
+    {
+     "id": "q9.1",
+     "label": "Cost descriptions",
+     "quote": "ACTUAL BUDGET SUMMARY Description",
+     "quote_match": "exact",
+     "wants": "text",
+     "answer": "ask",
+     "metric": null,
+     "age_range": null,
+     "formula": null,
+     "text": null,
+     "ask": "What were the project's actual cost items, described line by line?",
+     "to_staff": null,
+     "missing": null,
+     "reason": "The records hold participants, attendance and check-ins, but no costs or budget lines.",
+     "history": []
+    },
+    {
+     "id": "q9.2",
+     "label": "Actual Costs total",
+     "quote": "Description Actual Costs ($)",
+     "quote_match": "exact",
+     "wants": "money",
+     "answer": "ask",
+     "metric": null,
+     "age_range": null,
+     "formula": null,
+     "text": null,
+     "ask": "What was the total actual cost of the project, in dollars?",
+     "to_staff": null,
+     "missing": null,
+     "reason": "The records hold no financial data, so staff must give the actual cost total.",
+     "history": []
+    },
+    {
+     "id": "q9.3",
+     "label": "Funding Sources",
+     "quote": "Actual Costs ($) Funding Sources",
+     "quote_match": "exact",
+     "wants": "text",
+     "answer": "ask",
+     "metric": null,
+     "age_range": null,
+     "formula": null,
+     "text": null,
+     "ask": "Which funding sources paid for the project, including this grant and any others?",
+     "to_staff": null,
+     "missing": null,
+     "reason": "The records do not track funders or revenue sources.",
+     "history": []
+    },
+    {
+     "id": "q9.4",
+     "label": "Funding total",
+     "quote": "Funding Sources Funding ($)",
+     "quote_match": "exact",
+     "wants": "money",
+     "answer": "ask",
+     "metric": null,
+     "age_range": null,
+     "formula": null,
+     "text": null,
+     "ask": "What was the total funding received for the project from all sources, in dollars?",
+     "to_staff": null,
+     "missing": null,
+     "reason": "The records hold no funding amounts, so staff must give the total.",
+     "history": []
+    }
+   ]
+  },
+  {
+   "id": "q10",
+   "number": null,
+   "title": "In-Kind Contributions",
+   "quote": "IN-KIND CONTRIBUTIONS Description (Event/Meeting Space; Supplies; Venue Set-Up; etc.)",
+   "quote_match": "exact",
+   "fields": [
+    {
+     "id": "q10.1",
+     "label": "In-kind description",
+     "quote": "Description (Event/Meeting Space; Supplies; Venue Set-Up; etc.)",
+     "quote_match": "exact",
+     "wants": "text",
+     "answer": "ask",
+     "metric": null,
+     "age_range": null,
+     "formula": null,
+     "text": null,
+     "ask": "What in-kind contributions did the project receive, such as space, supplies or venue set-up?",
+     "to_staff": null,
+     "missing": null,
+     "reason": "The records do not track donated space, supplies or other in-kind support.",
+     "history": []
+    },
+    {
+     "id": "q10.2",
+     "label": "Value of Non-Municipal Contributions",
+     "quote": "Value ($) of NonMunicipal Contributions",
+     "quote_match": "exact",
+     "wants": "money",
+     "answer": "ask",
+     "metric": null,
+     "age_range": null,
+     "formula": null,
+     "text": null,
+     "ask": "What was the total dollar value of in-kind contributions from non-municipal sources?",
+     "to_staff": null,
+     "missing": null,
+     "reason": "The records hold no in-kind values, so staff must give the dollar value.",
+     "history": []
+    },
+    {
+     "id": "q10.3",
+     "label": "Municipal Resources or Project Partner",
+     "quote": "Please Indicate if the In-Kind was Municipal Resources or a Project Partner",
+     "quote_match": "exact",
+     "wants": "choice",
+     "answer": "ask",
+     "metric": null,
+     "age_range": null,
+     "formula": null,
+     "text": null,
+     "ask": "Was each in-kind contribution from municipal resources or from a project partner?",
+     "to_staff": null,
+     "missing": null,
+     "reason": "Whether in-kind support came from the municipality or a partner is not in the records.",
+     "history": []
+    }
+   ]
+  },
+  {
+   "id": "q11",
+   "number": null,
+   "title": "Volunteer Support",
+   "quote": "Volunteer Role VOLUNTEER SUPPORT # Volunteers Total Hours of Volunteer Time",
+   "quote_match": "exact",
+   "fields": [
+    {
+     "id": "q11.1",
+     "label": "Volunteer Role",
+     "quote": "Volunteer Role VOLUNTEER SUPPORT",
+     "quote_match": "exact",
+     "wants": "text",
+     "answer": "ask",
+     "metric": null,
+     "age_range": null,
+     "formula": null,
+     "text": null,
+     "ask": "What volunteer roles supported the project, such as mentors or event helpers?",
+     "to_staff": null,
+     "missing": null,
+     "reason": "The records track participants and groups, not volunteers or their roles.",
+     "history": []
+    },
+    {
+     "id": "q11.2",
+     "label": "# Volunteers",
+     "quote": "VOLUNTEER SUPPORT # Volunteers",
+     "quote_match": "exact",
+     "wants": "count",
+     "answer": "ask",
+     "metric": null,
+     "age_range": null,
+     "formula": null,
+     "text": null,
+     "ask": "How many volunteers served in each volunteer role?",
+     "to_staff": null,
+     "missing": null,
+     "reason": "The records do not count volunteers, so staff must report the number.",
+     "history": []
+    },
+    {
+     "id": "q11.3",
+     "label": "Total Hours of Volunteer Time",
+     "quote": "Total Hours of Volunteer Time",
+     "quote_match": "exact",
+     "wants": "hours",
+     "answer": "ask",
+     "metric": null,
+     "age_range": null,
+     "formula": null,
+     "text": null,
+     "ask": "How many total hours did volunteers contribute in each role?",
+     "to_staff": null,
+     "missing": null,
+     "reason": "The records do not log volunteer time; participant hours count youth attendance, not volunteer hours.",
+     "history": []
+    }
+   ]
+  }
+ ]
+}

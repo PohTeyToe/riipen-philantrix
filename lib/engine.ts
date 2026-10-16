@@ -35,6 +35,8 @@ export interface Measure {
   start: string;
   end: string;
   groupId: string | null;
+  /** The privacy cutoff the counts are shown under (lib/privacy.ts). */
+  smallBelow: number;
   /** Attendances records in range, one per person per session. Copies that disagree count at the fewest hours. */
   attendance: Engagement[];
   /** The other copies when a person is logged twice at one session. Not counted. */
@@ -50,7 +52,11 @@ export interface Measure {
   served: string[];
   newParticipants: Participant[];
   enrolledAny: Participant[];
+  /** Enrolled on the period's first day. */
+  enrolledAtStart: Participant[];
   retained: Participant[];
+  /** Enrolled during the period but not on its last day: their exit date falls inside it. */
+  exited: Participant[];
   /** Participants with an intake score and a check-in in the period. */
   checkins: CheckinRow[];
 }
@@ -128,6 +134,7 @@ export function measure(ds: Dataset, st: State, start: string, end: string, grou
     start,
     end,
     groupId,
+    smallBelow: st.smallBelow,
     attendance,
     duplicates,
     submissions,
@@ -139,7 +146,9 @@ export function measure(ds: Dataset, st: State, start: string, end: string, grou
     served: [...new Set(attendance.map((e) => e.participant_id))].sort(),
     newParticipants: people.filter((p) => inRange(p.join_date)),
     enrolledAny,
+    enrolledAtStart: enrolledAny.filter((p) => enrolledOn(p, start)),
     retained: enrolledAny.filter((p) => enrolledOn(p, end)),
+    exited: enrolledAny.filter((p) => !enrolledOn(p, end)),
     checkins,
   };
 }
@@ -147,7 +156,7 @@ export function measure(ds: Dataset, st: State, start: string, end: string, grou
 // ---------- goals ----------
 
 export type GoalStatus = 'Met' | 'On track' | 'Behind' | 'Past due' | 'No due date';
-/** What funder copy shows for a status: the status, or "Not shown" when it would give a count of 1 to 4 people away. */
+/** What funder copy shows for a status: the status, or "Not shown" when it would give a small count of people away. */
 export type ShownStatus = GoalStatus | 'Not shown';
 
 export interface GoalFigure {
@@ -157,7 +166,7 @@ export interface GoalFigure {
   asOf: string;
   /** Unrounded progress: a count, hours, or a rate between 0 and 1. */
   value: number | null;
-  /** Funder display (people counts follow the "<5" rule). */
+  /** Funder display (people counts follow the small-count rule). */
   display: string;
   staffDisplay: string;
   target: number;
@@ -165,7 +174,7 @@ export interface GoalFigure {
   dueDate: string | null;
   /** The true status, as staff see it. */
   status: GoalStatus;
-  /** Funder copy. A people goal at 1 to 4 shows "<5" and neither status nor forecast, since both are worked out from the count and could give it away. */
+  /** Funder copy. A people goal under the cutoff shows "<5" (at the default) and neither status nor forecast, since both are worked out from the count and could give it away. */
   shownStatus: ShownStatus;
   elapsedDays: number;
   windowDays: number | null;
@@ -202,7 +211,7 @@ export function goalFigure(ds: Dataset, st: State, goal: Goal, asOf: string): Go
     if (goal.metric === 'participant_hours') {
       n = m.hoursHundredths; scale = 100; value = n / 100; display = staffDisplay = fmtHours(n);
     } else if (goal.metric === 'new_participants') {
-      n = m.newParticipants.length; value = n; display = peopleForFunder(n); staffDisplay = fmtCount(n);
+      n = m.newParticipants.length; value = n; display = peopleForFunder(n, st.smallBelow); staffDisplay = fmtCount(n);
     } else {
       n = m.submissions.length; value = n; display = staffDisplay = fmtCount(n);
     }
@@ -224,7 +233,7 @@ export function goalFigure(ds: Dataset, st: State, goal: Goal, asOf: string): Go
 
   const showForecast = status === 'On track' || status === 'Behind';
   // "<5" with "On track", or with a forecast of 6 halfway through, would say how many.
-  const withheld = goal.metric === 'new_participants' && isSmall(n);
+  const withheld = goal.metric === 'new_participants' && isSmall(n, st.smallBelow);
   const forecastDisplay = showForecast && !withheld ? forecastStaffDisplay : null;
   const targetDisplay = goal.metric === 'attendance_rate' ? `${Math.round(goal.target * 100)}%` : commas(goal.target);
   return {

@@ -1,13 +1,11 @@
 import type { Metadata, Viewport } from 'next';
-import '@fontsource-variable/source-serif-4/opsz.css';
-import '@fontsource-variable/source-sans-3';
+import '@fontsource-variable/dm-sans';
+import '@fontsource-variable/lora';
 import './globals.css';
 
 const TITLE = 'Quarter-end funder report (sample data)';
-const DESCRIPTION =
-  'A working slice built for Philantrix\'s Platform Expansion project on Riipen: one quarter of sample engagement records, a data gaps check, and two funder reports where every number traces to its rows.';
+const DESCRIPTION = "Checks a quarter of sample program records for gaps, then builds two funders' reports. Built for Philantrix's Level UP project.";
 
-// og:image needs an absolute URL, so it's added with metadataBase at deploy time.
 // robots is set on each page: the 404 page gets Next's own noindex, and a
 // second one here would print two robots tags there.
 export const metadata: Metadata = {
@@ -20,7 +18,7 @@ export const metadata: Metadata = {
 export const viewport: Viewport = {
   width: 'device-width',
   initialScale: 1,
-  themeColor: '#eef0f3',
+  themeColor: '#fafafa',
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {

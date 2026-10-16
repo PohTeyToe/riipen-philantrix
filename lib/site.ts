@@ -1,26 +1,7 @@
-// Links and switches for the walkthrough page.
-
 import type { Metadata } from 'next';
 
 /** Each page sets this; see app/layout.tsx. */
 export const NO_INDEX: Metadata['robots'] = { index: false, follow: false };
 
-export const LINKS = {
-  /** The public repo for this demo. Update if the repo gets a different name. */
-  repo: 'https://github.com/PohTeyToe/riipen-philantrix',
-  github: 'https://github.com/PohTeyToe',
-  linkedin: 'https://linkedin.com/in/abdallah-safi',
-};
-
-/**
- * True only once LINKS.repo is public and its CI run is green. While false,
- * the walkthrough has no "See the code" button, so it never links to a 404.
- */
-export const REPO_PUBLIC = true;
-
-/**
- * True only while the row-level security tests pass: `npm test` runs
- * supabase/tests/database/rls.test.sql on PGlite (tests/rls.test.ts). While
- * false, the walkthrough leaves that line out and keeps the work in the plan.
- */
-export const RLS_SHIPPED = true;
+/** The public repo for this demo. */
+export const REPO_URL = 'https://github.com/PohTeyToe/riipen-philantrix';

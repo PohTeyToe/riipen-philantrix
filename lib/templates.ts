@@ -29,6 +29,12 @@ export interface Template {
   /** Toggle label. */
   short: string;
   name: string;
+  /**
+   * How the funder wants the page laid out: 'form' is a numbered list of
+   * fields, like a government grant form; 'brief' leads with the outcome in
+   * large figures. The numbers are the same either way.
+   */
+  layout: 'form' | 'brief';
   sections: Section[];
   slots: Record<string, Slot>;
   narrative: string;
@@ -47,6 +53,7 @@ export const TEMPLATES: Template[] = [
     id: 'city-youth-grant',
     short: 'City youth grant',
     name: 'City youth grant (example): reach and attendance',
+    layout: 'form',
     sections: [
       { id: 'reach', title: 'Reach', type: 'figures', metrics: ['participants_served', 'new_participants'], breakdown: 'age_range' },
       { id: 'delivery', title: 'Delivery', type: 'figures', metrics: ['sessions_delivered', 'participant_hours'] },
@@ -75,6 +82,7 @@ export const TEMPLATES: Template[] = [
     id: 'foundation-outcomes',
     short: 'Foundation',
     name: 'Foundation (example): outcomes and retention',
+    layout: 'brief',
     sections: [
       { id: 'outcomes', title: 'Outcomes', type: 'figures', metrics: ['confidence_improved', 'participants_checked_in'] },
       { id: 'retention', title: 'Retention', type: 'figures', metrics: ['retention_rate'], chart: 'retention_rate' },

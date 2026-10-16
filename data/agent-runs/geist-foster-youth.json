@@ -1,0 +1,1068 @@
+{
+ "form": {
+  "id": "geist-foster-youth",
+  "funder": "Geist Foundation, Hawaii Community Foundation",
+  "short": "Geist Foundation",
+  "title": "Supporting Transitioning Foster Youth: Final Report Cover Sheet",
+  "kind": "Private foundation final report",
+  "url": "https://www.hawaiicommunityfoundation.org/file/2024/Geist-Final-Report-Guidelines_2025_Transitioning-Foster-Youth.pdf",
+  "retrieved": "2026-10-16",
+  "pdf_sha256": "523aea3c4e34b3e11b27b1e31d6fa270a6eb6e25b23a7430620ad1fe24b11318",
+  "pages": 1,
+  "text": "geist-foster-youth.txt"
+ },
+ "recorded_on": "2026-10-16",
+ "cli": "2.1.299 (Claude Code)",
+ "model": "claude-opus-5-5",
+ "effort": "medium",
+ "workers": 5,
+ "prompts": {
+  "system": "agent/prompts/system.md@38630ac9fd71",
+  "extract": "agent/prompts/extract.md@05a7a27c04c1",
+  "map": "agent/prompts/map.md@5637b11aea30",
+  "review": "agent/prompts/review.md@f463ffa3f772"
+ },
+ "form_sha": "fc223eb5401a",
+ "form_text": "VICTORIA S. AND BRADLEY L. GEIST FOUNDATION\n827 FORT STREET • HONOLULU • HAWAI`I • 96813 • (808) 537-6333\nSupporting Transitioning Foster Youth Final Report (or Progress Report) Cover Sheet\nThe Trustees appreciate your work and look forward to learning more about it. Your final report provides important information that helps the Trustees to evaluate the Foundation’s programs. Your candor about what worked and why -- and what didn’t work and why not -- makes your report valuable and appreciated.\nYour report is due no later than 13 months after the date of your grant award letter. The Foundation does not accept proposals from organizations with overdue reports.\nPlease complete this cover sheet, attach the narrative, an updated tracking matrix and final financial reports, and upload the PDF document to the grant portal “Reporting” section for this award. Direct questions to Jarissa Lum, Program Officer at 808-566-5522 or by email at jlum@hcf-hawaii.org.\n\nOrganization Name:\n\nContact information for the person who prepared this report\n\nName:\n\nE-mail:\n\nTitle:\n\nTel:\n\nProject information\n\nGrant ID#\n\nGrant amount: $\n\nProject title:\n\nAttach financial report, narrative report, and tracking matrix\n Financial report: ▪ Provide original project budget shown in your grant application ▪ Show all actual project income and expenditures ▪ Indicate expenses for which this Geist Foundation grant was used.\n Narrative report: ▪ Describe the youth outcome area(s) addressed (permanence, education, employment, housing, physical and mental health, personal and community engagement) and the outcomes you were trying to achieve. ▪ Provide the number of transitioning foster youth served by the project, in these age groups: 14-15, 1618, 19-21, 22-24 ▪ Describe the activities conducted and the services delivered, including numbers of youth participating. Explain any changes from the activities described in your grant application. (You must use the grant only for the purpose stated in the grant award letter.) ▪ Describe what happened as a result of the efforts (outcomes), including any differences between these results and the expected results described in your grant application. ▪ Describe challenges encountered, unexpected benefits, and lessons learned.\n▪ Describe future plans for these efforts.\n Updated Tracking Matrix (PDF)\n",
+ "duration_ms": 87463,
+ "totals": {
+  "model_calls": 7,
+  "tool_calls": 14,
+  "checks": 5,
+  "checks_failed": 1,
+  "tokens_in": 65170,
+  "tokens_out": 11003,
+  "questions": 9,
+  "fields": 19,
+  "metric": 1,
+  "formula": 0,
+  "draft": 2,
+  "ask": 12,
+  "missing": 4
+ },
+ "events": [
+  {
+   "id": "e1",
+   "lane": "Read form",
+   "kind": "step",
+   "label": "Read the form",
+   "start": 0,
+   "end": 0,
+   "status": "ok",
+   "detail": {
+    "chars": 2340,
+    "sha": "fc223eb5401a",
+    "url": "https://www.hawaiicommunityfoundation.org/file/2024/Geist-Final-Report-Guidelines_2025_Transitioning-Foster-Youth.pdf"
+   }
+  },
+  {
+   "id": "e2",
+   "lane": "Read form",
+   "kind": "llm",
+   "label": "List the questions",
+   "start": 0,
+   "end": 23428,
+   "status": "ok",
+   "detail": {
+    "model": "claude-opus-5-5",
+    "effort": "medium",
+    "parent": null,
+    "prompt_chars": 3954,
+    "tokens_in": 2668,
+    "tokens_out": 2982,
+    "turns": 2,
+    "api_ms": 21751
+   }
+  },
+  {
+   "id": "e3",
+   "lane": "Read form",
+   "kind": "check",
+   "label": "Quotes are on the form",
+   "start": 23428,
+   "end": 23429,
+   "status": "fail",
+   "detail": {
+    "problems": [
+     "q1: quote \"Grant ID#\" is too short to find on the form; quote at least 3 words",
+     "q2: quote \"Grant amount: $\" is too short to find on the form; quote at least 3 words",
+     "q2.1: quote \"Grant amount: $\" is too short to find on the form; quote at least 3 words",
+     "q3: quote \"Project title:\" is too short to find on the form; quote at least 3 words"
+    ],
+    "micros": 786
+   }
+  },
+  {
+   "id": "e4",
+   "lane": "Read form",
+   "kind": "llm",
+   "label": "List the questions again",
+   "start": 23429,
+   "end": 47379,
+   "status": "ok",
+   "detail": {
+    "model": "claude-opus-5-5",
+    "effort": "medium",
+    "parent": null,
+    "prompt_chars": 4429,
+    "tokens_in": 2836,
+    "tokens_out": 2882,
+    "turns": 2,
+    "api_ms": 22210
+   }
+  },
+  {
+   "id": "e5",
+   "lane": "Read form",
+   "kind": "check",
+   "label": "Quotes are on the form",
+   "start": 47379,
+   "end": 47379,
+   "status": "pass",
+   "detail": {
+    "problems": [],
+    "micros": 802
+   }
+  },
+  {
+   "id": "e6",
+   "lane": "Read form",
+   "kind": "step",
+   "label": "Split into 2 batches",
+   "start": 47380,
+   "end": 47380,
+   "status": "ok",
+   "detail": {
+    "batches": [
+     [
+      "q1",
+      "q2",
+      "q3",
+      "q4",
+      "q5"
+     ],
+     [
+      "q6",
+      "q7",
+      "q8",
+      "q9"
+     ]
+    ]
+   }
+  },
+  {
+   "id": "e7",
+   "lane": "Worker 1",
+   "kind": "llm",
+   "label": "Map q1, q2, q3, q4, q5",
+   "start": 47380,
+   "end": 66595,
+   "status": "ok",
+   "detail": {
+    "model": "claude-opus-5-5",
+    "effort": "medium",
+    "parent": null,
+    "prompt_chars": 7016,
+    "items": [
+     "q1",
+     "q2",
+     "q3",
+     "q4",
+     "q5"
+    ],
+    "tokens_in": 12525,
+    "tokens_out": 1685,
+    "turns": 5,
+    "api_ms": 16550
+   }
+  },
+  {
+   "id": "e8",
+   "lane": "Worker 2",
+   "kind": "llm",
+   "label": "Map q6, q7, q8, q9",
+   "start": 47385,
+   "end": 67921,
+   "status": "ok",
+   "detail": {
+    "model": "claude-opus-5-5",
+    "effort": "medium",
+    "parent": null,
+    "prompt_chars": 6437,
+    "items": [
+     "q6",
+     "q7",
+     "q8",
+     "q9"
+    ],
+    "tokens_in": 19343,
+    "tokens_out": 1691,
+    "turns": 6,
+    "api_ms": 17713
+   }
+  },
+  {
+   "id": "e9",
+   "lane": "Worker 2",
+   "kind": "tool",
+   "label": "list_metrics",
+   "start": 51538,
+   "end": 51562,
+   "status": "ok",
+   "detail": {
+    "parent": "e8",
+    "input": {},
+    "output": "[\n {\n  \"id\": \"participants_served\",\n  \"label\": \"Participants served\",\n  \"kind\": \"people\",\n  \"definition\": \"Attended at least one session in the period.\",\n  \"formula\": \"Count each participant once if they have at least one Attendances record in the period.\",\n  \"records\": \"Attendances\",\n  \"divided_by\": null\n },\n {\n  \"id\": \"new_participants\",\n  \"label\": \"New participants\",\n  \"kind\": \"people\",\n  \"definition\": \"Joined the program during the period.\",\n  \"formula\": \"Count participants whose join date falls inside the period.\",\n  \"records\": \"Participant join dates\",\n  \"divided_by\": null\n },\n {\n  \"id\": \"sessions_delivered\",\n  \"label\": \"Sessions delivered\",\n  \"kind\": \"count\",\n  \"definition\": \"Group sessions with attendance logged, plus sessions confirmed as run.\",\n  \"formula\": \"Count each group and date with at least one Attendances record. Add scheduled sessions answered \\\"Ran, attendance not rec…"
+   }
+  },
+  {
+   "id": "e10",
+   "lane": "Worker 2",
+   "kind": "tool",
+   "label": "describe_records",
+   "start": 51547,
+   "end": 51568,
+   "status": "ok",
+   "detail": {
+    "parent": "e8",
+    "input": {},
+    "output": "{\n \"organization\": \"A youth mentorship program (sample data)\",\n \"records_cover\": \"2026-07-01 to 2026-09-30\",\n \"periods\": [\n  {\n   \"id\": \"q3\",\n   \"label\": \"Jul to Sep 2026\",\n   \"start\": \"2026-07-01\",\n   \"end\": \"2026-09-30\"\n  },\n  {\n   \"id\": \"jul\",\n   \"label\": \"Jul 2026\",\n   \"start\": \"2026-07-01\",\n   \"end\": \"2026-07-31\"\n  },\n  {\n   \"id\": \"aug\",\n   \"label\": \"Aug 2026\",\n   \"start\": \"2026-08-01\",\n   \"end\": \"2026-08-31\"\n  },\n  {\n   \"id\": \"sep\",\n   \"label\": \"Sep 2026\",\n   \"start\": \"2026-09-01\",\n   \"end\": \"2026-09-30\"\n  }\n ],\n \"tables\": [\n  {\n   \"name\": \"Participants\",\n   \"rows\": 40,\n   \"fields\": [\n    \"group (one of the groups below)\",\n    \"age range, a custom field with these values only: 10-12, 13-15, 16-18, 19-24\",\n    \"join date\",\n    \"exit date (the last enrolled day; empty while enrolled)\",\n    \"confidence at intake, a custom field scored 1 to 5\"\n   ]\n  },\n  {\n   \"name\": \"Engagements\",\n  …"
+   }
+  },
+  {
+   "id": "e11",
+   "lane": "Worker 1",
+   "kind": "tool",
+   "label": "list_metrics",
+   "start": 51855,
+   "end": 51895,
+   "status": "ok",
+   "detail": {
+    "parent": "e7",
+    "input": {},
+    "output": "[\n {\n  \"id\": \"participants_served\",\n  \"label\": \"Participants served\",\n  \"kind\": \"people\",\n  \"definition\": \"Attended at least one session in the period.\",\n  \"formula\": \"Count each participant once if they have at least one Attendances record in the period.\",\n  \"records\": \"Attendances\",\n  \"divided_by\": null\n },\n {\n  \"id\": \"new_participants\",\n  \"label\": \"New participants\",\n  \"kind\": \"people\",\n  \"definition\": \"Joined the program during the period.\",\n  \"formula\": \"Count participants whose join date falls inside the period.\",\n  \"records\": \"Participant join dates\",\n  \"divided_by\": null\n },\n {\n  \"id\": \"sessions_delivered\",\n  \"label\": \"Sessions delivered\",\n  \"kind\": \"count\",\n  \"definition\": \"Group sessions with attendance logged, plus sessions confirmed as run.\",\n  \"formula\": \"Count each group and date with at least one Attendances record. Add scheduled sessions answered \\\"Ran, attendance not rec…"
+   }
+  },
+  {
+   "id": "e12",
+   "lane": "Worker 1",
+   "kind": "tool",
+   "label": "describe_records",
+   "start": 51873,
+   "end": 51907,
+   "status": "ok",
+   "detail": {
+    "parent": "e7",
+    "input": {},
+    "output": "{\n \"organization\": \"A youth mentorship program (sample data)\",\n \"records_cover\": \"2026-07-01 to 2026-09-30\",\n \"periods\": [\n  {\n   \"id\": \"q3\",\n   \"label\": \"Jul to Sep 2026\",\n   \"start\": \"2026-07-01\",\n   \"end\": \"2026-09-30\"\n  },\n  {\n   \"id\": \"jul\",\n   \"label\": \"Jul 2026\",\n   \"start\": \"2026-07-01\",\n   \"end\": \"2026-07-31\"\n  },\n  {\n   \"id\": \"aug\",\n   \"label\": \"Aug 2026\",\n   \"start\": \"2026-08-01\",\n   \"end\": \"2026-08-31\"\n  },\n  {\n   \"id\": \"sep\",\n   \"label\": \"Sep 2026\",\n   \"start\": \"2026-09-01\",\n   \"end\": \"2026-09-30\"\n  }\n ],\n \"tables\": [\n  {\n   \"name\": \"Participants\",\n   \"rows\": 40,\n   \"fields\": [\n    \"group (one of the groups below)\",\n    \"age range, a custom field with these values only: 10-12, 13-15, 16-18, 19-24\",\n    \"join date\",\n    \"exit date (the last enrolled day; empty while enrolled)\",\n    \"confidence at intake, a custom field scored 1 to 5\"\n   ]\n  },\n  {\n   \"name\": \"Engagements\",\n  …"
+   }
+  },
+  {
+   "id": "e13",
+   "lane": "Worker 1",
+   "kind": "tool",
+   "label": "count_by_age",
+   "start": 51875,
+   "end": 51933,
+   "status": "ok",
+   "detail": {
+    "parent": "e7",
+    "input": {
+     "period": "q3"
+    },
+    "output": "{\n \"period\": \"Jul to Sep 2026\",\n \"by_age_range\": [\n  {\n   \"age_range\": \"10-12\",\n   \"participants_served\": \"11\"\n  },\n  {\n   \"age_range\": \"13-15\",\n   \"participants_served\": \"14\"\n  },\n  {\n   \"age_range\": \"16-18\",\n   \"participants_served\": \"12\"\n  },\n  {\n   \"age_range\": \"19-24\",\n   \"participants_served\": \"<5\"\n  }\n ],\n \"funder_copy_bands\": [\n  {\n   \"band\": \"10-12\",\n   \"ranges\": [\n    \"10-12\"\n   ],\n   \"funder_copy_shows\": \"11\"\n  },\n  {\n   \"band\": \"13-15\",\n   \"ranges\": [\n    \"13-15\"\n   ],\n   \"funder_copy_shows\": \"14\"\n  },\n  {\n   \"band\": \"16-24\",\n   \"ranges\": [\n    \"16-18\",\n    \"19-24\"\n   ],\n   \"funder_copy_shows\": \"15\"\n  }\n ],\n \"rule\": \"Funder copy never shows a group of 1 to 4 people. An age range that small in any period is reported together with the next range.\"\n}"
+   }
+  },
+  {
+   "id": "e14",
+   "lane": "Worker 2",
+   "kind": "tool",
+   "label": "get_metric",
+   "start": 54655,
+   "end": 54673,
+   "status": "ok",
+   "detail": {
+    "parent": "e8",
+    "input": {
+     "metric": "participants_served",
+     "period": "q3"
+    },
+    "output": "{\n \"metric\": \"participants_served\",\n \"label\": \"Participants served\",\n \"period\": \"Jul to Sep 2026\",\n \"funder_copy_shows\": \"40\",\n \"working\": \"40 participants with an Attendances record\"\n}"
+   }
+  },
+  {
+   "id": "e15",
+   "lane": "Worker 2",
+   "kind": "tool",
+   "label": "get_metric",
+   "start": 55000,
+   "end": 55007,
+   "status": "ok",
+   "detail": {
+    "parent": "e8",
+    "input": {
+     "metric": "confidence_improved",
+     "period": "q3"
+    },
+    "output": "{\n \"metric\": \"confidence_improved\",\n \"label\": \"Confidence improved\",\n \"period\": \"Jul to Sep 2026\",\n \"funder_copy_shows\": \"73%\",\n \"working\": \"27 improved ÷ 37 participants with a check-in = 72.97%, shown as 73%\"\n}"
+   }
+  },
+  {
+   "id": "e16",
+   "lane": "Worker 1",
+   "kind": "check",
+   "label": "Checks: metrics, units, wording",
+   "start": 66595,
+   "end": 66601,
+   "status": "pass",
+   "detail": {
+    "items": [
+     "q1",
+     "q2",
+     "q3",
+     "q4",
+     "q5"
+    ],
+    "problems": [],
+    "micros": 6304
+   }
+  },
+  {
+   "id": "e17",
+   "lane": "Worker 1",
+   "kind": "llm",
+   "label": "Review 1 answer",
+   "start": 66601,
+   "end": 75209,
+   "status": "ok",
+   "detail": {
+    "model": "claude-opus-5-5",
+    "effort": "medium",
+    "parent": null,
+    "prompt_chars": 1564,
+    "items": [
+     "q1",
+     "q2",
+     "q3",
+     "q4",
+     "q5"
+    ],
+    "tokens_in": 7747,
+    "tokens_out": 495,
+    "turns": 4,
+    "api_ms": 6607
+   }
+  },
+  {
+   "id": "e18",
+   "lane": "Worker 2",
+   "kind": "check",
+   "label": "Checks: metrics, units, wording",
+   "start": 67921,
+   "end": 67927,
+   "status": "pass",
+   "detail": {
+    "items": [
+     "q6",
+     "q7",
+     "q8",
+     "q9"
+    ],
+    "problems": [],
+    "micros": 5994
+   }
+  },
+  {
+   "id": "e19",
+   "lane": "Worker 2",
+   "kind": "llm",
+   "label": "Review 3 answers",
+   "start": 67927,
+   "end": 87440,
+   "status": "ok",
+   "detail": {
+    "model": "claude-opus-5-5",
+    "effort": "medium",
+    "parent": null,
+    "prompt_chars": 3010,
+    "items": [
+     "q6",
+     "q7",
+     "q8",
+     "q9"
+    ],
+    "tokens_in": 15342,
+    "tokens_out": 1054,
+    "turns": 7,
+    "api_ms": 17327
+   }
+  },
+  {
+   "id": "e20",
+   "lane": "Worker 1",
+   "kind": "tool",
+   "label": "list_metrics",
+   "start": 71200,
+   "end": 71214,
+   "status": "ok",
+   "detail": {
+    "parent": "e17",
+    "input": {},
+    "output": "[\n {\n  \"id\": \"participants_served\",\n  \"label\": \"Participants served\",\n  \"kind\": \"people\",\n  \"definition\": \"Attended at least one session in the period.\",\n  \"formula\": \"Count each participant once if they have at least one Attendances record in the period.\",\n  \"records\": \"Attendances\",\n  \"divided_by\": null\n },\n {\n  \"id\": \"new_participants\",\n  \"label\": \"New participants\",\n  \"kind\": \"people\",\n  \"definition\": \"Joined the program during the period.\",\n  \"formula\": \"Count participants whose join date falls inside the period.\",\n  \"records\": \"Participant join dates\",\n  \"divided_by\": null\n },\n {\n  \"id\": \"sessions_delivered\",\n  \"label\": \"Sessions delivered\",\n  \"kind\": \"count\",\n  \"definition\": \"Group sessions with attendance logged, plus sessions confirmed as run.\",\n  \"formula\": \"Count each group and date with at least one Attendances record. Add scheduled sessions answered \\\"Ran, attendance not rec…"
+   }
+  },
+  {
+   "id": "e21",
+   "lane": "Worker 1",
+   "kind": "tool",
+   "label": "describe_records",
+   "start": 71241,
+   "end": 71247,
+   "status": "ok",
+   "detail": {
+    "parent": "e17",
+    "input": {},
+    "output": "{\n \"organization\": \"A youth mentorship program (sample data)\",\n \"records_cover\": \"2026-07-01 to 2026-09-30\",\n \"periods\": [\n  {\n   \"id\": \"q3\",\n   \"label\": \"Jul to Sep 2026\",\n   \"start\": \"2026-07-01\",\n   \"end\": \"2026-09-30\"\n  },\n  {\n   \"id\": \"jul\",\n   \"label\": \"Jul 2026\",\n   \"start\": \"2026-07-01\",\n   \"end\": \"2026-07-31\"\n  },\n  {\n   \"id\": \"aug\",\n   \"label\": \"Aug 2026\",\n   \"start\": \"2026-08-01\",\n   \"end\": \"2026-08-31\"\n  },\n  {\n   \"id\": \"sep\",\n   \"label\": \"Sep 2026\",\n   \"start\": \"2026-09-01\",\n   \"end\": \"2026-09-30\"\n  }\n ],\n \"tables\": [\n  {\n   \"name\": \"Participants\",\n   \"rows\": 40,\n   \"fields\": [\n    \"group (one of the groups below)\",\n    \"age range, a custom field with these values only: 10-12, 13-15, 16-18, 19-24\",\n    \"join date\",\n    \"exit date (the last enrolled day; empty while enrolled)\",\n    \"confidence at intake, a custom field scored 1 to 5\"\n   ]\n  },\n  {\n   \"name\": \"Engagements\",\n  …"
+   }
+  },
+  {
+   "id": "e22",
+   "lane": "Worker 2",
+   "kind": "tool",
+   "label": "list_metrics",
+   "start": 73787,
+   "end": 73802,
+   "status": "ok",
+   "detail": {
+    "parent": "e19",
+    "input": {},
+    "output": "[\n {\n  \"id\": \"participants_served\",\n  \"label\": \"Participants served\",\n  \"kind\": \"people\",\n  \"definition\": \"Attended at least one session in the period.\",\n  \"formula\": \"Count each participant once if they have at least one Attendances record in the period.\",\n  \"records\": \"Attendances\",\n  \"divided_by\": null\n },\n {\n  \"id\": \"new_participants\",\n  \"label\": \"New participants\",\n  \"kind\": \"people\",\n  \"definition\": \"Joined the program during the period.\",\n  \"formula\": \"Count participants whose join date falls inside the period.\",\n  \"records\": \"Participant join dates\",\n  \"divided_by\": null\n },\n {\n  \"id\": \"sessions_delivered\",\n  \"label\": \"Sessions delivered\",\n  \"kind\": \"count\",\n  \"definition\": \"Group sessions with attendance logged, plus sessions confirmed as run.\",\n  \"formula\": \"Count each group and date with at least one Attendances record. Add scheduled sessions answered \\\"Ran, attendance not rec…"
+   }
+  },
+  {
+   "id": "e23",
+   "lane": "Worker 2",
+   "kind": "tool",
+   "label": "describe_records",
+   "start": 73794,
+   "end": 73813,
+   "status": "ok",
+   "detail": {
+    "parent": "e19",
+    "input": {},
+    "output": "{\n \"organization\": \"A youth mentorship program (sample data)\",\n \"records_cover\": \"2026-07-01 to 2026-09-30\",\n \"periods\": [\n  {\n   \"id\": \"q3\",\n   \"label\": \"Jul to Sep 2026\",\n   \"start\": \"2026-07-01\",\n   \"end\": \"2026-09-30\"\n  },\n  {\n   \"id\": \"jul\",\n   \"label\": \"Jul 2026\",\n   \"start\": \"2026-07-01\",\n   \"end\": \"2026-07-31\"\n  },\n  {\n   \"id\": \"aug\",\n   \"label\": \"Aug 2026\",\n   \"start\": \"2026-08-01\",\n   \"end\": \"2026-08-31\"\n  },\n  {\n   \"id\": \"sep\",\n   \"label\": \"Sep 2026\",\n   \"start\": \"2026-09-01\",\n   \"end\": \"2026-09-30\"\n  }\n ],\n \"tables\": [\n  {\n   \"name\": \"Participants\",\n   \"rows\": 40,\n   \"fields\": [\n    \"group (one of the groups below)\",\n    \"age range, a custom field with these values only: 10-12, 13-15, 16-18, 19-24\",\n    \"join date\",\n    \"exit date (the last enrolled day; empty while enrolled)\",\n    \"confidence at intake, a custom field scored 1 to 5\"\n   ]\n  },\n  {\n   \"name\": \"Engagements\",\n  …"
+   }
+  },
+  {
+   "id": "e24",
+   "lane": "Worker 1",
+   "kind": "gate",
+   "label": "Reviewer rejected 1",
+   "start": 75209,
+   "end": 75209,
+   "status": "fail",
+   "detail": {
+    "rejected": [
+     "q4.2"
+    ],
+    "items": [
+     "q1",
+     "q2",
+     "q3",
+     "q4",
+     "q5"
+    ]
+   }
+  },
+  {
+   "id": "e25",
+   "lane": "Worker 1",
+   "kind": "llm",
+   "label": "Remap 1 rejected",
+   "start": 75209,
+   "end": 80459,
+   "status": "ok",
+   "detail": {
+    "model": "claude-opus-5-5",
+    "effort": "medium",
+    "parent": null,
+    "prompt_chars": 7621,
+    "items": [
+     "q1",
+     "q2",
+     "q3",
+     "q4",
+     "q5"
+    ],
+    "tokens_in": 4709,
+    "tokens_out": 214,
+    "turns": 2,
+    "api_ms": 3382
+   }
+  },
+  {
+   "id": "e26",
+   "lane": "Worker 2",
+   "kind": "tool",
+   "label": "get_metric",
+   "start": 80204,
+   "end": 80223,
+   "status": "ok",
+   "detail": {
+    "parent": "e19",
+    "input": {
+     "metric": "confidence_improved",
+     "period": "q3"
+    },
+    "output": "{\n \"metric\": \"confidence_improved\",\n \"label\": \"Confidence improved\",\n \"period\": \"Jul to Sep 2026\",\n \"funder_copy_shows\": \"73%\",\n \"working\": \"27 improved ÷ 37 participants with a check-in = 72.97%, shown as 73%\"\n}"
+   }
+  },
+  {
+   "id": "e27",
+   "lane": "Worker 1",
+   "kind": "check",
+   "label": "Checks on the remap",
+   "start": 80459,
+   "end": 80459,
+   "status": "pass",
+   "detail": {
+    "items": [
+     "q1",
+     "q2",
+     "q3",
+     "q4",
+     "q5"
+    ],
+    "problems": [],
+    "micros": 53
+   }
+  },
+  {
+   "id": "e28",
+   "lane": "Worker 2",
+   "kind": "tool",
+   "label": "get_metric",
+   "start": 80672,
+   "end": 80680,
+   "status": "ok",
+   "detail": {
+    "parent": "e19",
+    "input": {
+     "metric": "retention_rate",
+     "period": "q3"
+    },
+    "output": "{\n \"metric\": \"retention_rate\",\n \"label\": \"Retention rate\",\n \"period\": \"Jul to Sep 2026\",\n \"funder_copy_shows\": \"95%\",\n \"working\": \"38 still enrolled ÷ 40 enrolled during the period = 95.00%, shown as 95%\"\n}"
+   }
+  },
+  {
+   "id": "e29",
+   "lane": "Worker 2",
+   "kind": "tool",
+   "label": "get_metric",
+   "start": 81056,
+   "end": 81063,
+   "status": "ok",
+   "detail": {
+    "parent": "e19",
+    "input": {
+     "metric": "sessions_delivered",
+     "period": "q3"
+    },
+    "output": "{\n \"metric\": \"sessions_delivered\",\n \"label\": \"Sessions delivered\",\n \"period\": \"Jul to Sep 2026\",\n \"funder_copy_shows\": \"42\",\n \"working\": \"42 with attendance logged\"\n}"
+   }
+  },
+  {
+   "id": "e30",
+   "lane": "Worker 2",
+   "kind": "gate",
+   "label": "Reviewer passed all",
+   "start": 87440,
+   "end": 87440,
+   "status": "pass",
+   "detail": {
+    "rejected": [],
+    "items": [
+     "q6",
+     "q7",
+     "q8",
+     "q9"
+    ]
+   }
+  },
+  {
+   "id": "e31",
+   "lane": "Assemble",
+   "kind": "step",
+   "label": "Assemble the form",
+   "start": 87440,
+   "end": 87441,
+   "status": "ok",
+   "detail": {
+    "metric": 1,
+    "formula": 0,
+    "draft": 2,
+    "ask": 12,
+    "missing": 4
+   }
+  },
+  {
+   "id": "e32",
+   "lane": "Assemble",
+   "kind": "gate",
+   "label": "12 for a person",
+   "start": 87441,
+   "end": 87441,
+   "status": "ok",
+   "detail": {
+    "fields": [
+     "q1.1",
+     "q2.1",
+     "q2.2",
+     "q3.1",
+     "q4.1",
+     "q4.2",
+     "q6.3",
+     "q7.2",
+     "q8.1",
+     "q8.2",
+     "q8.3",
+     "q9.1"
+    ]
+   }
+  }
+ ],
+ "items": [
+  {
+   "id": "q1",
+   "number": null,
+   "title": "Original project budget",
+   "quote": "Provide original project budget shown in your grant application",
+   "quote_match": "exact",
+   "fields": [
+    {
+     "id": "q1.1",
+     "label": "Original project budget",
+     "quote": "Provide original project budget shown in your grant application",
+     "quote_match": "exact",
+     "wants": "money",
+     "answer": "ask",
+     "metric": null,
+     "age_range": null,
+     "formula": null,
+     "text": null,
+     "ask": "What was the original project budget shown in your Geist Foundation grant application?",
+     "to_staff": null,
+     "missing": null,
+     "reason": "The records don't hold budget or financial figures.",
+     "history": []
+    }
+   ]
+  },
+  {
+   "id": "q2",
+   "number": null,
+   "title": "Actual project income and expenditures",
+   "quote": "Show all actual project income and expenditures",
+   "quote_match": "exact",
+   "fields": [
+    {
+     "id": "q2.1",
+     "label": "Actual project income",
+     "quote": "Show all actual project income",
+     "quote_match": "exact",
+     "wants": "money",
+     "answer": "ask",
+     "metric": null,
+     "age_range": null,
+     "formula": null,
+     "text": null,
+     "ask": "What was the total actual income for this project during the grant period?",
+     "to_staff": null,
+     "missing": null,
+     "reason": "The records don't hold income figures.",
+     "history": []
+    },
+    {
+     "id": "q2.2",
+     "label": "Actual project expenditures",
+     "quote": "Show all actual project income and expenditures",
+     "quote_match": "exact",
+     "wants": "money",
+     "answer": "ask",
+     "metric": null,
+     "age_range": null,
+     "formula": null,
+     "text": null,
+     "ask": "What were the total actual expenditures for this project during the grant period?",
+     "to_staff": null,
+     "missing": null,
+     "reason": "The records don't hold expenditure figures.",
+     "history": []
+    }
+   ]
+  },
+  {
+   "id": "q3",
+   "number": null,
+   "title": "Expenses paid by Geist Foundation grant",
+   "quote": "Indicate expenses for which this Geist Foundation grant was used.",
+   "quote_match": "exact",
+   "fields": [
+    {
+     "id": "q3.1",
+     "label": "Expenses paid with this grant",
+     "quote": "Indicate expenses for which this Geist Foundation grant was used.",
+     "quote_match": "exact",
+     "wants": "money",
+     "answer": "ask",
+     "metric": null,
+     "age_range": null,
+     "formula": null,
+     "text": null,
+     "ask": "Which expenses did the Geist Foundation grant pay for, and how much went to each?",
+     "to_staff": null,
+     "missing": null,
+     "reason": "The records don't track how grant money was spent.",
+     "history": []
+    }
+   ]
+  },
+  {
+   "id": "q4",
+   "number": null,
+   "title": "Youth outcome areas addressed",
+   "quote": "Describe the youth outcome area(s) addressed (permanence, education, employment, housing, physical and mental health, personal and community engagement) and the outcomes you were trying to achieve.",
+   "quote_match": "exact",
+   "fields": [
+    {
+     "id": "q4.1",
+     "label": "Youth outcome area(s) addressed",
+     "quote": "Describe the youth outcome area(s) addressed (permanence, education, employment, housing, physical and mental health, personal and community engagement)",
+     "quote_match": "exact",
+     "wants": "choice",
+     "answer": "ask",
+     "metric": null,
+     "age_range": null,
+     "formula": null,
+     "text": null,
+     "ask": "Which youth outcome areas did this project address: permanence, education, employment, housing, health, or engagement?",
+     "to_staff": null,
+     "missing": null,
+     "reason": "Choosing the outcome areas the project targeted is a staff judgment that the records can't make.",
+     "history": []
+    },
+    {
+     "id": "q4.2",
+     "label": "Outcomes you were trying to achieve",
+     "quote": "the outcomes you were trying to achieve",
+     "quote_match": "exact",
+     "wants": "text",
+     "answer": "ask",
+     "metric": null,
+     "age_range": null,
+     "formula": null,
+     "text": null,
+     "ask": "What outcomes did your grant application say this project aimed to achieve for transitioning foster youth?",
+     "to_staff": null,
+     "missing": null,
+     "reason": "The intended outcomes come from the grant application and staff judgment, and the records only show results, not what the program set out to achieve.",
+     "history": [
+      {
+       "step": "review",
+       "verdict": "fail",
+       "reason": "The field asks which outcome areas the program targeted and what it intended to achieve, but the draft states as fact that the program aimed to build confidence (the records can't show intent, and the mapper itself says the intended outcomes come from the application), names none of the funder's outcome areas, reports results instead of goals, and treats {confidence_improved}, which is a percent, as a count in \"{confidence_improved} of them.\""
+      },
+      {
+       "step": "remap",
+       "answer": "ask"
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "id": "q5",
+   "number": null,
+   "title": "Number of transitioning foster youth served",
+   "quote": "Provide the number of transitioning foster youth served by the project, in these age groups: 14-15, 1618, 19-21, 22-24",
+   "quote_match": "exact",
+   "fields": [
+    {
+     "id": "q5.1",
+     "label": "Youth served, ages 14-15",
+     "quote": "Provide the number of transitioning foster youth served by the project, in these age groups: 14-15",
+     "quote_match": "exact",
+     "wants": "count",
+     "answer": "missing",
+     "metric": null,
+     "age_range": null,
+     "formula": null,
+     "text": null,
+     "ask": null,
+     "to_staff": null,
+     "missing": "Foster care or transition status for each participant, and age bands that match 14-15 (the records use 13-15).",
+     "reason": "The records don't show who is a transitioning foster youth, and the 13-15 range doesn't line up with 14-15.",
+     "history": []
+    },
+    {
+     "id": "q5.2",
+     "label": "Youth served, ages 16-18",
+     "quote": "Provide the number of transitioning foster youth served by the project, in these age groups: 14-15, 1618",
+     "quote_match": "exact",
+     "wants": "count",
+     "answer": "missing",
+     "metric": null,
+     "age_range": null,
+     "formula": null,
+     "text": null,
+     "ask": null,
+     "to_staff": null,
+     "missing": "Foster care or transition status for each participant.",
+     "reason": "The records hold a 16-18 age range but no foster status, so participants served would count youth who may not be in foster care.",
+     "history": []
+    },
+    {
+     "id": "q5.3",
+     "label": "Youth served, ages 19-21",
+     "quote": "Provide the number of transitioning foster youth served by the project, in these age groups: 14-15, 1618, 19-21",
+     "quote_match": "exact",
+     "wants": "count",
+     "answer": "missing",
+     "metric": null,
+     "age_range": null,
+     "formula": null,
+     "text": null,
+     "ask": null,
+     "to_staff": null,
+     "missing": "Foster care or transition status for each participant, and age bands that split 19-21 from 22-24.",
+     "reason": "The records don't show foster status, and they only hold a combined 19-24 range.",
+     "history": []
+    },
+    {
+     "id": "q5.4",
+     "label": "Youth served, ages 22-24",
+     "quote": "Provide the number of transitioning foster youth served by the project, in these age groups: 14-15, 1618, 19-21, 22-24",
+     "quote_match": "exact",
+     "wants": "count",
+     "answer": "missing",
+     "metric": null,
+     "age_range": null,
+     "formula": null,
+     "text": null,
+     "ask": null,
+     "to_staff": null,
+     "missing": "Foster care or transition status for each participant, and age bands that split 22-24 from 19-21.",
+     "reason": "The records don't show foster status, and they only hold a combined 19-24 range.",
+     "history": []
+    }
+   ]
+  },
+  {
+   "id": "q6",
+   "number": null,
+   "title": "Activities conducted and services delivered",
+   "quote": "Describe the activities conducted and the services delivered, including numbers of youth participating. Explain any changes from the activities described in your grant application.",
+   "quote_match": "exact",
+   "fields": [
+    {
+     "id": "q6.1",
+     "label": "Activities conducted and services delivered",
+     "quote": "Describe the activities conducted and the services delivered",
+     "quote_match": "exact",
+     "wants": "text",
+     "answer": "draft",
+     "metric": null,
+     "age_range": null,
+     "formula": null,
+     "text": "During {period}, the program ran {sessions_delivered} mentoring and skills sessions across its Coding Club, Mentor Circle and Weekend Leaders groups, for a total of {participant_hours} participant hours. Participants also handed in {assignment_submissions} assignments.",
+     "ask": "What other services, beyond these group sessions, did transitioning foster youth receive during the grant?",
+     "to_staff": null,
+     "missing": null,
+     "reason": "Session, hours and assignment records can describe the activities delivered, with the group names taken from the Groups table.",
+     "history": [
+      {
+       "step": "review",
+       "verdict": "pass",
+       "reason": "The draft describes the activities and services delivered using only supported slots (sessions delivered, participant hours, assignment submissions), and the three group names come from the Groups table."
+      }
+     ]
+    },
+    {
+     "id": "q6.2",
+     "label": "Numbers of youth participating",
+     "quote": "including numbers of youth participating",
+     "quote_match": "exact",
+     "wants": "count",
+     "answer": "metric",
+     "metric": "participants_served",
+     "age_range": null,
+     "formula": null,
+     "text": null,
+     "ask": null,
+     "to_staff": null,
+     "missing": null,
+     "reason": "Participants served counts each youth who attended at least one session, which is the number of youth taking part in the activities.",
+     "history": [
+      {
+       "step": "review",
+       "verdict": "pass",
+       "reason": "Participants served counts each youth once if they attended at least one session in the period, which matches the number of youth taking part in the activities."
+      }
+     ]
+    },
+    {
+     "id": "q6.3",
+     "label": "Changes from activities in grant application",
+     "quote": "Explain any changes from the activities described in your grant application.",
+     "quote_match": "exact",
+     "wants": "text",
+     "answer": "ask",
+     "metric": null,
+     "age_range": null,
+     "formula": null,
+     "text": null,
+     "ask": "How did the activities you delivered differ from those described in your grant application, and why?",
+     "to_staff": null,
+     "missing": null,
+     "reason": "The records do not include the grant application, so only staff can make this comparison.",
+     "history": []
+    }
+   ]
+  },
+  {
+   "id": "q7",
+   "number": null,
+   "title": "Outcomes resulting from the efforts",
+   "quote": "Describe what happened as a result of the efforts (outcomes), including any differences between these results and the expected results described in your grant application.",
+   "quote_match": "exact",
+   "fields": [
+    {
+     "id": "q7.1",
+     "label": "Outcomes",
+     "quote": "Describe what happened as a result of the efforts (outcomes)",
+     "quote_match": "exact",
+     "wants": "text",
+     "answer": "draft",
+     "metric": null,
+     "age_range": null,
+     "formula": null,
+     "text": "Of the {participants_checked_in} participants who rated their confidence at intake and at a check-in during {period}, {confidence_improved} reported greater confidence at their latest check-in. The program kept {retention_rate} of the youth enrolled during the period through its last day.",
+     "ask": "What other outcomes did youth reach, such as housing, school or employment milestones?",
+     "to_staff": null,
+     "missing": null,
+     "reason": "Confidence check-ins and enrollment dates support outcome statements; staff can add outcomes the records don't track.",
+     "history": [
+      {
+       "step": "review",
+       "verdict": "pass",
+       "reason": "The draft matches the metric definitions: confidence_improved (shown as a percent, 73% for Q3) is a share of the participants who have both an intake score and a check-in in the period, and retention_rate is the share of youth enrolled during the period who were still enrolled on its last day."
+      }
+     ]
+    },
+    {
+     "id": "q7.2",
+     "label": "Differences from expected results",
+     "quote": "including any differences between these results and the expected results described in your grant application.",
+     "quote_match": "exact",
+     "wants": "text",
+     "answer": "ask",
+     "metric": null,
+     "age_range": null,
+     "formula": null,
+     "text": null,
+     "ask": "How do these results differ from the expected results in your grant application, and why?",
+     "to_staff": null,
+     "missing": null,
+     "reason": "The expected results from the grant application are not in the records.",
+     "history": []
+    }
+   ]
+  },
+  {
+   "id": "q8",
+   "number": null,
+   "title": "Challenges, unexpected benefits, lessons learned",
+   "quote": "Describe challenges encountered, unexpected benefits, and lessons learned.",
+   "quote_match": "exact",
+   "fields": [
+    {
+     "id": "q8.1",
+     "label": "Challenges encountered",
+     "quote": "Describe challenges encountered",
+     "quote_match": "exact",
+     "wants": "text",
+     "answer": "ask",
+     "metric": null,
+     "age_range": null,
+     "formula": null,
+     "text": null,
+     "ask": "What challenges did the program encounter in delivering these efforts?",
+     "to_staff": null,
+     "missing": null,
+     "reason": "Challenges are a staff judgment the records cannot supply.",
+     "history": []
+    },
+    {
+     "id": "q8.2",
+     "label": "Unexpected benefits",
+     "quote": "Describe challenges encountered, unexpected benefits",
+     "quote_match": "exact",
+     "wants": "text",
+     "answer": "ask",
+     "metric": null,
+     "age_range": null,
+     "formula": null,
+     "text": null,
+     "ask": "What unexpected benefits came out of this work?",
+     "to_staff": null,
+     "missing": null,
+     "reason": "Unexpected benefits are a staff account the records do not hold.",
+     "history": []
+    },
+    {
+     "id": "q8.3",
+     "label": "Lessons learned",
+     "quote": "unexpected benefits, and lessons learned.",
+     "quote_match": "exact",
+     "wants": "text",
+     "answer": "ask",
+     "metric": null,
+     "age_range": null,
+     "formula": null,
+     "text": null,
+     "ask": "What lessons did the program learn from this work?",
+     "to_staff": null,
+     "missing": null,
+     "reason": "Lessons learned are a staff reflection the records cannot provide.",
+     "history": []
+    }
+   ]
+  },
+  {
+   "id": "q9",
+   "number": null,
+   "title": "Future plans for these efforts",
+   "quote": "Describe future plans for these efforts.",
+   "quote_match": "exact",
+   "fields": [
+    {
+     "id": "q9.1",
+     "label": "Future plans",
+     "quote": "Describe future plans for these efforts.",
+     "quote_match": "exact",
+     "wants": "text",
+     "answer": "ask",
+     "metric": null,
+     "age_range": null,
+     "formula": null,
+     "text": null,
+     "ask": "What are your future plans for continuing or changing these efforts?",
+     "to_staff": null,
+     "missing": null,
+     "reason": "Future plans need staff input and are not in the records.",
+     "history": []
+    }
+   ]
+  }
+ ]
+}

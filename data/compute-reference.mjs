@@ -268,6 +268,7 @@ export function computeReference({ org, participants, engagements, checkins, goa
       served,
       new_participants: people.filter((p) => inRange(p.join_date)).length,
       enrolled_any: enrolledAny.length,
+      enrolled_at_start: enrolledAny.filter((p) => enrolledOn(p, start)).length,
       retained: retained.length,
       submissions,
       checked_in: latest.size,
@@ -404,6 +405,9 @@ export function computeReference({ org, participants, engagements, checkins, goa
         : { submissions: m.submissions, served: 0, value: null, display: 'No participants served' },
       participants_checked_in: { value: m.checked_in, display: fmtPeople(m.checked_in) },
       confidence_improved: { improved: m.improved, checked_in: m.checked_in, ...rateFigure(m.improved, m.checked_in, 'No check-ins in this period') },
+      enrolled_at_start: { value: m.enrolled_at_start, display: fmtPeople(m.enrolled_at_start) },
+      enrolled_in_period: { value: m.enrolled_any, display: fmtPeople(m.enrolled_any) },
+      participants_exited: { value: m.enrolled_any - m.retained, display: fmtPeople(m.enrolled_any - m.retained) },
     };
     const byGroup = org.groups.map((g) => ({ g, gm: measure(period.start, period.end, st, g.id) }));
     const goalFigs = goals.map((g) => goalFigure(g, period.end, st));

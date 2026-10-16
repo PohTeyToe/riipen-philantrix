@@ -362,6 +362,18 @@
             "denominator": 37,
             "value": 0.7297297297297297,
             "display": "73%"
+          },
+          "enrolled_at_start": {
+            "value": 34,
+            "display": "34"
+          },
+          "enrolled_in_period": {
+            "value": 40,
+            "display": "40"
+          },
+          "participants_exited": {
+            "value": 2,
+            "display": "<5"
           }
         },
         "attendance_rate_by_group": [
@@ -602,6 +614,18 @@
             "denominator": 37,
             "value": 0.7297297297297297,
             "display": "73%"
+          },
+          "enrolled_at_start": {
+            "value": 34,
+            "display": "34"
+          },
+          "enrolled_in_period": {
+            "value": 40,
+            "display": "40"
+          },
+          "participants_exited": {
+            "value": 4,
+            "display": "<5"
           }
         },
         "attendance_rate_by_group": [
@@ -901,6 +925,18 @@
             "denominator": 31,
             "value": 0.4838709677419355,
             "display": "48%"
+          },
+          "enrolled_at_start": {
+            "value": 34,
+            "display": "34"
+          },
+          "enrolled_in_period": {
+            "value": 34,
+            "display": "34"
+          },
+          "participants_exited": {
+            "value": 0,
+            "display": "0"
           }
         },
         "attendance_rate_by_group": [
@@ -1141,6 +1177,18 @@
             "denominator": 31,
             "value": 0.4838709677419355,
             "display": "48%"
+          },
+          "enrolled_at_start": {
+            "value": 34,
+            "display": "34"
+          },
+          "enrolled_in_period": {
+            "value": 34,
+            "display": "34"
+          },
+          "participants_exited": {
+            "value": 0,
+            "display": "0"
           }
         },
         "attendance_rate_by_group": [
@@ -1399,6 +1447,18 @@
             "denominator": 25,
             "value": 0.52,
             "display": "52%"
+          },
+          "enrolled_at_start": {
+            "value": 33,
+            "display": "33"
+          },
+          "enrolled_in_period": {
+            "value": 39,
+            "display": "39"
+          },
+          "participants_exited": {
+            "value": 0,
+            "display": "0"
           }
         },
         "attendance_rate_by_group": [
@@ -1639,6 +1699,18 @@
             "denominator": 25,
             "value": 0.52,
             "display": "52%"
+          },
+          "enrolled_at_start": {
+            "value": 33,
+            "display": "33"
+          },
+          "enrolled_in_period": {
+            "value": 39,
+            "display": "39"
+          },
+          "participants_exited": {
+            "value": 2,
+            "display": "<5"
           }
         },
         "attendance_rate_by_group": [
@@ -1890,6 +1962,18 @@
             "denominator": 34,
             "value": 0.7352941176470589,
             "display": "74%"
+          },
+          "enrolled_at_start": {
+            "value": 39,
+            "display": "39"
+          },
+          "enrolled_in_period": {
+            "value": 39,
+            "display": "39"
+          },
+          "participants_exited": {
+            "value": 1,
+            "display": "<5"
           }
         },
         "attendance_rate_by_group": [
@@ -2130,6 +2214,18 @@
             "denominator": 34,
             "value": 0.7352941176470589,
             "display": "74%"
+          },
+          "enrolled_at_start": {
+            "value": 37,
+            "display": "37"
+          },
+          "enrolled_in_period": {
+            "value": 37,
+            "display": "37"
+          },
+          "participants_exited": {
+            "value": 1,
+            "display": "<5"
           }
         },
         "attendance_rate_by_group": [

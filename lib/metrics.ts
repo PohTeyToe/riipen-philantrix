@@ -18,7 +18,10 @@ export type MetricId =
   | 'assignment_submissions'
   | 'submissions_per_participant'
   | 'participants_checked_in'
-  | 'confidence_improved';
+  | 'confidence_improved'
+  | 'enrolled_at_start'
+  | 'enrolled_in_period'
+  | 'participants_exited';
 
 /** How a value is shown, and whether the people-count rule applies. */
 export type MetricKind = 'people' | 'count' | 'hours' | 'percent' | 'decimal';
@@ -61,9 +64,9 @@ const rate = (num: number, den: number, numLabel: string, denLabel: string, empt
   return { value: num / den, display: shown, staffDisplay: shown, arithmetic: `${commas(num)} ${numLabel} ÷ ${commas(den)} ${denLabel} = ${fmtPercentPrecise(num, den)}, shown as ${shown}` };
 };
 
-const people = (n: number, what: string): MetricValue => ({
+const people = (n: number, what: string, below: number): MetricValue => ({
   value: n,
-  display: peopleForFunder(n),
+  display: peopleForFunder(n, below),
   staffDisplay: fmtCount(n),
   arithmetic: `${commas(n)} ${what}`,
 });
@@ -79,7 +82,7 @@ export const METRICS: Record<MetricId, MetricDef> = {
     period: REPORT_PERIOD,
     definition: 'Attended at least one session in the period.',
     formula: 'Count each participant once if they have at least one Attendances record in the period.',
-    compute: (m) => people(m.served.length, m.served.length === 1 ? 'participant with an Attendances record' : 'participants with an Attendances record'),
+    compute: (m) => people(m.served.length, m.served.length === 1 ? 'participant with an Attendances record' : 'participants with an Attendances record', m.smallBelow),
   },
   new_participants: {
     id: 'new_participants',
@@ -91,7 +94,7 @@ export const METRICS: Record<MetricId, MetricDef> = {
     period: REPORT_PERIOD,
     definition: 'Joined the program during the period.',
     formula: 'Count participants whose join date falls inside the period.',
-    compute: (m) => people(m.newParticipants.length, m.newParticipants.length === 1 ? 'participant joined in the period' : 'participants joined in the period'),
+    compute: (m) => people(m.newParticipants.length, m.newParticipants.length === 1 ? 'participant joined in the period' : 'participants joined in the period', m.smallBelow),
   },
   sessions_delivered: {
     id: 'sessions_delivered',
@@ -209,7 +212,7 @@ export const METRICS: Record<MetricId, MetricDef> = {
     period: REPORT_PERIOD,
     definition: 'Rated their confidence at a check-in in the period, and at intake.',
     formula: 'Count each participant once if they have an intake score and at least one check-in dated in the period.',
-    compute: (m) => people(m.checkins.length, m.checkins.length === 1 ? 'participant with an intake score and a check-in' : 'participants with an intake score and a check-in'),
+    compute: (m) => people(m.checkins.length, m.checkins.length === 1 ? 'participant with an intake score and a check-in' : 'participants with an intake score and a check-in', m.smallBelow),
   },
   confidence_improved: {
     id: 'confidence_improved',
@@ -230,6 +233,42 @@ export const METRICS: Record<MetricId, MetricDef> = {
         m.checkins.length === 1 ? 'participant with a check-in' : 'participants with a check-in',
         'No check-ins in this period',
       ),
+  },
+  enrolled_at_start: {
+    id: 'enrolled_at_start',
+    label: 'Enrolled at the start',
+    kind: 'people',
+    activityType: 'Participant join and exit dates',
+    aggregation: 'Count of participants',
+    denominator: null,
+    period: "The period's first day",
+    definition: 'Enrolled on the first day of the period.',
+    formula: "Count participants who had joined by the period's first day and whose exit date, if any, is on or after it.",
+    compute: (m) => people(m.enrolledAtStart.length, m.enrolledAtStart.length === 1 ? 'participant enrolled on the first day' : 'participants enrolled on the first day', m.smallBelow),
+  },
+  enrolled_in_period: {
+    id: 'enrolled_in_period',
+    label: 'Enrolled during the period',
+    kind: 'people',
+    activityType: 'Participant join and exit dates',
+    aggregation: 'Count of participants',
+    denominator: null,
+    period: REPORT_PERIOD,
+    definition: 'Enrolled on at least one day of the period.',
+    formula: "Count participants who joined on or before the period's last day and whose exit date, if any, is on or after its first day. The same count divides the retention rate.",
+    compute: (m) => people(m.enrolledAny.length, m.enrolledAny.length === 1 ? 'participant enrolled during the period' : 'participants enrolled during the period', m.smallBelow),
+  },
+  participants_exited: {
+    id: 'participants_exited',
+    label: 'Participants who left',
+    kind: 'people',
+    activityType: 'Participant exit dates',
+    aggregation: 'Count of participants',
+    denominator: null,
+    period: REPORT_PERIOD,
+    definition: 'Enrolled during the period and left before its last day.',
+    formula: 'Count participants enrolled on any day of the period whose exit date falls before its last day. An exit date is the last enrolled day. Answering "Left the program" sets it to the last activity.',
+    compute: (m) => people(m.exited.length, m.exited.length === 1 ? 'participant left during the period' : 'participants left during the period', m.smallBelow),
   },
 };
 

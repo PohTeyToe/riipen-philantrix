@@ -1,25 +1,48 @@
 @import 'tailwindcss';
 
-/* Paper on a desk. Light only: it's a document tool that prints. */
+/* Colours and type follow Philantrix's own app (philantrix.com stylesheet and
+   product screenshots, Oct 2026): a #fafafa canvas, #ebebeb hairlines,
+   mahogany #4c0000 for what's selected, orange #ea580c for what needs a
+   person, DM Sans for UI and Lora for page titles. See DESIGN.md. */
 @theme {
-  --color-desk: oklch(95.4% 0.005 258);
-  --color-desk-deep: oklch(92.6% 0.007 258);
-  --color-paper: oklch(99.4% 0.0015 250);
-  --color-ink: oklch(26.1% 0.03 265);
-  --color-muted: oklch(50.2% 0.029 263);
-  --color-faint: oklch(66% 0.022 262);
-  --color-rule: oklch(92.4% 0.008 261);
-  --color-rule-strong: oklch(86% 0.011 261);
-  --color-accent: oklch(48.9% 0.08 195);
-  --color-accent-deep: oklch(41.9% 0.068 195);
-  --color-accent-tint: oklch(95.6% 0.016 192);
-  --color-amber: oklch(59.3% 0.132 66);
-  --color-amber-ink: oklch(50% 0.11 62);
-  --color-amber-tint: oklch(96.4% 0.03 80);
-  --color-absent: oklch(97% 0.004 258);
+  --color-canvas: oklch(98.4% 0.002 29);
+  --color-surface: oklch(99.7% 0.001 29);
+  --color-sunken: oklch(96.2% 0.003 29);
+  --color-line: oklch(92.6% 0.003 29);
+  --color-line-strong: oklch(86.5% 0.004 29);
+  --color-ink: oklch(21% 0.008 29);
+  --color-muted: oklch(46% 0.01 29);
+  --color-faint: oklch(54% 0.01 29);
 
-  --font-sans: 'Source Sans 3 Variable', ui-sans-serif, system-ui, -apple-system, 'Segoe UI', sans-serif;
-  --font-serif: 'Source Serif 4 Variable', ui-serif, Georgia, 'Times New Roman', serif;
+  --color-mah: oklch(26.2% 0.107 29.2);
+  --color-mah-deep: oklch(19% 0.08 29.2);
+  --color-mah-hover: oklch(33% 0.13 29.2);
+  --color-mah-tint: oklch(96.4% 0.018 17);
+  --color-mah-soft: oklch(87% 0.05 18);
+  --color-mah-mid: oklch(62% 0.12 22);
+
+  --color-orange: oklch(64.6% 0.194 41.1);
+  --color-orange-ink: oklch(50% 0.15 41);
+  --color-orange-tint: oklch(97.2% 0.022 55);
+  --color-orange-line: oklch(87% 0.08 50);
+
+  --color-green: oklch(60% 0.14 150);
+  --color-green-ink: oklch(45% 0.11 150);
+  --color-green-tint: oklch(97.4% 0.02 155);
+
+  --color-absent: oklch(90.5% 0.004 29);
+
+  /* The agent run card: solid mahogany, like their Tracked Goals cards. */
+  --color-on-mah: oklch(97% 0.012 30);
+  --color-on-mah-muted: oklch(82% 0.04 25);
+  --color-on-mah-faint: oklch(66% 0.06 25);
+  --color-mah-line: oklch(37% 0.1 29);
+  --color-mah-well: oklch(21.5% 0.085 29.2);
+  --color-orange-on-mah: oklch(78% 0.15 52);
+  --color-green-on-mah: oklch(82% 0.13 150);
+
+  --font-sans: 'DM Sans Variable', ui-sans-serif, system-ui, -apple-system, 'Segoe UI', sans-serif;
+  --font-serif: 'Lora Variable', ui-serif, Georgia, serif;
 
   --ease-out-quint: cubic-bezier(0.22, 1, 0.36, 1);
 }
@@ -32,21 +55,30 @@
     -webkit-text-size-adjust: 100%;
   }
   body {
-    background: var(--color-desk);
+    background: var(--color-canvas);
     color: var(--color-ink);
     font-family: var(--font-sans);
-    font-size: 15px;
+    font-size: 13.5px;
     line-height: 1.5;
     -webkit-font-smoothing: antialiased;
     text-rendering: optimizeLegibility;
+    font-kerning: normal;
   }
   ::selection {
-    background: var(--color-accent-tint);
+    background: var(--color-mah-soft);
   }
   :focus-visible {
-    outline: 2px solid var(--color-accent);
+    outline: 2px solid var(--color-mah);
     outline-offset: 2px;
-    border-radius: 3px;
+    border-radius: 4px;
+  }
+  h1,
+  h2,
+  h3 {
+    text-wrap: balance;
+  }
+  p {
+    text-wrap: pretty;
   }
 }
 
@@ -55,152 +87,320 @@
     font-variant-numeric: tabular-nums lining-nums;
   }
 
-  /* A number that opens its trace. Dotted teal underline, like a footnote.
-     The padding and matching negative margin make the tap target at least
-     24px tall without moving the text. */
+  /* Small uppercase labels, like "TRACKED GOALS" in their dashboard. */
+  .eyebrow {
+    font-size: 11.5px;
+    font-weight: 600;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--color-muted);
+  }
+
+  .panel {
+    background: var(--color-surface);
+    border: 1px solid var(--color-line);
+    border-radius: 12px;
+  }
+
+  /* A number that opens its sources. Dotted underline, like a footnote; the
+     padding and matching negative margin widen the target without moving
+     the text. */
   .trace {
-    padding: 3px 2px;
-    margin: -3px -2px;
+    position: relative;
+    padding: 2px 3px;
+    margin: -2px -3px;
     font: inherit;
     color: inherit;
     font-variant-numeric: tabular-nums lining-nums;
-    text-decoration: underline dotted var(--color-accent);
+    text-decoration: underline dotted oklch(26.2% 0.107 29.2 / 0.4);
     text-decoration-thickness: 1.5px;
-    text-underline-offset: 0.18em;
-    border-radius: 3px;
+    text-underline-offset: 0.16em;
+    border-radius: 5px;
     cursor: pointer;
-    transition: background-color 150ms var(--ease-out-quint), color 150ms var(--ease-out-quint);
+    transition:
+      background-color 150ms var(--ease-out-quint),
+      color 150ms var(--ease-out-quint);
   }
   .trace:hover {
-    color: var(--color-accent-deep);
-    background: var(--color-accent-tint);
-    text-decoration-style: solid;
+    color: var(--color-mah);
+    background: var(--color-mah-tint);
+    text-decoration-color: var(--color-mah);
   }
-  .trace[aria-expanded='true'] {
-    background: var(--color-accent-tint);
-    color: var(--color-accent-deep);
-    text-decoration-style: solid;
+  .trace[aria-pressed='true'] {
+    color: var(--color-surface);
+    background: var(--color-mah);
+    text-decoration-color: transparent;
   }
 
-  /* A figure an answer just changed: amber, then clear. */
+  /* A number an edit or answer just moved: a rose wash, and its old value
+     floating above it for a moment. */
   .changed {
-    animation: changed 1800ms var(--ease-out-quint) both;
+    animation: changed 2400ms var(--ease-out-quint) both;
+  }
+  .was {
+    position: absolute;
+    left: 50%;
+    bottom: calc(100% + 2px);
+    translate: -50% 0;
+    padding: 1px 5px;
+    border-radius: 4px;
+    background: var(--color-ink);
+    color: var(--color-surface);
+    font-size: 11px;
+    font-weight: 600;
+    line-height: 1.35;
+    letter-spacing: 0;
+    white-space: nowrap;
+    pointer-events: none;
+    animation: was 3200ms var(--ease-out-quint) both;
+  }
+  .was s {
+    text-decoration-thickness: 1.5px;
+    opacity: 0.75;
   }
 
   .btn {
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    gap: 0.5rem;
-    min-height: 40px;
-    padding: 0 1rem;
-    border-radius: 6px;
+    gap: 0.4rem;
+    min-height: 32px;
+    padding: 0 0.75rem;
+    border-radius: 8px;
     font-weight: 600;
-    font-size: 14.5px;
+    font-size: 13px;
     line-height: 1;
     white-space: nowrap;
-    transition: background-color 150ms var(--ease-out-quint), border-color 150ms var(--ease-out-quint), color 150ms var(--ease-out-quint);
+    transition:
+      background-color 150ms var(--ease-out-quint),
+      border-color 150ms var(--ease-out-quint),
+      color 150ms var(--ease-out-quint);
+  }
+  .btn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+  .btn[aria-busy='true'] {
+    cursor: progress;
   }
   .btn-primary {
-    background: var(--color-accent);
-    color: var(--color-paper);
+    background: var(--color-mah);
+    color: var(--color-surface);
   }
-  .btn-primary:hover {
-    background: var(--color-accent-deep);
+  .btn-primary:hover:not(:disabled) {
+    background: var(--color-mah-hover);
   }
-  .btn-primary:active {
-    background: oklch(37% 0.06 195);
+  .btn-primary:active:not(:disabled) {
+    background: var(--color-mah-deep);
   }
   .btn-quiet {
-    background: var(--color-paper);
+    background: var(--color-surface);
     color: var(--color-ink);
-    border: 1px solid var(--color-rule-strong);
+    border: 1px solid var(--color-line-strong);
   }
-  .btn-quiet:hover {
+  .btn-quiet:hover:not(:disabled) {
     border-color: var(--color-faint);
   }
-  .btn-quiet:active {
-    background: var(--color-desk);
+  .btn-quiet:active:not(:disabled) {
+    background: var(--color-sunken);
+  }
+  .btn-ghost {
+    color: var(--color-muted);
+  }
+  .btn-ghost:hover:not(:disabled) {
+    color: var(--color-ink);
+    background: var(--color-sunken);
   }
 
-  /* Two- and four-way toggles. */
+  /* Segmented controls: period, funder, answers. */
   .seg {
     display: inline-flex;
     padding: 3px;
     gap: 2px;
-    background: var(--color-desk-deep);
-    border-radius: 8px;
+    background: var(--color-sunken);
+    border-radius: 9px;
   }
   .seg > button {
-    flex: 1 1 0;
-    min-height: 34px;
-    padding: 0 0.75rem;
+    flex: 1 1 auto;
+    min-height: 28px;
+    padding: 0 0.7rem;
     border-radius: 6px;
-    font-size: 14px;
+    font-size: 13px;
     font-weight: 600;
     line-height: 1.2;
     white-space: nowrap;
     color: var(--color-muted);
-    transition: background-color 150ms var(--ease-out-quint), color 150ms var(--ease-out-quint), box-shadow 150ms var(--ease-out-quint);
+    transition:
+      background-color 150ms var(--ease-out-quint),
+      color 150ms var(--ease-out-quint),
+      box-shadow 150ms var(--ease-out-quint);
   }
   .seg > button:hover {
     color: var(--color-ink);
   }
-  @media (width < 48rem) {
-    .seg-wrap > button {
-      white-space: normal;
-      padding-block: 6px;
-    }
-  }
-  @media (width >= 48rem) {
-    .seg-fit > button {
-      flex: 0 0 auto;
-    }
-  }
   .seg > button[aria-pressed='true'] {
-    background: var(--color-paper);
-    color: var(--color-accent-deep);
-    box-shadow: 0 1px 2px oklch(26% 0.03 265 / 0.12);
+    background: var(--color-surface);
+    color: var(--color-mah);
+    box-shadow:
+      0 0 0 1px oklch(21% 0.008 29 / 0.06),
+      0 1px 2px oklch(21% 0.008 29 / 0.1);
+  }
+
+  /* One-click answers: quiet until chosen, then mahogany. */
+  .answer {
+    min-height: 30px;
+    padding: 0 0.65rem;
+    border-radius: 7px;
+    border: 1px solid var(--color-line-strong);
+    background: var(--color-surface);
+    font-size: 12.5px;
+    font-weight: 600;
+    white-space: nowrap;
+    transition:
+      background-color 150ms var(--ease-out-quint),
+      border-color 150ms var(--ease-out-quint),
+      color 150ms var(--ease-out-quint);
+  }
+  .answer:hover {
+    border-color: var(--color-mah);
+    color: var(--color-mah);
+  }
+  .answer[aria-pressed='true'] {
+    background: var(--color-mah);
+    border-color: var(--color-mah);
+    color: var(--color-surface);
   }
 
   .field-select {
     appearance: none;
-    min-height: 38px;
-    padding: 0 2rem 0 0.75rem;
-    border: 1px solid var(--color-rule-strong);
-    border-radius: 6px;
-    background: var(--color-paper)
-      url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath d='M3 4.5 6 7.5 9 4.5' fill='none' stroke='%235b6475' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E")
-      no-repeat right 0.7rem center;
-    font-size: 14.5px;
+    min-height: 32px;
+    padding: 0 1.9rem 0 0.65rem;
+    border: 1px solid var(--color-line-strong);
+    border-radius: 8px;
+    background: var(--color-surface)
+      url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath d='M3 4.5 6 7.5 9 4.5' fill='none' stroke='%23525252' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E")
+      no-repeat right 0.6rem center;
+    font-size: 13px;
+    font-weight: 500;
     color: var(--color-ink);
   }
   .field-select:hover {
     border-color: var(--color-faint);
   }
 
+  /* A roster checkbox, like the Engagement Logger's. */
+  .tick {
+    appearance: none;
+    display: grid;
+    place-items: center;
+    width: 18px;
+    height: 18px;
+    flex: none;
+    border-radius: 5px;
+    border: 1.5px solid var(--color-line-strong);
+    background: var(--color-surface);
+    transition:
+      background-color 120ms var(--ease-out-quint),
+      border-color 120ms var(--ease-out-quint);
+  }
+  .tick::after {
+    content: '';
+    width: 9px;
+    height: 5px;
+    margin-top: -2px;
+    border-left: 2px solid var(--color-surface);
+    border-bottom: 2px solid var(--color-surface);
+    rotate: -45deg;
+    opacity: 0;
+  }
+  .tick:checked {
+    background: var(--color-mah);
+    border-color: var(--color-mah);
+  }
+  .tick:checked::after {
+    opacity: 1;
+  }
+  .tick:hover:not(:checked) {
+    border-color: var(--color-faint);
+  }
+
+  /* Report pages. */
   .paper {
-    background: var(--color-paper);
-    box-shadow:
-      0 0 0 1px oklch(26% 0.03 265 / 0.05),
-      0 1px 2px oklch(26% 0.03 265 / 0.06),
-      0 12px 32px -8px oklch(26% 0.03 265 / 0.12);
+    container-type: inline-size;
+    background: var(--color-surface);
+    border: 1px solid var(--color-line);
+    border-radius: 12px;
+    box-shadow: 0 1px 2px oklch(21% 0.008 29 / 0.04);
+  }
+
+  .scroll-y {
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    scrollbar-width: thin;
+    scrollbar-color: var(--color-line-strong) transparent;
   }
 
   .fade-in {
     animation: fade-in 180ms var(--ease-out-quint) both;
   }
+
+  /* "Why" links on report fields show on hover where there is hover; touch screens always show them. */
+  @media (hover: hover) {
+    [data-report] .why {
+      opacity: 0;
+      transition: opacity 150ms var(--ease-out-quint);
+    }
+    [data-report] :is(section, tbody):hover .why,
+    [data-report] .why:focus-visible {
+      opacity: 1;
+    }
+  }
+
+  /* A live step's time flashes when a rebuild changes it. */
+  .tick-flash {
+    animation: tick-flash 900ms var(--ease-out-quint) both;
+  }
+  .sheet-in {
+    animation: sheet-in 220ms var(--ease-out-quint) both;
+  }
 }
 
 @keyframes changed {
   0%,
-  35% {
-    background-color: oklch(90% 0.08 80);
-    box-shadow: 0 0 0 3px oklch(90% 0.08 80);
+  40% {
+    background-color: var(--color-mah-soft);
+    box-shadow: 0 0 0 3px var(--color-mah-soft);
   }
   100% {
     background-color: transparent;
     box-shadow: 0 0 0 3px transparent;
+  }
+}
+
+@keyframes was {
+  0% {
+    opacity: 0;
+    translate: -50% 3px;
+  }
+  8%,
+  75% {
+    opacity: 1;
+    translate: -50% 0;
+  }
+  100% {
+    opacity: 0;
+    translate: -50% 0;
+    visibility: hidden;
+  }
+}
+
+@keyframes tick-flash {
+  0% {
+    color: var(--color-mah);
+    background-color: var(--color-mah-tint);
+  }
+  100% {
+    background-color: transparent;
   }
 }
 
@@ -215,18 +415,7 @@
 
 @keyframes sheet-in {
   from {
-    transform: translateY(24px);
-    opacity: 0;
-  }
-  to {
-    transform: none;
-    opacity: 1;
-  }
-}
-
-@keyframes panel-in {
-  from {
-    transform: translateX(24px);
+    transform: translateY(32px);
     opacity: 0;
   }
   to {
@@ -244,23 +433,27 @@
   }
   .changed {
     animation: none;
-    background-color: oklch(93% 0.06 80);
+    background-color: var(--color-mah-tint);
+  }
+  .was {
+    animation: none;
+    display: none;
   }
 }
 
-/* What's on screen is what prints: the report page alone, on US Letter. */
+/* PDF: the one report asked for, on US Letter. */
 @page {
   size: letter;
   margin: 0.55in 0.6in 0.6in;
   @bottom-left {
     content: 'SAMPLE DATA. Fictional organization and records.';
-    font: 8pt 'Source Sans 3 Variable', sans-serif;
-    color: #5b6475;
+    font: 8pt 'DM Sans Variable', sans-serif;
+    color: #525252;
   }
   @bottom-right {
     content: 'Page ' counter(page) ' of ' counter(pages);
-    font: 8pt 'Source Sans 3 Variable', sans-serif;
-    color: #5b6475;
+    font: 8pt 'DM Sans Variable', sans-serif;
+    color: #525252;
   }
 }
 
@@ -269,40 +462,45 @@
     background: none;
     font-size: 10.5pt;
   }
-  .no-print {
+  .no-print,
+  body[data-print] [data-report]:not([data-printing]) {
     display: none !important;
   }
-  .print-root {
+  .print-flat {
     display: block !important;
+    position: static !important;
     padding: 0 !important;
     margin: 0 !important;
-  }
-  * {
-    outline: none !important;
+    max-width: none !important;
+    width: auto !important;
+    grid-template-columns: none !important;
   }
   .paper {
     background: none !important;
+    border: 0 !important;
+    border-radius: 0 !important;
     box-shadow: none !important;
-    width: auto !important;
-    max-width: none !important;
-    min-height: 0 !important;
     padding: 0 !important;
-    margin: 0 !important;
   }
   .trace {
     text-decoration: none;
     background: none !important;
     color: inherit !important;
   }
-  .changed {
+  .changed,
+  .was {
     animation: none !important;
     background: none !important;
     box-shadow: none !important;
+  }
+  .was {
+    display: none !important;
   }
   .avoid-break {
     break-inside: avoid;
   }
   * {
+    outline: none !important;
     -webkit-print-color-adjust: exact;
     print-color-adjust: exact;
   }

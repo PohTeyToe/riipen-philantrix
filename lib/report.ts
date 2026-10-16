@@ -8,7 +8,7 @@ import { goalFigure, measure, type GoalFigure, type ShownStatus } from './engine
 import { applyAnswers, type Answers, type Finding, type State } from './findings';
 import { commas, fmtDate, fmtDay, fmtHours, fmtLongDate, fmtPercent, toHundredths } from './format';
 import { METRICS, type MetricId, type MetricKind, type MetricValue } from './metrics';
-import { COMBINED_FOOTNOTE, bandLabel, combineBands, peopleForFunder } from './privacy';
+import { DEFAULT_SMALL_BELOW, bandLabel, combineBands, combinedFootnote, peopleForFunder } from './privacy';
 import { SUMMARY_LABEL, TEMPLATES, templateById, templateGoals, templateMetrics, type Slot, type Template, type TemplateId } from './templates';
 
 // ---------- figures for one period ----------
@@ -41,6 +41,8 @@ export interface AgeBand {
 
 export interface PeriodFigures {
   period: Period;
+  /** The privacy cutoff these figures were shown under. */
+  smallBelow: number;
   metrics: Record<MetricId, MetricValue>;
   attendanceByGroup: GroupRate[];
   retentionByGroup: GroupRate[];
@@ -49,15 +51,17 @@ export interface PeriodFigures {
   notes: DataNote[];
 }
 
-const bandsCache = new WeakMap<Dataset, string[][]>();
+const bandsCache = new WeakMap<Dataset, Map<number, string[][]>>();
 
 /**
  * The age bands funder copy uses, the same in every period a reader can switch
  * to, from participants served in each. Answers don't change who attended, so
- * this depends on the records alone.
+ * this depends on the records and the cutoff alone.
  */
-export function ageBands(ds: Dataset): string[][] {
-  let bands = bandsCache.get(ds);
+export function ageBands(ds: Dataset, smallBelow = DEFAULT_SMALL_BELOW): string[][] {
+  let byCutoff = bandsCache.get(ds);
+  if (!byCutoff) bandsCache.set(ds, (byCutoff = new Map()));
+  let bands = byCutoff.get(smallBelow);
   if (!bands) {
     const st = applyAnswers(ds, [], {});
     const age = new Map(ds.participants.map((p) => [p.id, p.age_range]));
@@ -65,8 +69,8 @@ export function ageBands(ds: Dataset): string[][] {
       const served = measure(ds, st, p.start, p.end).served;
       return ds.ageRanges.map((r) => served.filter((pid) => age.get(pid) === r).length);
     });
-    bands = combineBands(ds.ageRanges, counts);
-    bandsCache.set(ds, bands);
+    bands = combineBands(ds.ageRanges, counts, smallBelow);
+    byCutoff.set(smallBelow, bands);
   }
   return bands;
 }
@@ -82,22 +86,24 @@ export function computePeriod(ds: Dataset, st: State, findings: Finding[], perio
   const retentionByGroup = byGroup.map(({ g, gm }) => ({ groupId: g.id, groupName: g.name, ...groupRate(gm.retained.length, gm.enrolledAny.length, `No participants in ${period.short}`) }));
 
   const byId = new Map(st.people.map((p) => [p.id, p]));
-  const bands = ageBands(ds);
+  const below = st.smallBelow;
+  const bands = ageBands(ds, below);
   const cells = bands.map((ranges) => {
     const value = m.served.filter((pid) => ranges.includes(byId.get(pid)?.age_range ?? '')).length;
-    return { key: bandLabel(ranges), ranges, value, display: peopleForFunder(value) };
+    return { key: bandLabel(ranges), ranges, value, display: peopleForFunder(value, below) };
   });
   const goals = ds.goals.map((g) => goalFigure(ds, st, g, period.end));
 
   return {
     period,
+    smallBelow: below,
     metrics,
     attendanceByGroup,
     retentionByGroup,
     ageBreakdown: {
-      total: { value: m.served.length, display: peopleForFunder(m.served.length) },
+      total: { value: m.served.length, display: peopleForFunder(m.served.length, below) },
       cells,
-      footnote: bands.some((b) => b.length > 1) ? COMBINED_FOOTNOTE : null,
+      footnote: bands.some((b) => b.length > 1) ? combinedFootnote(below) : null,
     },
     goals,
     notes: dataNotes(ds, st, findings, period, goals),
@@ -142,7 +148,7 @@ export function dataNotes(ds: Dataset, st: State, findings: Finding[], period: P
   }
   for (const g of goals) {
     if (g.shownStatus === 'Not shown') {
-      notes.push({ findingId: `withheld-${g.id}`, kind: 'goal_status_withheld', templates: showing(g.id), text: `${g.name}: fewer than 5 so far, so its status and forecast aren't shown. Either one would say how many.` });
+      notes.push({ findingId: `withheld-${g.id}`, kind: 'goal_status_withheld', templates: showing(g.id), text: `${g.name}: fewer than ${st.smallBelow} so far, so its status and forecast aren't shown. Either one would say how many.` });
     }
   }
   return notes.filter((n) => n.templates.length);
@@ -185,6 +191,8 @@ export interface GoalView {
   targetDisplay: string;
   due: string;
   status: ShownStatus;
+  /** Unrounded forecast, or null when there is none or it's withheld. */
+  forecast: number | null;
   forecastDisplay: string | null;
   forecastLine: string | null;
 }
@@ -206,6 +214,8 @@ export type SectionView =
 
 export interface Report {
   templateId: TemplateId;
+  /** The privacy cutoff: people counts under it show as "<cutoff". */
+  smallBelow: number;
   templateName: string;
   periodId: Period['id'];
   period: Period;
@@ -232,6 +242,7 @@ export const STATUS_PHRASE: Record<ShownStatus, string> = {
   'No due date': 'open, with no due date',
   'Not shown': 'not rated while it counts fewer than 5 people',
 };
+const statusPhrase = (s: ShownStatus, below: number) => (s === 'Not shown' ? `not rated while it counts fewer than ${below} people` : STATUS_PHRASE[s]);
 
 export function renderSlot(slot: Slot, f: PeriodFigures): SummaryPart {
   const src = slot.source;
@@ -246,7 +257,7 @@ export function renderSlot(slot: Slot, f: PeriodFigures): SummaryPart {
     const g = f.goals.find((x) => x.id === src.goalId);
     if (!g) throw new Error(`no goal ${src.goalId}`);
     const goalRef: TraceRef = { kind: 'goal', goalId: src.goalId, part: 'value' };
-    if (src.part === 'status') return { text: STATUS_PHRASE[g.shownStatus], ref: goalRef };
+    if (src.part === 'status') return { text: statusPhrase(g.shownStatus, f.smallBelow), ref: goalRef };
     if (src.part === 'due') return { text: g.dueDate ? fmtLongDate(g.dueDate) : 'no due date', ref: goalRef };
     ({ value, display } = { value: g.target, display: g.targetDisplay });
     ref = { kind: 'goal', goalId: src.goalId, part: 'target' };
@@ -254,7 +265,7 @@ export function renderSlot(slot: Slot, f: PeriodFigures): SummaryPart {
   if (value === null) return { text: display, ref };
   switch (slot.kind) {
     // A 0 reads "no": "no new participants joined", not "0 new participants joined".
-    case 'people': return { text: value === 0 ? 'no' : value <= 4 ? 'fewer than 5' : commas(value), ref };
+    case 'people': return { text: value === 0 ? 'no' : value < f.smallBelow ? `fewer than ${f.smallBelow}` : commas(value), ref };
     case 'count': return { text: commas(value), ref };
     case 'hours': return { text: fmtHours(toHundredths(value)), ref };
     default: return { text: display, ref };
@@ -332,6 +343,7 @@ export function reportFromFigures(ds: Dataset, f: PeriodFigures, templateId: Tem
             targetDisplay: g.targetDisplay,
             due: g.dueDate ? fmtDate(g.dueDate) : 'Not set',
             status: g.shownStatus,
+            forecast: g.forecastDisplay ? g.forecast : null,
             forecastDisplay: g.forecastDisplay,
             forecastLine: g.forecastLine,
           };
@@ -343,6 +355,7 @@ export function reportFromFigures(ds: Dataset, f: PeriodFigures, templateId: Tem
   });
   return {
     templateId: t.id,
+    smallBelow: f.smallBelow,
     templateName: t.name,
     periodId: f.period.id,
     period: f.period,
@@ -354,8 +367,8 @@ export function reportFromFigures(ds: Dataset, f: PeriodFigures, templateId: Tem
   };
 }
 
-export function buildReport(ds: Dataset, findings: Finding[], answers: Answers, templateId: TemplateId, periodId: Period['id']): Report {
-  const st = applyAnswers(ds, findings, answers);
+export function buildReport(ds: Dataset, findings: Finding[], answers: Answers, templateId: TemplateId, periodId: Period['id'], smallBelow = DEFAULT_SMALL_BELOW): Report {
+  const st = applyAnswers(ds, findings, answers, smallBelow);
   return reportFromFigures(ds, computePeriod(ds, st, findings, periodById(periodId)), templateId);
 }
 
@@ -417,11 +430,11 @@ export interface FigureChange {
 }
 
 /** Every number that differs between two sets of answers, on either template. */
-export function changedFigures(ds: Dataset, findings: Finding[], before: Answers, after: Answers, periodId: Period['id']): FigureChange[] {
+export function changedFigures(ds: Dataset, findings: Finding[], before: Answers, after: Answers, periodId: Period['id'], smallBelow = DEFAULT_SMALL_BELOW): FigureChange[] {
   const out = new Map<string, FigureChange>();
   for (const t of TEMPLATES) {
-    const was = reportFigures(buildReport(ds, findings, before, t.id, periodId));
-    for (const [key, now] of reportFigures(buildReport(ds, findings, after, t.id, periodId))) {
+    const was = reportFigures(buildReport(ds, findings, before, t.id, periodId, smallBelow));
+    for (const [key, now] of reportFigures(buildReport(ds, findings, after, t.id, periodId, smallBelow))) {
       const old = was.get(key);
       if (!old || old.display === now.display) continue;
       const seen = out.get(key);
