@@ -105,15 +105,14 @@ export function RunCard({ run, litItems, selected, onSelect, replayT, onReplay, 
   useEffect(() => {
     if (!autoplay || compact) return;
     let t = 0;
-    const start = () => {
-      if (document.visibilityState !== 'visible') return;
-      document.removeEventListener('visibilitychange', start);
-      t = window.setTimeout(() => play(0), 600);
+    const arm = () => {
+      window.clearTimeout(t);
+      if (document.visibilityState === 'visible') t = window.setTimeout(() => play(0), 600);
     };
-    document.addEventListener('visibilitychange', start);
-    start();
+    document.addEventListener('visibilitychange', arm);
+    arm();
     return () => {
-      document.removeEventListener('visibilitychange', start);
+      document.removeEventListener('visibilitychange', arm);
       window.clearTimeout(t);
     };
   }, [autoplay]); // eslint-disable-line react-hooks/exhaustive-deps
